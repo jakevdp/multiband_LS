@@ -58,4 +58,4 @@ target/
 *~
 
 # data files
-*.tar.gz
+*.gz

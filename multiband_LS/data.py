@@ -3,6 +3,8 @@ Data downloaders for the multiband_LS stuff
 """
 import os
 import tarfile
+import gzip
+from io import BytesIO
 
 import numpy as np
 
@@ -91,3 +93,24 @@ def fetch_light_curves(data_dir=None):
         open(save_loc, 'bw').write(buf)
 
     return RRLyraeLC(save_loc)
+
+
+def fetch_lc_params(data_dir=None):
+    if data_dir is None:
+        data_dir = DATA_DIRECTORY
+    save_loc = os.path.join(data_dir, 'table2.dat.gz')
+    url = SESAR_RRLYRAE_URL + 'table2.dat.gz'
+
+    if not os.path.exists(save_loc):
+        buf = download_with_progress_bar(url)
+        open(save_loc, 'wb').write(buf)
+
+    dtype = [('id', 'i'), ('type', 'S2'), ('P', 'f'),
+             ('uA', 'f'), ('u0', 'f'), ('uE', 'f'), ('uT', 'f'),
+             ('gA', 'f'), ('g0', 'f'), ('gE', 'f'), ('gT', 'f'),
+             ('rA', 'f'), ('r0', 'f'), ('rE', 'f'), ('rT', 'f'),
+             ('iA', 'f'), ('i0', 'f'), ('iE', 'f'), ('iT', 'f'),
+             ('zA', 'f'), ('z0', 'f'), ('zE', 'f'), ('zT', 'f')]
+
+    return np.loadtxt(save_loc, dtype=dtype)
+    
