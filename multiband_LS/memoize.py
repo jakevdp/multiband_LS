@@ -16,10 +16,6 @@ class CacheResults(object):
                             "_{0}_{1}.npy".format(f.__name__, key))
 
     def call(self, f, key, overwrite=False, args=None, kwargs=None):
-        if self.verbose:
-            print(key, "...", sep="", end=" ", flush=True)
-            t0 = time.time()
-
         if args is None:
             args = ()
         if kwargs is None:
@@ -31,9 +27,10 @@ class CacheResults(object):
         cache_file = self.key_to_file(f, key)
         if os.path.exists(cache_file) and not overwrite:
             result = np.load(cache_file)
-            if self.verbose:
-                print("(cached)", flush=True)
         else:
+            if self.verbose:
+                print(key, "...", sep="", end=" ", flush=True)
+                t0 = time.time()
             result = f(key, *args, **kwargs)
             np.save(cache_file, result)
             if self.verbose:
