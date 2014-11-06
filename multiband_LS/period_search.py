@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 import numpy as np
 from astroML.time_series import lomb_scargle as lomb_scargle_astroML
 from .lomb_scargle import lomb_scargle
@@ -37,9 +39,8 @@ def period_search(t, y, dy, pmin=0.2, pmax=1.0, N=50000,
 
     # now zoom-in around the best periods
     p_best = np.unique(0.001 * (np.array(p_best) // 0.001))
-    #print(p_best)
 
-    period = np.concatenate([np.linspace(p - 0.05, p + 0.05, 10000)
+    period = np.concatenate([np.linspace(p - 0.05, p + 0.05, N)
                              for p in p_best])
     omega = 2 * np.pi / period
     
