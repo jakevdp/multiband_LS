@@ -2,7 +2,7 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_
 from nose import SkipTest
 
-from ..lomb_scargle import lomb_scargle, best_params, _construct_X
+from ..lomb_scargle import LombScargle, lomb_scargle, best_params, _construct_X
 
 
 def _generate_data(N=100, omega=10, dy=0.1, random_state=0):
@@ -12,6 +12,44 @@ def _generate_data(N=100, omega=10, dy=0.1, random_state=0):
     dy = dy * (1 + rng.rand(N))
     y += dy * rng.randn(N)
     return t, y, dy
+
+
+def test_lomb_scargle_class(N=100, omega=10):
+    """Test whether the standard and generalized lomb-scargle
+    give close to the same results for non-centered data"""
+    t, y, dy = _generate_data(N, omega)
+    omegas = np.linspace(1, omega + 1, 100)
+
+    P1 = LombScargle(fit_offset=True).fit(t, y, dy).power(omegas)
+    P2 = LombScargle(fit_offset=False).fit(t, y, dy).power(omegas)
+
+    rms = np.sqrt(np.mean((P1 - P2) ** 2))
+    assert_(rms < 0.005)
+
+
+def test_class_vs_astroML(N=100, omega=10):
+    try:
+        from astroML.time_series import lomb_scargle as lomb_scargle_astroML
+    except ImportError:
+        raise SkipTest("astroML is not available")
+
+    t, y, dy = _generate_data(N, omega)
+    omegas = np.linspace(omega - 4, omega + 4, 100)
+
+    # standard lomb-scargle
+    P1 = lomb_scargle_astroML(t, y, dy, omegas, generalized=False)
+    P2 = LombScargle(fit_offset=False).fit(t, y, dy).power(omegas)
+    yield assert_allclose, P1, P2
+
+    # generalized lomb-scargle
+    P1 = lomb_scargle_astroML(t, y, dy, omegas, generalized=True)
+    P2 = LombScargle(fit_offset=True).fit(t, y, dy).power(omegas)
+    yield assert_allclose, P1, P2
+
+    # generalized lomb-scargle without first centering the data
+    P2 = LombScargle(fit_offset=True,
+                     center_data=False).fit(t, y, dy).power(omegas)
+    yield assert_allclose, P1, P2
 
 
 def test_construct_X(N=100, omega=10):
