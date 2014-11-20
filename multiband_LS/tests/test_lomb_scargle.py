@@ -19,13 +19,13 @@ def test_construct_X(N=100, omega=10):
     """
     t, y, dy = _generate_data(N, omega)
 
-    X1 = _construct_X(t, dy, omega, Nterms=1, compute_offset=False)
+    X1 = _construct_X(t, dy, omega, Nterms=1, fit_offset=False)
     assert_(X1.shape == (100, 2))
 
-    X2 = _construct_X(t, dy, omega, Nterms=2, compute_offset=False)
+    X2 = _construct_X(t, dy, omega, Nterms=2, fit_offset=False)
     assert_(X2.shape == (100, 4))
 
-    X3 = _construct_X(t, dy, omega, Nterms=2, compute_offset=True)
+    X3 = _construct_X(t, dy, omega, Nterms=2, fit_offset=True)
     assert_(X3.shape == (100, 5))
 
     assert_allclose(X1, X2[:, :2])
@@ -39,8 +39,8 @@ def test_lomb_scargle(N=100, omega=10):
     t, y, dy = _generate_data(N, omega)
     omegas = np.linspace(1, omega + 1, 100)
 
-    P1 = lomb_scargle(t, y, dy, omegas, compute_offset=True)
-    P2 = lomb_scargle(t, y, dy, omegas, compute_offset=False)
+    P1 = lomb_scargle(t, y, dy, omegas, fit_offset=True)
+    P2 = lomb_scargle(t, y, dy, omegas, fit_offset=False)
 
     rms = np.sqrt(np.mean((P1 - P2) ** 2))
     assert_(rms < 0.01)
@@ -53,6 +53,6 @@ def test_best_params(N=100, omega=10):
 
     chi2_0 = y - np.dot(y, dy ** -2) / np.sum(dy ** -2)
 
-    for compute_offset in [True, False]:
+    for fit_offset in [True, False]:
         for Nterms in [1, 2]:
-            theta_best = best_params(t, y, dy, omega, Nterms, compute_offset)
+            theta_best = best_params(t, y, dy, omega, Nterms, fit_offset)
