@@ -39,16 +39,14 @@ def best_params(t, y, dy, omega, Nterms=1, fit_offset=False):
 
 def lomb_scargle(t, y, dy, omegas, Nterms=1,
                  center_data=True, fit_offset=True):
-    # TODO: get rid of center_data??
-
     # P = (chi2_0 - chi2) / chi2_ref
-    # chi2_0 = chi2_ref when the data is centered
-    # otherwise it's more complicated
+    # chi2_0 = y^T y
+    # chi2_ref = (y - mean)^T (y - mean)
+    # so if center_data is True, then chi2_ref == chi2_0
 
     t, y, dy, omegas = map(np.asarray, (t, y, dy, omegas))
 
     yw = _construct_y(y, dy, center_data)
-
     chi2_0 = np.dot(yw.T, yw)
 
     if center_data:
@@ -65,15 +63,10 @@ def lomb_scargle(t, y, dy, omegas, Nterms=1,
         XTy = np.dot(Xw.T, yw)
         P_LS[i] = np.dot(XTy.T, np.linalg.solve(XTX, XTy))
 
-
-    if center_data:
-        P_LS /= chi2_0
-        return P_LS
-    else:
-        P_LS -= chi2_0
-        P_LS /= chi2_ref
-        P_LS += 1
-        return P_LS
+    P_LS -= chi2_0
+    P_LS /= chi2_ref
+    P_LS += 1
+    return P_LS
 
 
 def window_power(t, dy, omegas, **kwargs):

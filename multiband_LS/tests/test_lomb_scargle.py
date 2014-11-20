@@ -1,12 +1,13 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_
+from nose import SkipTest
 
 from ..lomb_scargle import lomb_scargle, best_params, _construct_X
 
 
 def _generate_data(N=100, omega=10, dy=0.1, random_state=0):
     rng = np.random.RandomState(random_state)
-    t = 10 * rng.rand(N)
+    t = 10 * omega * rng.rand(N)
     y = 10 + 2 * np.sin(omega * t) + 3 * np.cos(omega * t - 0.3)
     dy = dy * (1 + rng.rand(N))
     y += dy * rng.randn(N)
@@ -56,3 +57,29 @@ def test_best_params(N=100, omega=10):
     for fit_offset in [True, False]:
         for Nterms in [1, 2]:
             theta_best = best_params(t, y, dy, omega, Nterms, fit_offset)
+
+
+def test_vs_astroML(N=100, omega=10):
+    try:
+        from astroML.time_series import lomb_scargle as lomb_scargle_astroML
+    except ImportError:
+        raise SkipTest("astroML is not available")
+
+    t, y, dy = _generate_data(N, omega)
+    omegas = np.linspace(omega - 4, omega + 4, 100)
+
+    # standard lomb-scargle
+    P1 = lomb_scargle_astroML(t, y, dy, omegas, generalized=False)
+    P2 = lomb_scargle(t, y, dy, omegas, fit_offset=False)
+    yield assert_allclose, P1, P2
+
+    # generalized lomb-scargle
+    P1 = lomb_scargle_astroML(t, y, dy, omegas, generalized=True)
+    P2 = lomb_scargle(t, y, dy, omegas, fit_offset=True)
+    yield assert_allclose, P1, P2
+
+    # generalized lomb-scargle without first centering the data
+    P2 = lomb_scargle(t, y, dy, omegas, fit_offset=True, center_data=False)
+    yield assert_allclose, P1, P2
+    
+
