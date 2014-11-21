@@ -1,5 +1,5 @@
 import numpy as np
-from .lomb_scargle import lomb_scargle
+from .lomb_scargle import LombScargle
 
 
 def lomb_scargle_multiband(t, y, dy, filt, omegas, Nterms=1):
@@ -14,9 +14,8 @@ def lomb_scargle_multiband(t, y, dy, filt, omegas, Nterms=1):
 
     # Perform a separate Lomb-Scargle for each band
     masks = np.array([(filt == f) for f in np.unique(filt)])
-    powers = np.array([lomb_scargle(t[mask], y[mask], dy[mask],
-                                    omegas, Nterms=Nterms,
-                                    center_data=False, fit_offset=True)
+    powers = np.array([LombScargle(center_data=False, fit_offset=True)\
+                       .fit(t[mask], y[mask], dy[mask]).power(omegas)
                        for mask in masks])
 
     # Return sum of powers weighted by chi2-normalization

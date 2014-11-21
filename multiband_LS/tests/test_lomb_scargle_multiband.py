@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
-from ..lomb_scargle import lomb_scargle
+from ..lomb_scargle import LombScargle
 from ..lomb_scargle_multiband import lomb_scargle_multiband
 
 
@@ -18,9 +18,9 @@ def test_lomb_scargle_multiband(N=100, omega=10):
     """Test that results are the same with/without filter labels"""
     t, y, dy = _generate_data(N, omega)
     omegas = np.linspace(1, omega + 1, 100)
-    P_singleband = lomb_scargle(t, y, dy, omegas,
-                                center_data=False,
-                                fit_offset=True)
+    model1 = LombScargle(center_data=False, fit_offset=True)
+    P_singleband = model1.fit(t, y, dy).power(omegas)
+
     filt = np.ones(N)
     P_multiband = lomb_scargle_multiband(t, y, dy, filt, omegas)
     assert_allclose(P_multiband, P_singleband)
