@@ -45,7 +45,7 @@ class RRLyraeLC(object):
             else:
                 yield int(f[0])
 
-    def get_lightcurve(self, star_id):
+    def get_lightcurve(self, star_id, return_1d=False):
         """Get the light curves for the given ID
 
         Parameters
@@ -55,10 +55,15 @@ class RRLyraeLC(object):
 
         Returns
         -------
-        t, y, dy : np.ndarray
+        t, y, dy : np.ndarrays (if return_1d == False)
             Times, magnitudes, and magnitude errors.
             The shape of each array is [Nobs, 5], where the columns refer
             to [u,g,r,i,z] bands. Non-observations are indicated by NaN.
+
+        t, y, dy, filts : np.ndarrays (if return_1d == True)
+            Times, magnitudes, magnitude errors, and filters
+            The shape of each array is [Nobs], and non-observations are
+            filtered out.
         """
         filename = '{0}/{1}.dat'.format(self.dirname, star_id)
 
@@ -79,7 +84,13 @@ class RRLyraeLC(object):
         y[nans] = np.nan
         dy[nans] = np.nan
 
-        return t, y, dy
+        if return_1d:
+            t, y, dy, filts = np.broadcast_arrays(t, y, dy,
+                                                  ['u', 'g', 'r', 'i', 'z'])
+            good = ~np.isnan(t)
+            return t[good], y[good], dy[good], filts[good]
+        else:
+            return t, y, dy
 
 
 def fetch_light_curves(data_dir=None):
