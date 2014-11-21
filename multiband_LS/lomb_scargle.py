@@ -32,11 +32,12 @@ class PeriodicModeler(object):
 
 class LombScargle(PeriodicModeler):
     def __init__(self, center_data=True, fit_offset=True, Nterms=1,
-                 regularization=None):
+                 regularization=None, weight_by_diagonal=True):
         self.center_data = center_data
         self.fit_offset = fit_offset
         self.Nterms = int(Nterms)
         self.regularization = regularization
+        self.weight_by_diagonal = weight_by_diagonal
 
         if not self.center_data and not self.fit_offset:
             warnings.warn("Not centering data or fitting offset can lead "
@@ -73,7 +74,10 @@ class LombScargle(PeriodicModeler):
 
         if self.regularization is not None:
             diag = M.ravel(order='K')[::M.shape[0] + 1]
-            diag += self.regularization ** 2
+            if self.weight_by_diagonal:
+                diag += diag.sum() * np.asarray(self.regularization)
+            else:
+                diag += np.asarray(self.regularization)
 
         return X, M
 
