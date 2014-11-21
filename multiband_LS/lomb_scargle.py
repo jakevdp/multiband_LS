@@ -6,6 +6,11 @@ import numpy as np
 from scipy import optimize
 
 
+# TODO: there should be an option on fit() to automatically scan frequencies
+#       and find a suitable omega... then the predict() and best_params()
+#       methods could use this.
+
+
 class PeriodicModeler(object):
     """Base class for periodic modeling"""
     def __init__(self, *args, **kwargs):
@@ -139,7 +144,7 @@ class LombScargleAstroML(PeriodicModeler):
         self.fit_offset = fit_offset
         self.center_data = center_data
 
-    def fit(self, t, y, dy):
+    def fit(self, t, y, dy, filts=None):
         self.fit_data_ = (t, y, dy)
         return self
 
@@ -148,3 +153,26 @@ class LombScargleAstroML(PeriodicModeler):
         return self._LS_func(t, y, dy, omegas,
                              generalized=self.fit_offset,
                              subtract_mean=self.center_data)
+
+
+class LombScargleMultiband(PeriodicModeler):
+    def __init__(self, Nterms=1, Base=LombScargle):
+        self.Nterms = Nterms
+        self.Base = Base
+
+    def fit(self, t, y, dy, filts):
+        self.fit_data_ = list(map(np.asarray, (t, y, dy, filts)))
+        return self
+        
+    def power(self, omegas):
+        t, y, dy, filts = self.fit_data_
+
+        masks = np.array([(filts == f) for f in np.unique(filts)])
+        models = [self.Base(center_data=False, fit_offset=True)
+                  for mask in masks]
+        powers = np.array([model.fit(t[mask], y[mask], dy[mask]).power(omegas)
+                           for (mask, model) in zip(masks, models)])
+
+        # Return sum of powers weighted by chi2-normalization
+        chi2_0 = np.array([np.sum(y[mask] ** 2) for mask in masks])
+        return np.dot(chi2_0 / chi2_0.sum(), powers)
