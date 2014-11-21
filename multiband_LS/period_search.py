@@ -2,7 +2,6 @@ from __future__ import division, print_function
 
 import numpy as np
 from astroML.time_series import lomb_scargle as lomb_scargle_astroML
-from .lomb_scargle import lomb_scargle
 
 
 def _single_curve(t, y, dy, i):

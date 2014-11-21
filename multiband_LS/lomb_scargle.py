@@ -1,4 +1,5 @@
 from __future__ import division, print_function
+__all__ = ['LombScargle', 'LombScargleAstroML', 'LombScargleMultiband']
 
 import warnings
 
@@ -156,23 +157,40 @@ class LombScargleAstroML(PeriodicModeler):
 
 
 class LombScargleMultiband(PeriodicModeler):
-    def __init__(self, Nterms=1, Base=LombScargle):
+    def __init__(self, Nterms=1, BaseModel=LombScargle):
+        # Note: center_data must be True, or else the chi^2 weighting will fail
         self.Nterms = Nterms
-        self.Base = Base
+        self.BaseModel = BaseModel
 
     def fit(self, t, y, dy, filts):
-        self.fit_data_ = list(map(np.asarray, (t, y, dy, filts)))
+        t, y, dy, filts = np.broadcast_arrays(t, y, dy, filts)
+        self.unique_filts_ = np.unique(filts)
+        masks = [(filts == f) for f in self.unique_filts_]
+        self.models_ = [self.BaseModel(Nterms=self.Nterms, center_data=True,
+                                       fit_offset=True).fit(t[m], y[m], dy[m])
+                        for m in masks]
         return self
         
     def power(self, omegas):
-        t, y, dy, filts = self.fit_data_
-
-        masks = np.array([(filts == f) for f in np.unique(filts)])
-        models = [self.Base(center_data=False, fit_offset=True)
-                  for mask in masks]
-        powers = np.array([model.fit(t[mask], y[mask], dy[mask]).power(omegas)
-                           for (mask, model) in zip(masks, models)])
-
         # Return sum of powers weighted by chi2-normalization
-        chi2_0 = np.array([np.sum(y[mask] ** 2) for mask in masks])
+        powers = np.array([model.power(omegas) for model in self.models_])
+        chi2_0 = np.array([np.sum(model.yw_ ** 2) for model in self.models_])
         return np.dot(chi2_0 / chi2_0.sum(), powers)
+
+    def best_params(self, omega):
+        return np.asarray([model.best_params(omega) for model in self.models_])
+    
+    def predict(self, t, filts, omega):
+        vals = set(np.unique(filts))
+        if not vals.issubset(self.unique_filts_):
+            raise ValueError("filts does not match training data: "
+                             "{0}".format(self.unique_filts - vals))
+
+        t, filts = np.broadcast_arrays(t, filts)
+        
+        result = np.zeros(t.shape, dtype=float)
+        masks = ((filts == f) for f in self.unique_filts_)
+        for model, mask in zip(self.models_, masks):
+            result[mask] = model.predict(t[mask], omega)
+        return result
+            
