@@ -61,3 +61,6 @@ target/
 *.gz
 *.npy
 *.npz
+
+#IPython
+.ipynb_checkpoints

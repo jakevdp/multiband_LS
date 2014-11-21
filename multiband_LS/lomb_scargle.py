@@ -29,6 +29,9 @@ class PeriodicModeler(object):
     def predict(self, t, omega):
         raise NotImplementedError()
 
+    def __call__(self, omegas):
+        return self.power(omegas)
+
 
 class LombScargle(PeriodicModeler):
     def __init__(self, center_data=True, fit_offset=True, Nterms=1,
