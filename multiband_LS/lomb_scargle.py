@@ -31,10 +31,12 @@ class PeriodicModeler(object):
 
 
 class LombScargle(PeriodicModeler):
-    def __init__(self, center_data=True, fit_offset=True, Nterms=1):
+    def __init__(self, center_data=True, fit_offset=True, Nterms=1,
+                 regularization=None):
         self.center_data = center_data
         self.fit_offset = fit_offset
         self.Nterms = int(Nterms)
+        self.regularization = regularization
 
         if not self.center_data and not self.fit_offset:
             warnings.warn("Not centering data or fitting offset can lead "
@@ -64,6 +66,16 @@ class LombScargle(PeriodicModeler):
             return np.transpose(np.vstack(cols) / dy)
         else:
             return np.transpose(np.vstack(cols))
+
+    def _construct_X_M(self, omega, weighted=True, **kwargs):
+        X = self._construct_X(omega, weighted, **kwargs)
+        M = np.dot(X.T, X)
+
+        if self.regularization is not None:
+            diag = M.ravel(order='K')[::M.shape[0] + 1]
+            diag += self.regularization ** 2
+
+        return X, M
 
     def _compute_ymean(self, **kwargs):
         y = kwargs.get('y', self.fit_data_[1])
@@ -109,8 +121,7 @@ class LombScargle(PeriodicModeler):
 
         # Iterate through the omegas and compute the power for each
         for i, omega in enumerate(omegas.flat):
-            Xw = self._construct_X(omega, weighted=True)
-            XTX = np.dot(Xw.T, Xw)
+            Xw, XTX = self._construct_X_M(omega, weighted=True)
             XTy = np.dot(Xw.T, self.yw_)
             chi2_0_minus_chi2[i] = np.dot(XTy.T, np.linalg.solve(XTX, XTy))
 
@@ -123,8 +134,7 @@ class LombScargle(PeriodicModeler):
         return P.reshape(output_shape)
 
     def best_params(self, omega):
-        Xw = self._construct_X(omega, weighted=True)
-        XTX = np.dot(Xw.T, Xw)
+        Xw, XTX = self._construct_X_M(omega, weighted=True)
         XTy = np.dot(Xw.T, self.yw_)
         return np.linalg.solve(XTX, XTy)
 
@@ -154,6 +164,7 @@ class LombScargleAstroML(PeriodicModeler):
         return self._LS_func(t, y, dy, omegas,
                              generalized=self.fit_offset,
                              subtract_mean=self.center_data)
+        
 
 
 class LombScargleMultiband(PeriodicModeler):
@@ -193,4 +204,3 @@ class LombScargleMultiband(PeriodicModeler):
         for model, mask in zip(self.models_, masks):
             result[mask] = model.predict(t[mask], omega)
         return result
-            
