@@ -2,7 +2,9 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_
 from nose import SkipTest
 
-from ..lomb_scargle import LombScargle, LombScargleAstroML, LombScargleMultiband
+from ..lomb_scargle import (LombScargle, LombScargleAstroML,
+                            LombScargleMultiband,
+                            LombScargleMultiband2)
 
 
 def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
@@ -93,3 +95,18 @@ def test_best_params(N=100, omega=10):
         model.fit(t, y, dy)
         theta_best = model.best_params(omega)
         assert_allclose(theta_true, theta_best[:3], atol=0.2)
+
+
+def test_lomb_scargle_multiband2(N=100, omega=10):
+    """Test that results are the same with/without filter labels"""
+    t, y, dy = _generate_data(N, omega)
+    omegas = np.linspace(1, omega + 1, 100)
+    model = LombScargle(center_data=False, fit_offset=True)
+    P_singleband = model.fit(t, y, dy).power(omegas)
+
+    filts = np.ones(N)
+    model_mb = LombScargleMultiband2(center_data=False)
+    P_multiband = model_mb.fit(t, y, dy, filts).power(omegas)
+    assert_allclose(P_multiband, P_singleband)
+    assert_allclose(model.best_params(omega),
+                    model_mb.best_params(omega)[:3])

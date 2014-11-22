@@ -53,8 +53,8 @@ class LombScargle(PeriodicModeler):
             raise ValueError("You're specifying an empty model, dude!")
 
     def _construct_X(self, omega, weighted=True, **kwargs):
-        t = kwargs.get('t', self.fit_data_[0])
-        dy = kwargs.get('dy', self.fit_data_[2])
+        t = kwargs.get('t', self.fit_data_['t'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
         fit_offset = kwargs.get('fit_offset', self.fit_offset)
 
         if fit_offset:
@@ -85,18 +85,18 @@ class LombScargle(PeriodicModeler):
         return X, M
 
     def _compute_ymean(self, **kwargs):
-        y = kwargs.get('y', self.fit_data_[1])
-        dy = kwargs.get('dy', self.fit_data_[2])
+        y = kwargs.get('y', self.fit_data_['y'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
         w = 1. / dy ** 2
         return np.dot(y, w) / w.sum()
 
     def _construct_y(self, weighted=True, **kwargs):
-        y = kwargs.get('y', self.fit_data_[1])
-        dy = kwargs.get('dy', self.fit_data_[2])
+        y = kwargs.get('y', self.fit_data_['y'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
         center_data = kwargs.get('center_data', self.center_data)
 
         if center_data:
-            y = y - self.ymean_
+            y = y - self._compute_ymean(y=y, dy=dy)
 
         if weighted:
             return y / dy
@@ -104,9 +104,9 @@ class LombScargle(PeriodicModeler):
             return y
 
     def fit(self, t, y, dy, filts=None):
-        self.fit_data_ = (t, y, dy)
-        self.ymean_ = self._compute_ymean()
+        self.fit_data_ = dict(t=t, y=y, dy=dy)
         self.yw_ = self._construct_y(weighted=True)
+        self.ymean_ = self._compute_ymean()
         return self
 
     def power(self, omegas):
@@ -163,11 +163,13 @@ class LombScargleAstroML(PeriodicModeler):
         self.center_data = center_data
 
     def fit(self, t, y, dy, filts=None):
-        self.fit_data_ = (t, y, dy)
+        self.fit_data_ = dict(t=t, y=y, dy=dy)
         return self
 
     def power(self, omegas):
-        t, y, dy = self.fit_data_
+        t = self.fit_data_['t']
+        y = self.fit_data_['y']
+        dy = self.fit_data_['dy']
         return self._LS_func(t, y, dy, omegas,
                              generalized=self.fit_offset,
                              subtract_mean=self.center_data)
@@ -211,3 +213,125 @@ class LombScargleMultiband(PeriodicModeler):
         for model, mask in zip(self.models_, masks):
             result[mask] = model.predict(t[mask], omega)
         return result
+
+
+class LombScargleMultiband2(LombScargle):
+    def __init__(self, Nterms_base=1, Nterms_band=1,
+                 reg_base=None, reg_band=1E-6, weight_by_diagonal=True,
+                 center_data=True):
+        self.Nterms_base = Nterms_base
+        self.Nterms_band = Nterms_band
+        self.reg_base = reg_base
+        self.reg_band = reg_band
+        self.weight_by_diagonal = weight_by_diagonal
+        self.center_data = center_data
+
+    def fit(self, t, y, dy, filts):
+        t, y, dy, filts = np.broadcast_arrays(t, y, dy, filts)
+        self.fit_data_ = dict(t=t, y=y, dy=dy, filts=filts)
+        self.unique_filts_ = np.unique(filts)
+        self.ymean_ = self._compute_ymean()
+
+        masks = [(filts == filt) for filt in self.unique_filts_]
+        self.ymean_by_filt_ = [LombScargle._compute_ymean(self,
+                                                          y=y[mask],
+                                                          dy=dy[mask])
+                               for mask in masks]
+
+        self.yw_ = self._construct_y(weighted=True)
+        self.regularization = self._construct_regularization()
+        return self
+
+    def _construct_regularization(self):
+        if self.reg_base is None and self.reg_band is None:
+            reg = 0
+        else:
+            Nbase = 1 + 2 * self.Nterms_base
+            Nband = 1 + 2 * self.Nterms_band
+            reg = np.zeros(Nbase + len(self.unique_filts_) * Nband)
+            if self.reg_base is not None:
+                reg[:Nbase] = self.reg_base
+            if self.reg_band is not None:
+                reg[Nbase:] = self.reg_band
+        return reg
+
+    def _compute_ymean(self, **kwargs):
+        y = kwargs.get('y', self.fit_data_['y'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
+        filts = kwargs.get('filts', self.fit_data_['filts'])
+
+        ymean = np.zeros(y.shape)
+        for filt in np.unique(filts):
+            mask = (filts == filt)
+            ymean[mask] = LombScargle._compute_ymean(self, y=y[mask],
+                                                     dy=dy[mask])
+        return ymean
+
+    def _construct_y(self, weighted=True, **kwargs):
+        y = kwargs.get('y', self.fit_data_['y'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
+        filts = kwargs.get('filts', self.fit_data_['filts'])
+        center_data = kwargs.get('center_data', self.center_data)
+
+        ymean = self._compute_ymean(**kwargs)
+
+        if center_data:
+            y = y - ymean
+
+        if weighted:
+            return y / dy
+        else:
+            return y
+
+    def _construct_X(self, omega, weighted=True, **kwargs):
+        t = kwargs.get('t', self.fit_data_['t'])
+        dy = kwargs.get('dy', self.fit_data_['dy'])
+        filts = kwargs.get('filts', self.fit_data_['filts'])
+
+        # X is a huge-ass matrix that has lots of zeros depending on
+        # which filters are present...
+        #
+        # huge-ass, quantitatively speaking, is of shape
+        #  [len(t), (1 + 2 * Nterms_base + nfilts * (1 + 2 * Nterms_band))]
+
+        # TODO: this could be more efficient
+        cols = [np.ones(len(t))]
+        cols = sum(([np.sin((i + 1) * omega * t),
+                     np.cos((i + 1) * omega * t)]
+                    for i in range(self.Nterms_base)), cols)
+
+        for filt in self.unique_filts_:
+            cols.append(np.ones(len(t)))
+            cols = sum(([np.sin((i + 1) * omega * t),
+                         np.cos((i + 1) * omega * t)]
+                        for i in range(self.Nterms_band)), cols)
+            mask = (filts == filt)
+            for i in range(-1 - 2 * self.Nterms_band, 0):
+                cols[i][~mask] = 0
+
+        if weighted:
+            return np.transpose(np.vstack(cols) / dy)
+        else:
+            return np.transpose(np.vstack(cols))
+
+    def predict(self, t, filts, omega):
+        vals = set(np.unique(filts))
+        if not vals.issubset(self.unique_filts_):
+            raise ValueError("filts does not match training data: "
+                             "{0}".format(self.unique_filts - vals))
+
+        t, filts = np.broadcast_arrays(t, filts)
+        output_shape = t.shape
+
+        t = t.ravel()
+        filts = filts.ravel()
+
+        # TODO: broadcast this
+        ymeans = np.zeros(len(filts))
+        for i, filt in enumerate(filts):
+            j = np.where(self.unique_filts_ == filt)[0][0]
+            ymeans[i] = self.ymean_by_filt_[j]
+
+        theta = self.best_params(omega)
+        X = self._construct_X(omega, weighted=False, t=t, filts=filts)
+        return (ymeans + np.dot(X, theta)).reshape(output_shape)
