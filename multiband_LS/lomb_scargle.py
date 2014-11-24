@@ -32,6 +32,28 @@ class PeriodicModeler(object):
     def __call__(self, omegas):
         return self.power(omegas)
 
+    def find_best_period(self, P_min=0.2, P_max=1.2, Nzooms=10, verbose=1):
+        if not hasattr(self, 'fit_data_'):
+            raise ValueError("Must call fit() before find_best_period")
+        t = self.fit_data_['t']
+        omega_min = 2 * np.pi / P_max
+        omega_max = 2 * np.pi / P_min
+        expected_width = (2 * np.pi / (t.max() - t.min()))
+        omega_step = 0.2 * expected_width
+        if verbose:
+            print("- Computing periods at {0:.0f} "
+                  "steps".format((omega_max - omega_min) // omega_step))
+        omegas = np.arange(omega_min, omega_max, omega_step)
+        P = self.power(omegas)
+
+        # Choose the top ten peaks and zoom-in on them
+        i = np.argsort(P)[-Nzooms:]
+        omegas = np.concatenate([np.linspace(omega - 3 * omega_step,
+                                             omega + 3 * omega_step,
+                                             500) for omega in omegas[i]])
+        P = self.power(omegas)
+        return 2 * np.pi / omegas[np.argmax(P)]
+
 
 class LombScargle(PeriodicModeler):
     def __init__(self, center_data=True, fit_offset=True, Nterms=1,
