@@ -29,6 +29,7 @@ class RRLyraeLC(object):
     def __init__(self, filename, dirname='table1'):
         self.data = tarfile.open(filename)
         self.dirname = dirname
+        self._metadata = None
 
     @property
     def filenames(self):
@@ -92,8 +93,17 @@ class RRLyraeLC(object):
         else:
             return t, y, dy
 
+    def get_metadata(self, lcid):
+        if self._metadata is None:
+            self._metadata = fetch_lc_params()
+        i = np.where(self._metadata['id'] == lcid)[0]
+        if len(i) == 0:
+            raise ValueError("invalid lcid: {0}".format(lcid))
+        return self._metadata[i[0]]
+
 
 def fetch_light_curves(data_dir=None):
+    """Fetch light curves from Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
     save_loc = os.path.join(data_dir, 'table1.tar.gz')
@@ -107,6 +117,7 @@ def fetch_light_curves(data_dir=None):
 
 
 def fetch_lc_params(data_dir=None):
+    """Fetch data from table 2 of Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
     save_loc = os.path.join(data_dir, 'table2.dat.gz')
