@@ -4,7 +4,7 @@ Utilities for creating IPython interactive plots to explore data & fits
 import numpy as np
 from IPython.html.widgets import interact
 from .data import fetch_light_curves
-from .lomb_scargle import LombScargleMultiband2
+from .lomb_scargle import LombScargleMultiband
 
 
 def interact_data():
@@ -46,7 +46,7 @@ def interact_multifit():
     rrlyrae = fetch_light_curves()
     lcids = np.fromiter(rrlyrae.ids, dtype=int)
     
-    def plot_data(object_index=0, Nterms_base=4, Nterms_band=1):
+    def plot_multifit(object_index=0, Nterms_base=4, Nterms_band=1):
         fig = plt.figure(figsize=(14, 6))
         gs = plt.GridSpec(2, 4, wspace=0.3)
         
@@ -54,12 +54,13 @@ def interact_multifit():
         lcid = lcids[object_index]
         t, y, dy, filts = rrlyrae.get_lightcurve(lcid, return_1d=True)
         period = rrlyrae.get_metadata(lcid)['P']
+        omega = 2 * np.pi / period
         
-        model = LombScargleMultiband2(Nterms_base=Nterms_base,
-                                      Nterms_band=Nterms_band)
+        model = LombScargleMultiband(Nterms_base=Nterms_base,
+                                     Nterms_band=Nterms_band)
         model.fit(t, y, dy, filts)
         tfit = np.linspace(0, period, 500)[:, None]
-        yfits = model.predict(tfit, ['u', 'g', 'r', 'i', 'z'], 2 * np.pi / period)
+        yfits = model.predict(tfit, ['u', 'g', 'r', 'i', 'z'], omega)
         colors = plt.rcParams['axes.color_cycle']
         
         ax0 = fig.add_subplot(gs[:2, :2])
@@ -95,5 +96,5 @@ def interact_multifit():
         ax3.plot(r, ri, '-k', alpha=0.7)
         ax3.set_xlabel('r')
 
-    return interact(plot_data, object_index=[0, len(lcids) - 1],
+    return interact(plot_multifit, object_index=[0, len(lcids) - 1],
                     Nterms_base=[1, 10], Nterms_band=[0, 10])

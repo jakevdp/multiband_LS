@@ -17,7 +17,7 @@ class PeriodicModeler(object):
     def __init__(self, *args, **kwargs):
         raise NotImplementedError("PeriodicModeler")
 
-    def fit(self, t, y, dy):
+    def fit(self, t, y, dy, filts=None):
         raise NotImplementedError()
 
     def power(self, omegas):
@@ -197,8 +197,7 @@ class LombScargleAstroML(PeriodicModeler):
                              subtract_mean=self.center_data)
         
 
-
-class LombScargleMultiband(PeriodicModeler):
+class LombScargleMultibandFast(PeriodicModeler):
     def __init__(self, Nterms=1, BaseModel=LombScargle):
         # Note: center_data must be True, or else the chi^2 weighting will fail
         self.Nterms = Nterms
@@ -237,7 +236,7 @@ class LombScargleMultiband(PeriodicModeler):
         return result
 
 
-class LombScargleMultiband2(LombScargle):
+class LombScargleMultiband(LombScargle):
     def __init__(self, Nterms_base=1, Nterms_band=1,
                  reg_base=None, reg_band=1E-6, weight_by_diagonal=True,
                  center_data=True):

@@ -3,8 +3,8 @@ from numpy.testing import assert_allclose, assert_
 from nose import SkipTest
 
 from ..lomb_scargle import (LombScargle, LombScargleAstroML,
-                            LombScargleMultiband,
-                            LombScargleMultiband2)
+                            LombScargleMultibandFast,
+                            LombScargleMultiband)
 
 
 def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
@@ -37,7 +37,7 @@ def test_lomb_scargle_multiband(N=100, omega=10):
     P_singleband = model.fit(t, y, dy).power(omegas)
 
     filts = np.ones(N)
-    model = LombScargleMultiband()
+    model = LombScargleMultibandFast()
     P_multiband = model.fit(t, y, dy, filts).power(omegas)
     assert_allclose(P_multiband, P_singleband)
 
@@ -105,7 +105,7 @@ def test_lomb_scargle_multiband2(N=100, omega=10):
     P_singleband = model.fit(t, y, dy).power(omegas)
 
     filts = np.ones(N)
-    model_mb = LombScargleMultiband2(center_data=False)
+    model_mb = LombScargleMultiband(center_data=False)
     P_multiband = model_mb.fit(t, y, dy, filts).power(omegas)
     assert_allclose(P_multiband, P_singleband)
     assert_allclose(model.best_params(omega),
