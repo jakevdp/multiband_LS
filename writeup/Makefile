@@ -1,4 +1,5 @@
 LATEX       = pdflatex
+BIBTEX      = bibtex
 BASH        = bash -c
 ECHO        = echo
 RM          = rm -rf
@@ -14,11 +15,12 @@ DOC_OUT = ${NAME}.${SUFF}
 
 default: ${DOC_OUT}
 
-%.pdf: %.tex
+%.pdf: %.tex %.bib
 	${LATEX} $<
 	( ${CHECK_RERUN} && ${LATEX} $< ) || echo "Done."
+	${BIBTEX} $(<:.tex=.aux)
+	${LATEX} $<
 	( ${CHECK_RERUN} && ${LATEX} $< ) || echo "Done."
 
 clean:
 	${RM_TMP}
-

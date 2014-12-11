@@ -2,3 +2,5 @@
 *.brf
 *.log
 *.out
+*.bbl
+*.blg

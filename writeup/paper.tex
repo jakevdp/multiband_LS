@@ -119,7 +119,7 @@
 \section{Multiterm Periodograms: Background}
 
 \begin{itemize}
-  \item Relationship between Fourier Periodogram \& Least Squares fit (cite Jaynes)
+  \item Relationship between Fourier Periodogram \& Least Squares fit \citep{Jaynes96}
   \item Matrix form of linear models
   \item Generalization of single-term to multi-term models
   \item Show expression for Power; refer to appendix for computational details
@@ -158,7 +158,10 @@
   \item issues with physicality of model
 \end{itemize}
 
-\section{Appendices}
+
+\bibliographystyle{apj}
+\bibliography{paper}
+
 
 \appendix
 
@@ -263,7 +266,7 @@ Typically, the Lomb-Scargle periodogram is expressed in terms of various weighte
 
 \section{Higher-order Models}
 
-As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of Zechmeister [cite]. This adjusts the classic Lomb-Scargle algorithm by using a model with a floating mean, which can be more accurate for certain observing cadences:
+As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citep{Zechmeister09}. This adjusts the classic Lomb-Scargle algorithm by using a model with a floating mean, which can be more accurate for certain observing cadences:
 
 \begin{equation}
   M(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
