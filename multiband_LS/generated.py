@@ -36,12 +36,18 @@ class RRLyraeObject(object):
     def period(self):
         return self.meta['P']
     
-    def observed(self, band):
+    def observed(self, band, corrected=True):
         if band not in 'ugriz':
             raise ValueError("band='{0}' not recognized".format(band))
         i = 'ugriz'.find(band)
         t, y, dy = self.lcdata.get_lightcurve(self.lcid)
-        return t[:, i], y[:, i], dy[:, i]
+
+        if corrected:
+            ext = self.obsmeta['rExt'] * self.ext_correction[band]
+        else:
+            ext = 0
+
+        return t[:, i], y[:, i] - ext, dy[:, i]
 
     def generated(self, band, t, err=None, corrected=True):
         t = np.asarray(t)
@@ -51,9 +57,9 @@ class RRLyraeObject(object):
         t0 = self.meta[band + 'E']
 
         if corrected:
-            ext = self.obsmeta['rExt'] * self.ext_correction[band]
-        else:
             ext = 0
+        else:
+            ext = self.obsmeta['rExt'] * self.ext_correction[band]
         
         func = self._template_func(num, band, mu + ext, amp)
         mag = func(((t - t0) / self.period) % 1)
