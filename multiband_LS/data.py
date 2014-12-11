@@ -20,7 +20,7 @@ def set_data_directory(data_directory):
 
 DATA_DIRECTORY = ''
 set_data_directory(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                'data')))
+                                                '_data_downloads')))
 
 SESAR_RRLYRAE_URL = 'http://www.astro.washington.edu/users/bsesar/S82_RRLyr/'
 
