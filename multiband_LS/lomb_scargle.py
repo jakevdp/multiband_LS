@@ -109,13 +109,24 @@ class LombScargle(PeriodicModeler):
     def _compute_ymean(self, **kwargs):
         y = kwargs.get('y', self.fit_data_['y'])
         dy = kwargs.get('dy', self.fit_data_['dy'])
-        w = 1. / dy ** 2
-        return np.dot(y, w) / w.sum()
+
+        y = np.asarray(y)
+        dy = np.asarray(dy)
+
+        if dy.size == 1:
+            # if dy is a scalar, we use the simple mean
+            return np.mean(y)
+        else:
+            w = 1 / dy ** 2
+            return np.dot(y, w) / w.sum()
 
     def _construct_y(self, weighted=True, **kwargs):
         y = kwargs.get('y', self.fit_data_['y'])
         dy = kwargs.get('dy', self.fit_data_['dy'])
         center_data = kwargs.get('center_data', self.center_data)
+
+        y = np.asarray(y)
+        dy = np.asarray(dy)
 
         if center_data:
             y = y - self._compute_ymean(y=y, dy=dy)

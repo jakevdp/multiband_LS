@@ -29,6 +29,25 @@ def test_lomb_scargle(N=100, omega=10):
     assert_(rms < 0.005)
 
 
+def test_dy_scalar(N=100, omega=10):
+    """Test whether the standard and generalized lomb-scargle
+    give close to the same results for non-centered data"""
+    t, y, dy = _generate_data(N, omega)
+
+    # Make dy array all the same
+    dy[:] = dy.mean()
+    omegas = np.linspace(1, omega + 1, 100)
+
+    def compare(cls):
+        P1 = cls().fit(t, y, dy).power(omegas)
+        P2 = cls().fit(t, y, dy[0]).power(omegas)
+
+        assert_allclose(P1, P2)
+
+    for cls in [LombScargle, LombScargleAstroML]:
+        yield compare, cls
+
+
 def test_lomb_scargle_multiband(N=100, omega=10):
     """Test that results are the same with/without filter labels"""
     t, y, dy = _generate_data(N, omega)
