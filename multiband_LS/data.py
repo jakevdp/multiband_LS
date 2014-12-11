@@ -30,6 +30,7 @@ class RRLyraeLC(object):
         self.data = tarfile.open(filename)
         self.dirname = dirname
         self._metadata = None
+        self._obsdata = None
 
     @property
     def filenames(self):
@@ -101,6 +102,14 @@ class RRLyraeLC(object):
             raise ValueError("invalid lcid: {0}".format(lcid))
         return self._metadata[i[0]]
 
+    def get_obsmeta(self, lcid):
+        if self._obsdata is None:
+            self._obsdata = fetch_lc_fit_params()
+        i = np.where(self._obsdata['id'] == lcid)[0]
+        if len(i) == 0:
+            raise ValueError("invalid lcid: {0}".format(lcid))
+        return self._obsdata[i[0]]
+
 
 def fetch_light_curves(data_dir=None):
     """Fetch light curves from Sesar 2010"""
@@ -135,4 +144,59 @@ def fetch_lc_params(data_dir=None):
              ('zA', 'f'), ('z0', 'f'), ('zE', 'f'), ('zT', 'f')]
 
     return np.loadtxt(save_loc, dtype=dtype)
+
+
+def fetch_lc_fit_params(data_dir=None):
+    """Fetch data from table 3 of Sesar 2010"""
+    if data_dir is None:
+        data_dir = DATA_DIRECTORY
+    save_loc = os.path.join(data_dir, 'table3.dat.gz')
+    url = SESAR_RRLYRAE_URL + 'table3.dat.gz'
+
+    if not os.path.exists(save_loc):
+        buf = download_with_progress_bar(url)
+        open(save_loc, 'wb').write(buf)
+
+    dtype = [('id', 'i'), ('RA', 'f'), ('DEC', 'f'), ('rExt', 'f'),
+             ('d', 'f'), ('RGC', 'f'),
+             ('u', 'f'), ('g', 'f'), ('r', 'f'),
+             ('i', 'f'), ('z', 'f'), ('V', 'f'),
+             ('ugmin', 'f'), ('ugmin_err', 'f'),
+             ('grmin', 'f'), ('grmin_err', 'f')]
+
+    return np.loadtxt(save_loc, dtype=dtype)
+
+
+class RRLyraeTemplates(object):
+    def __init__(self, filename, dirname='table1'):
+        self.data = tarfile.open(filename)
+        self.dirname = dirname
+
+    @property
+    def filenames(self):
+        return self.data.getnames()
+
+    @property
+    def ids(self):
+        return [f.split('.')[0] for f in self.filenames]
+
+    def get_template(self, template_id):
+        try:
+            data = np.loadtxt(self.data.extractfile(template_id + '.dat'))
+        except KeyError:
+            raise ValueError("invalid star id: {0}".format(template_id))
+        return data.T
+    
+
+def fetch_rrlyrae_templates(data_dir=None):
+    if data_dir is None:
+        data_dir = DATA_DIRECTORY
+    save_loc = os.path.join(data_dir, 'RRLyr_ugriz_templates.tar.gz')
+    url = SESAR_RRLYRAE_URL + 'RRLyr_ugriz_templates.tar.gz'
+
+    if not os.path.exists(save_loc):
+        buf = download_with_progress_bar(url)
+        open(save_loc, 'wb').write(buf)
+
+    return RRLyraeTemplates(save_loc)
     
