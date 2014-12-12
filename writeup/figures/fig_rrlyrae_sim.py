@@ -38,7 +38,7 @@ mags = np.array([rrlyrae.generated(band, t, err=dy, corrected=False)
 # First figure:
 # Compute the lomb-scargle periodogram in each band
 
-periods = np.linspace(0.2, 0.9, 10000)
+periods = np.linspace(0.2, 0.9, 1000)
 omegas = 2 * np.pi / periods
 P = [LombScargleAstroML().fit(t, m, dy).power(omegas) for m in mags]
 
@@ -57,7 +57,7 @@ ax[0].set_ylabel('magnitude')
 for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
     offset = 4 - i
     ax[1].plot(periods, Pi + offset, lw=1)
-    ax[1].text(0.89, 0.98 + offset, band, fontsize=14, ha='right', va='top')
+    ax[1].text(0.89, 0.7 + offset, band, fontsize=14, ha='right', va='top')
 ax[1].set_title('Lomb-Scargle in Each Band')
 ax[1].set_ylim(0, 5)
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
