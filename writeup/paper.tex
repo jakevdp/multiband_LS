@@ -9,6 +9,8 @@
 \usepackage{url}
 \usepackage{algorithmic,algorithm}
 \usepackage{amssymb,amsmath}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
 
 \newcommand{\arxiv}[1]{\href{http://arxiv.org/abs/#1}{arXiv:#1}}
 
@@ -136,6 +138,34 @@
 
 \section{Examples}
 \subsection{Simulated Example}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{fig01.pdf}
+  \caption{
+    An illustration of the typical approach to multiband periodograms,
+    in which each band is fit individually. The data consists of 60 coeval
+    u-g-r-i-z observations spread over 180 nights, and is based on an
+    RR Lyrae template from \citet{Sesar2010}. With this much data in each
+    band, individual periodograms can be constructed and compared to find the
+    true period $P=0.622$ days.
+  }
+  \label{fig:01}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{fig02.pdf}
+  \caption{
+    Another realization of the data from \fig{01}, with only a single-band
+    observation each night (i.e. 12 observations per band, spread over 180
+    days). In this case, there is not enough data in each band to recover
+    periodicity information. By applying the multiband approach which utilizes
+    all the data at once (lower right), we again see a significant spike of
+    power at the true period $P=0.622$ days.    
+  } 
+  \label{fig:02}
+\end{figure}
 
 \begin{itemize}
   \item Show power spectrum for a single-band RR-Lyrae
