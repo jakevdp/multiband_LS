@@ -5,11 +5,10 @@
 %\definecolor{linkcolor}{rgb}{0,0,0.5}
 %\hypersetup{colorlinks=true,linkcolor=linkcolor,citecolor=linkcolor,
 %            filecolor=linkcolor,urlcolor=linkcolor}
+%\usepackage{amssymb,amsmath}
 
 \usepackage{color}
 \usepackage{url}
-\usepackage{algorithmic,algorithm}
-\usepackage{amssymb,amsmath}
 \usepackage{graphicx}
 \graphicspath{{figures/}}
 
@@ -29,6 +28,7 @@
 %        stringstyle=\color[rgb]{0.627,0.126,0.941},
 %    }
 
+\newcommand{\todo}[1]{{\color{red} [TODO: #1]}}
 \newcommand{\foreign}[1]{{\it #1}}
 
 \newcommand{\adhoc}{\foreign{ad hoc}}
@@ -61,7 +61,7 @@
 
 
 \begin{abstract}
-  This paper introduces a general method for least-squares spectral fitting of multi-band periodic data.
+  This paper introduces the {\it multiband periodogram} a general extension of the well-known Lomb-Scargle method for detecting periodic signals in time-domain data.
 \end{abstract}
 
 \keywords{
@@ -100,7 +100,7 @@ where $\bar{d}$ is the mean and $\sigma^2$ is the variance of the data $\{d_k\}$
 
 This deep connection between spectral power and least squares fitting methods was solidified by \citep{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citep{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
 
-(Mention supersmoother and ARMA-based methods?)
+\todo{Add a paragraph about Supersmoother \citep{Reimann94}, CARMA \citep{Kelly14}, and other methods}
 
 A weakness with the above methods is that they require homogeneous measurements -- for astronomy data, this means that successive measurements must be taken through a single band. This has not been a problem for past surveys, as measurements are generally taken through a single photometric filter (e.g. LINEAR, ??), or in all bands at each observation (e.g. SDSS, ??). In such cases, past studies have generally relied on \adhoc{} methods such as a majority vote among multiple single-band estimates of the periodogram.
 
@@ -132,7 +132,7 @@ We can find the maximum likelihood estimate of the parameters $\theta$ by minimi
 \end{equation}
 For the single-term Fourier model, it can be shown \citep[See, e.g.][]{ICVG2014} that
 \begin{equation}
-  \eqlabel{chi2_PN}
+  \eqlabel{chi2PN}
   \chi_{min}^2(\omega) = \chi^2_0[1 - P_N(\omega)]
 \end{equation}
 where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle} and $\chi^2_0$ is the reference $\chi^2$ for a constant model, which due to the assumption in \eq{ycentered} is simply $\chi^2_0 = \sum_k (y_k/\sigma_k)^2$
@@ -173,37 +173,44 @@ With these definitions, the model in \eq{simplemodel} is a simple linear product
   \chi^2_0 &=& y^T \Sigma^{-1} y
 \end{eqnarray}
 
-the normalized periodogram can be computed by finding the minimum of $\chi^2(\omega)$ via standard methods and plugging the result into \eq{chi2_PN} to find
-
+the normalized periodogram can be computed by finding the minimum of $\chi^2(\omega)$ via standard methods and plugging the result into \eq{chi2PN} to find
 \begin{equation}
   \eqlabel{LombScargle2}
-  P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega(X_\omega^T\Sigma^{-1}X_\omega)^{-1}X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}
+  P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
 \end{equation}
+This expression is equivalent to \eq{LombScargle} in the case that $\Sigma \propto I$.
 
-For $\Sigma \propto I$, this expression is equivalent to \eq{LombScargle}.
-
-While \eq{LombScargle} can be computed more efficiently than \eq{LombScargle2}, the matrix-based formulation has several advantages
+While the expression in \eq{LombScargle} can be computed more efficiently than that in \eq{LombScargle2}, the matrix-based formulation has several advantages:
 \begin{enumerate}
   \item It is trivially extended for heteroscedastic and/or uncorrelated noise in the data $y_k$ by appropriately modifying the noise matrix $\Sigma$
   \item It is trivially extended to more sophisticated models by appropriately modifying the design matrix $X_\omega$.
   \item It is trivially extended to L2-regularized likelihoods by adding an appropriate diagonal term to $X_\omega^T\Sigma^{-1}X_\omega$ before inverting.
 \end{enumerate}
+In the remainder of this section, we'll explore a few of these modifications.
 
 \subsection{Lomb-Scargle with Floating Mean}
-
-As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citep{Zechmeister09}. This adjusts the classic Lomb-Scargle algorithm by using a model with a floating mean, which can be more accurate for certain observing cadences:
+As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citet{Zechmeister09}. This adjusts the classic Lomb-Scargle algorithm by using a model with a floating mean, which can be more accurate for certain observing cadences:
 
 \begin{equation}
   M(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
 
-While \citep{Zechmeister09} details a formalism to express this {\it generalized periodogram} model similarly to \eq{LombScargle}, in the matrix formalism all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
+While \citet{Zechmeister09} details a formalism to express this {\it generalized periodogram} model similarly to \eq{LombScargle}, in the matrix formalism all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
+
+\todo{example of this in action?}
 
 \subsection{Truncated Fourier Models}
-In a similar vein, the power for a truncated Fourier series model of any order can be constructed by extending the $X$ matrix with appropriate columns; for example, for a 2-term truncated Fourier fit with a floating mean we can write
+\sectlabel{multiterm}
+The classic Lomb-Scargle approach is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to use a multiple-term sinusoidal model. With $M$ terms, there are $2M + 1$ free parameters, and the model is given by:
 
 \begin{equation}
-X_\omega = \left[
+  M(t|\omega,\theta) = \theta_0 + \sum_{n=1}^M \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]
+\end{equation}
+
+Because this remains a linear model, it can be easily accommodated into the matrix formalism above. For example, an $M = 2$-term model can be constructed by building a design matrix $X_\omega$ with $2M + 1 = 5$ columns:
+
+\begin{equation}
+X_\omega^{(2)} = \left[
 \begin{array}{ccccc}
 1 & \sin(\omega t_1) & \cos(\omega t_1) & \sin(2\omega t_1) & \cos(2\omega t_1)\\
 1 & \sin(\omega t_2) & \cos(\omega t_2) & \sin(2\omega t_2) & \cos(2\omega t_2)\\
@@ -213,25 +220,74 @@ X_\omega = \left[
 \end{array}
 \right]
 \end{equation}
+Using $X_\omega^{(2)}$ in \eq{LombScargle2} will give the two-term periodogram. In general, we can fit an $M$-term periodogram by simply adding terms to the fit.
 
-Plugging this $X$ matrix into Eqn.~\ref{eq:power} will give us the normalized periodogram associated with the two-term truncated Fourier model.
+\todo{Show a truncated Fourier model?}
 
 \subsection{Regularized Models}
+\sectlabel{regularization}
+The previous sections raise the question: how complicated a model should we use? If we added many terms to the truncated Fourier series, we might fit the data perfectly, but eventually we would {\it overfit} the data: that is, our model is fitting the noise rather than the signal. This can be avoided by explicitly truncating the series, but another approach is to use a {\it regularization} term to enforce a less complicated model.
 
-Show how regularized models fit into this.
+A regularization term is an explicit penalty on the magnitude of the model parameters $\theta$, and can take any number of forms. For computational simplicity here we'll use an {\it L2 regularization} (also known as Tikhonov Regularization), which is a quadratic penalty term in the model parameters. This is mathematically equivalent to the Bayesian approach of using a Gaussian prior on the model parameters.
 
+We'll encode our regularization in the matrix $\Lambda = {\rm diag}([\lambda_1, \lambda_2 \cdots \lambda_M])$ for a model with $M$ parameters, and our expression for $\chi^2$ becomes
+\begin{equation}
+  \eqlabel{chi2reg}
+  \chi_\Lambda^2(\omega) = (y - X_\omega\theta)^T\Sigma^{-1}(y - X_\omega\theta) + \theta^T\Lambda\theta
+\end{equation}
+Minimizing this $\chi^2$, solving for $\theta$, and plugging into the expression for $P_N$ gives us the regularized counterpart of \eq{LombScargle2}:
+\begin{equation}
+  \eqlabel{LombScargleReg}
+  P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega + \Lambda]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
+\end{equation}
+Note that the effect of this regularization term is to add a diagonal term to the matrix inversion in the numerator, which also has the effect of correcting ill-posed models. This feature of the regularization will become important below.
+
+\todo{Show a regularized model?}
 
 \section{Moving to Multiple Bands}
 
-\begin{itemize}
-  \item Write-out the linear model
-  \item Demonstrate the matrix form of this
-  \item Use light regularization
-  \item Correspondance of the single-term multiband result to the weighted sum of single-band Lomb-Scargle results
-\end{itemize}
+To compute a periodogram for multi-band data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which allows us to specify an arbitrary linear model covering our data. We will construct a multi-term Fourier model with the following features:
+\begin{enumerate}
+  \item An $M_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
+  \item An $M_{band}$-term truncated Fourier fit which models the residual of each band from the overall variability.
+\end{enumerate}
+The total number of parameters for $N_{filt}$ filters is then $M = (2M_{base} + 1) + N_{filt}(2M_{band} + 1)$. The model looks as follows, for a band $b$:
+\begin{eqnarray}
+  M(t|\omega,\theta,b) = &&\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]\\ 
+  &+& \theta^{(b)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(b)}_{2n - 1}\sin(n\omega t) + \theta^{(b)}_{2n}\cos(n\omega t)\right].
+\end{eqnarray}
+The important feature is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(b)}$ are fit within each band.
+
+We can build the matrix form of this model by building a sparse $X_{\omega}$ matrix with $M$ columns. Each row corresponds to a single observation through a single band; columns corresponding to the base model and the observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $X_\omega$ matrix with $N_{base}=1$ and $N_{band}=0$ (that is, a single sinusoid model with independent offsets to each band) will look as follows:
+
+\begin{equation}
+X_\omega^{(1,0)} = \left[
+\begin{array}{cccccccc}
+1 & \sin(\omega t_1) & \cos(\omega t_1) & 1 & 0 & 0 & 0 & 0\\
+1 & \sin(\omega t_2) & \cos(\omega t_2) & 0 & 1 & 0 & 0 & 0\\
+1 & \sin(\omega t_3) & \cos(\omega t_3) & 1 & 0 & 0 & 0 & 0\\
+1 & \sin(\omega t_4) & \cos(\omega t_4) & 0 & 0 & 1 & 0 & 0\\
+\vdots & \vdots & \vdots & & & \vdots & &\\
+1 & \sin(\omega t_N) & \cos(\omega t_N) & 0 & 0 & 0 & 0 & 1\\
+\end{array}
+\right]
+\end{equation}
+Here the structure of the final five columns indicates the band observed at the given time: the first row is a $u$-band measurement, the second is a $g$-band, the third is a $u$-band, etc.
+
+From reasoning about the free parameters, or by examining the above matrix it is easy to see that some of the parameters will be degenerate (i.e. $X_\omega$ is low-rank). Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each of the band columns. In order to proceed, then, we'll either have to correct this model deficiency, or use a regularization term on one of the offending parameters. We'll choose the latter here, and regularize all the band columns to drive the common behavior into the base model. For the above matrix,
+this regularization will look like
+\begin{equation}
+  \Lambda = {\rm diag}([0, 0, 0, \epsilon, \epsilon, \epsilon, \epsilon, \epsilon])
+\end{equation}
+where $\epsilon$ is some small fraction of the trace of the matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. We'll see an example of this in action in \sect{Simulated}.
+
+\todo{Talk about the $N_{base} = 0$, $N_{band} = 1$ case. This is equivalent to fitting a floating-mean Lomb-Scargle independently to each band, and constructing a weighted sum of each individual periodogram.}
 
 \section{Examples}
+Here we'll show several examples of the multiband periodogram method in action.
+
 \subsection{Simulated Example}
+\sectlabel{Simulated}
 
 \begin{figure}
   \centering
@@ -244,30 +300,33 @@ Show how regularized models fit into this.
     band, individual periodograms can be constructed and compared to find the
     true period $P=0.622$ days. Note also the presence of aliasing typical
     in Lomb-Scargle periodograms, located at beat frequencies between the
-    true Period and the 1-day observing cadence.
+    true period and the 1-day observing cadence (see footnote \ref{foot1}).
   }
-  \figlabel{01}
+  \figlabel{adhoc_example}
 \end{figure}
+
+\fig{adhoc_example} shows a simulated RR Lyrae light curve based on a template from \citet{Sesar2010}. The observations take place on 60 random nights over a 6-month period, and each night all five bands ({\it u,g,r,i,z}) are recorded. The left panel of \fig{adhoc_example} shows the observations folded as a function of phase.
+Using the typical approach from the literature prior to this paper, we individually compute the Lomb-Scargle periodogram within each band: the results are shown in the right panel. Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band.\footnote{\label{foot1}
+  An aliasing effect is readily apparent in the left panel of \fig{adhoc_example}: these additional peaks are due to beat frequencies between the true period $P$ and the observing cadence of $\sim 1$ day. That is, for nightly observations, we'd expect excess power to be found at frequencies $P / (1 + nP)$ for a positive or negative integer $n$. For the current work, we'll ignore this (important) piece of the problem; for a thorough discussion of aliasing within astronomical time series, see \citet{Roberts87}.}
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{fig02.pdf}
   \caption{
-    Another realization of the data from \fig{01}, with only a single filter
-    observed each night (i.e. 12 observations per band, spread over 180
+    Another realization of the data from \fig{adhoc_example}, with only a single
+    band observed each night (i.e. 12 observations per band, spread over 180
     days). In this case, single-band data is not sufficient to recover the
     Lomb-Scargle peaks, and the classic band-by-band approach fails.
-    By utilizing all the data at once with the multiband approach,
-    we recover a significant spike of power at the period $P=0.622$ days.    
+    By utilizing all the data at once with the multiband approach
+    (with $N_{base}=1,~N_{band}=0$),
+    we faithfully reconstruct the periodogram and recover
+    the dominant power at period $P=0.622$ days.
   } 
-  \figlabel{02}
+  \figlabel{multi_example}
 \end{figure}
 
-\begin{itemize}
-  \item Show power spectrum for a single-band RR-Lyrae
-  \item Reduce observations, show multiple power spectra for multi-band RR-Lyrae
-  \item Show single power spectrum for multi-band RR-Lyrae
-\end{itemize}
+\fig{multi_example} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the Lomb-Scargle fits to the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period band-by-band. With the multiband approach (here computed for $N_{base}=1$ and $N_{band}=0$), as seen in the lower-right panel of \fig{multi_example}, the period is cleanly recovered.
+
 
 \subsection{Stripe 82}
 
@@ -280,7 +339,7 @@ Show how regularized models fit into this.
 \section{Further work}
 
 \begin{itemize}
-  \item issues with window function corrections
+  \item issues with aliasing \& window function corrections
   \item issues with physicality of model
 \end{itemize}
 

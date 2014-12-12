@@ -23,14 +23,14 @@ rrlyrae = RRLyraeObject(lcid, random_state=0)
 
 # Generate data in a 6-month observing season
 Nobs = 60
-dy = 0.07
 rng = np.random.RandomState(0)
 
 nights = np.arange(180)
 rng.shuffle(nights)
 nights = nights[:Nobs]
 
-t = 57000 + nights + 0.2 * rng.rand(Nobs)
+t = 57000 + nights + 0.05 * rng.randn(Nobs)
+dy = 0.06 + 0.01 * rng.randn(Nobs)
 mags = np.array([rrlyrae.generated(band, t, err=dy, corrected=False)
                  for band in 'ugriz'])
 
@@ -77,7 +77,7 @@ mags = mags[np.arange(Nobs) % 5, np.arange(Nobs)]
     
 masks = [(filts == band) for band in 'ugriz']
 
-P = [LombScargleAstroML().fit(t[mask], mags[mask], dy).power(omegas)
+P = [LombScargleAstroML().fit(t[mask], mags[mask], dy[mask]).power(omegas)
      for mask in masks]
     
 LS_multi = LombScargleMultiband(Nterms_base=1, Nterms_band=0)
@@ -93,7 +93,7 @@ ax = [fig.add_subplot(gs[:, 0]),
       fig.add_subplot(gs[3, 1])]
     
 for band, mask in zip('ugriz', masks):
-    ax[0].errorbar((t[mask] / rrlyrae.period) % 1, mags[mask], dy,
+    ax[0].errorbar((t[mask] / rrlyrae.period) % 1, mags[mask], dy[mask],
                    fmt='.', label=band)
 ax[0].set_ylim(18, 14.5)
 ax[0].legend(loc='upper left', fontsize=12, ncol=3)
@@ -118,5 +118,16 @@ ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
 
 fig.savefig('fig02.pdf')
+
+#----------------------------------------------------------------------
+# Write the results to file
+import pandas as pd
+df = pd.DataFrame({'t': t})
+df['band'] = filts
+df['mag'] = mags
+df['dmag'] = dy
+df = df.sort('t')
+
+df.to_csv('fig01data.csv', sep=' ', float_format='%.4f', index=False)
 
 plt.show()
