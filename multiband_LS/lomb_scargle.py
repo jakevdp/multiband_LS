@@ -1,5 +1,6 @@
 from __future__ import division, print_function
-__all__ = ['LombScargle', 'LombScargleAstroML', 'LombScargleMultiband']
+__all__ = ['LombScargle', 'LombScargleAstroML',
+           'LombScargleMultiband', 'LombScargleMultibandFast']
 
 import warnings
 
@@ -128,7 +129,9 @@ class LombScargle(PeriodicModeler):
     """Lomb-Scargle Periodogram Implementation
 
     This is a generalized periodogram implementation using the matrix formalism
-    outlined in VanderPlas & Ivezic 2015. It allows computation of
+    outlined in VanderPlas & Ivezic 2015. It allows computation of periodograms
+    and best-fit models for both the classic normalized periodogram and
+    truncated Fourier series generalizations.
 
     Parameters
     ----------
@@ -155,9 +158,9 @@ class LombScargle(PeriodicModeler):
     >>> ls = LombScargle().fit(t, y, dy)
     >>> omega_best = ls.find_best_omega()
     >>> omega_best
-    10.000686132649726
-    >>> ls.predict(t=[0], omega=omega_best)
-    array([-0.01107339])
+    10.000707659055472
+    >>> ls.predict(t=0, omega=omega_best)
+    array(-0.012038993444193624)
 
     See Also
     --------
@@ -352,6 +355,41 @@ class LombScargle(PeriodicModeler):
 
 
 class LombScargleAstroML(PeriodicModeler):
+    """Lomb-Scargle Periodogram Implementation using AstroML
+
+    This is a generalized periodogram implementation which uses the periodogram
+    functions from astroML. Compared to LombScargle, this implementation is
+    both faster and more memory-efficient.
+
+    Parameters
+    ----------
+    center_data : boolean (default = True)
+        If True, then compute the weighted mean of the input data and subtract
+        before fitting the model.
+    fit_offset : boolean (default = True)
+        If True, then fit a floating-mean sinusoid model.
+    slow_version : boolean (default = False)
+        If True, use the slower pure-python version from astroML. Otherwise,
+        use the faster version of the code from astroML_addons
+
+    Examples
+    --------
+    >>> rng = np.random.RandomState(0)
+    >>> t = 100 * rng.rand(100)
+    >>> dy = 0.1
+    >>> omega = 10
+    >>> y = np.sin(omega * t) + dy * rng.randn(100)
+    >>> ls = LombScargleAstroML().fit(t, y, dy)
+    >>> omega_best = ls.find_best_omega()
+    >>> omega_best
+    10.000707659055472
+
+    See Also
+    --------
+    LombScargle
+    LombScargleMultiband
+    LombScargleMultibandFast
+    """
     def __init__(self, fit_offset=True, center_data=True,
                  slow_version=False):
         if slow_version:
@@ -363,10 +401,34 @@ class LombScargleAstroML(PeriodicModeler):
         self.center_data = center_data
 
     def fit(self, t, y, dy, filts=None):
+        """Fit the Periodogram model to the data.
+
+        Parameters
+        ----------
+        t : array_like, one-dimensional
+            sequence of observation times
+        y : array_like, one-dimensional
+            sequence of observed values
+        dy : float or array_like
+            errors on observed values
+        """
         self.fit_data_ = dict(t=t, y=y, dy=dy)
         return self
 
     def periodogram(self, omegas):
+        """Compute the periodogram at the given angular frequencies
+
+        Parameters
+        ----------
+        omegas : array_like
+            Array of angular frequencies at which to compute
+            the periodogram
+
+        Returns
+        -------
+        periodogram : np.ndarray
+            Array of normalized powers (between 0 and 1) for each frequency
+        """
         t = self.fit_data_['t']
         y = self.fit_data_['y']
         dy = self.fit_data_['dy']
