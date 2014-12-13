@@ -22,8 +22,8 @@ def test_lomb_scargle(N=100, omega=10):
     t, y, dy = _generate_data(N, omega)
     omegas = np.linspace(1, omega + 1, 100)
 
-    P1 = LombScargle(fit_offset=True).fit(t, y, dy).power(omegas)
-    P2 = LombScargle(fit_offset=False).fit(t, y, dy).power(omegas)
+    P1 = LombScargle(fit_offset=True).fit(t, y, dy).periodogram(omegas)
+    P2 = LombScargle(fit_offset=False).fit(t, y, dy).periodogram(omegas)
 
     rms = np.sqrt(np.mean((P1 - P2) ** 2))
     assert_(rms < 0.005)
@@ -39,8 +39,8 @@ def test_dy_scalar(N=100, omega=10):
     omegas = np.linspace(1, omega + 1, 100)
 
     def compare(cls):
-        P1 = cls().fit(t, y, dy).power(omegas)
-        P2 = cls().fit(t, y, dy[0]).power(omegas)
+        P1 = cls().fit(t, y, dy).periodogram(omegas)
+        P2 = cls().fit(t, y, dy[0]).periodogram(omegas)
 
         assert_allclose(P1, P2)
 
@@ -53,11 +53,11 @@ def test_lomb_scargle_multiband(N=100, omega=10):
     t, y, dy = _generate_data(N, omega)
     omegas = np.linspace(1, omega + 1, 100)
     model = LombScargle(center_data=False, fit_offset=True)
-    P_singleband = model.fit(t, y, dy).power(omegas)
+    P_singleband = model.fit(t, y, dy).periodogram(omegas)
 
     filts = np.ones(N)
     model = LombScargleMultibandFast()
-    P_multiband = model.fit(t, y, dy, filts).power(omegas)
+    P_multiband = model.fit(t, y, dy, filts).periodogram(omegas)
     assert_allclose(P_multiband, P_singleband)
 
 
@@ -66,7 +66,8 @@ def test_vs_astroML(N=100, omega=10):
     omegas = np.linspace(omega - 4, omega + 4, 100)
 
     def compare_models(model1, model2):
-        P = [model.fit(t, y, dy).power(omegas) for model in (model1, model2)]
+        P = [model.fit(t, y, dy).periodogram(omegas)
+             for model in (model1, model2)]
         assert_allclose(P[0], P[1])
 
     # standard lomb-scargle
@@ -121,11 +122,11 @@ def test_lomb_scargle_multiband2(N=100, omega=10):
     t, y, dy = _generate_data(N, omega)
     omegas = np.linspace(1, omega + 1, 100)
     model = LombScargle(center_data=False, fit_offset=True)
-    P_singleband = model.fit(t, y, dy).power(omegas)
+    P_singleband = model.fit(t, y, dy).periodogram(omegas)
 
     filts = np.ones(N)
     model_mb = LombScargleMultiband(center_data=False)
-    P_multiband = model_mb.fit(t, y, dy, filts).power(omegas)
+    P_multiband = model_mb.fit(t, y, dy, filts).periodogram(omegas)
     assert_allclose(P_multiband, P_singleband)
     assert_allclose(model.best_params(omega),
                     model_mb.best_params(omega)[:3])
