@@ -71,10 +71,14 @@ class PeriodicModeler(object):
         t = np.asarray(self.fit_data_['t'])
         expected_width = (2 * np.pi / (t.max() - t.min()))
         omega_step = 0.2 * expected_width
+        if verbose:
+            print("- Using omega_step = {0:.5f}".format(omega_step))
+
         omegas = np.arange(omega_min, omega_max, omega_step)
 
         if verbose:
-            print("- Computing periods at {0:.0f} steps".format(len(omegas)))
+            print("- Computing periods at {0:.0f} steps".format(len(omegas)),
+                  flush=True)
 
         P = self.periodogram(omegas)
 
@@ -84,8 +88,8 @@ class PeriodicModeler(object):
                                              omega + 3 * omega_step, 500)
                                  for omega in omegas[i]])
         if verbose:
-            print("- Zooming & computing periods at {0:.0f} furthersteps"
-                  "".format(len(omegas)))
+            print("- Zooming & computing periods at {0:.0f} further steps"
+                  "".format(len(omegas)), flush=True)
 
         P = self.periodogram(omegas)
         return omegas[np.argmax(P)]
@@ -669,6 +673,7 @@ class LombScargleMultibandFast(PeriodicModeler):
             the array specifying the filter/bandpass for each observation
         """
         t, y, dy, filts = np.broadcast_arrays(t, y, dy, filts)
+        self.fit_data_ = dict(t=t, y=y, dy=dy, filts=filts)
         self.unique_filts_ = np.unique(filts)
         masks = [(filts == f) for f in self.unique_filts_]
         self.models_ = [self.BaseModel(Nterms=self.Nterms, center_data=True,
@@ -690,7 +695,7 @@ class LombScargleMultibandFast(PeriodicModeler):
         periodogram : np.ndarray
             Array of normalized powers (between 0 and 1) for each frequency
         """
-        if not hasattr(self, 'models_'):
+        if not hasattr(self, 'fit_data_'):
             raise ValueError("must call fit() before periodogram()")
 
         # Return sum of powers weighted by chi2-normalization
@@ -712,7 +717,7 @@ class LombScargleMultibandFast(PeriodicModeler):
         theta : np.ndarray
             The array of model parameters for the best-fit model at omega
         """
-        if not hasattr(self, 'models_'):
+        if not hasattr(self, 'fit_data_'):
             raise ValueError("must call fit() before periodogram()")
 
         return np.asarray([model.best_params(omega) for model in self.models_])
@@ -735,7 +740,7 @@ class LombScargleMultibandFast(PeriodicModeler):
         y : np.ndarray
             predicted model values at times t
         """
-        if not hasattr(self, 'models_'):
+        if not hasattr(self, 'fit_data_'):
             raise ValueError("must call fit() before periodogram()")
 
         vals = set(np.unique(filts))
