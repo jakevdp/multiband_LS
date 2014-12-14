@@ -2,15 +2,11 @@ from __future__ import division, print_function
 __all__ = ['LombScargle', 'LombScargleAstroML',
            'LombScargleMultiband', 'LombScargleMultibandFast']
 
+import sys
 import warnings
 
 import numpy as np
 from scipy import optimize
-
-
-# TODO: there should be an option on fit() to automatically scan frequencies
-#       and find a suitable omega... then the predict() and best_params()
-#       methods could use this.
 
 
 class PeriodicModeler(object):
@@ -24,16 +20,72 @@ class PeriodicModeler(object):
     def periodogram(self, omegas):
         raise NotImplementedError()
 
-    def best_params(self, omega):
+    def best_params(self, omega=None):
+        """Compute the maximum likelihood model parameters at frequency omega
+
+        Parameters
+        ----------
+        omega : float (optional)
+            The angular frequency at which to compute the best parameters.
+            if not specified, it will be computed via self.find_best_omega().
+
+        Returns
+        -------
+        theta : np.ndarray
+            The array of model parameters for the best-fit model at omega
+        """
+        if not hasattr(self, 'fit_data_'):
+            raise ValueError("Must call fit() before periodogram/best_params")
+        if omega is None:
+            omega = self.best_omega
+        return self._best_params(omega)
+
+    def _best_params(self, omega):
         raise NotImplementedError()
 
-    def predict(self, t, omega):
+    def predict(self, t, omega=None, filts=None):
+        """Compute the best-fit model at ``t`` for a given frequency omega
+
+        Parameters
+        ----------
+        t : float or array_like
+            times at which to predict
+        omega : float (optional)
+            The angular frequency at which to compute the best parameters.
+            if not specified, it will be computed via self.find_best_omega().
+        filts : array_like (optional)
+            the array specifying the filter/bandpass for each observation. This
+            is used only in multiband periodograms.
+
+        Returns
+        -------
+        y : np.ndarray
+            predicted model values at times t
+        """
+        if not hasattr(self, 'fit_data_'):
+            raise ValueError("Must call fit() before predict")
+        if omega is None:
+            omega = self.best_omega
+        return self._predict(t=t, omega=omega, filts=filts)
+
+    def _predict(self, t, omega, filts=None):
         raise NotImplementedError()
 
     def __call__(self, omegas):
         return self.periodogram(omegas)
 
-    def find_best_omega(self, omega_min=1, omega_max=60, Nzooms=10, verbose=1):
+    @property
+    def best_omega(self):
+        if not hasattr(self, '_best_omega'):
+            self._best_omega = self.find_best_omega()
+        return self._best_omega
+
+    @property
+    def best_period(self):
+        return 2 * np.pi / self.best_omega
+
+    def find_best_omega(self, omega_min=None, omega_max=None,
+                        Nzooms=10, verbose=1):
         """Find the best value of omega for the given data.
 
         This method attempts to be smart: it uses the range of the fit to
@@ -43,10 +95,12 @@ class PeriodicModeler(object):
 
         Parameters
         ----------
-        omega_min : float
-            Minimum angular frequency of the scan range
-        omega_max : float
-            Maximum angular frequency of the scan range
+        omega_min : float (optional)
+            Minimum angular frequency of the scan range. If not specified,
+            then self.period_range will be used.
+        omega_max : float (optional)
+            Maximum angular frequency of the scan range. If not specified,
+            then self.period_range will be used.
         Nzooms : integer
             Number of initial peaks to zoom on to find the final result
         verbose : boolean
@@ -64,6 +118,13 @@ class PeriodicModeler(object):
         """
         if not hasattr(self, 'fit_data_'):
             raise ValueError("Must call fit() before find_best_period")
+            
+        if omega_min is None:
+            omega_min = 2 * np.pi / max(self.period_range[0],
+                                        self.period_range[1])
+        if omega_max is None:
+            omega_max = 2 * np.pi / min(self.period_range[0],
+                                        self.period_range[1])
 
         # Make sure things are in the right order
         omega_min, omega_max = np.sort([omega_min, omega_max])
@@ -72,13 +133,15 @@ class PeriodicModeler(object):
         expected_width = (2 * np.pi / (t.max() - t.min()))
         omega_step = 0.2 * expected_width
         if verbose:
-            print("- Using omega_step = {0:.5f}".format(omega_step))
+            print("Finding optimal frequency:")
+            print(" - Using omega_step = {0:.5f}".format(omega_step))
+            sys.stdout.flush()
 
         omegas = np.arange(omega_min, omega_max, omega_step)
 
         if verbose:
-            print("- Computing periods at {0:.0f} steps".format(len(omegas)),
-                  flush=True)
+            print(" - Computing periods at {0:.0f} steps".format(len(omegas)))
+            sys.stdout.flush()
 
         P = self.periodogram(omegas)
 
@@ -88,13 +151,14 @@ class PeriodicModeler(object):
                                              omega + 3 * omega_step, 500)
                                  for omega in omegas[i]])
         if verbose:
-            print("- Zooming & computing periods at {0:.0f} further steps"
-                  "".format(len(omegas)), flush=True)
+            print(" - Zooming & computing periods at {0:.0f} further steps"
+                  "".format(len(omegas)))
+            sys.stdout.flush()
 
         P = self.periodogram(omegas)
         return omegas[np.argmax(P)]
 
-    def find_best_period(self, P_min=0.2, P_max=1.2, Nzooms=10, verbose=1):
+    def find_best_period(self, P_min=None, P_max=None, Nzooms=10, verbose=1):
         """Find the best period for the given data.
 
         This method attempts to be smart: it uses the range of the fit to
@@ -104,10 +168,12 @@ class PeriodicModeler(object):
 
         Parameters
         ----------
-        P_min : float
-            Minimum period of the scan range
-        P_max : float
-            Maximum period of the scan range
+        P_min : float (optional)
+            Minimum period of the scan range. If not specified,
+            then self.period_range will be used.
+        P_max : float (optional)
+            Maximum period of the scan range. If not specified,
+            then self.period_range will be used.
         Nzooms : integer
             Number of initial peaks to zoom on to find the final result
         verbose : boolean
@@ -123,6 +189,10 @@ class PeriodicModeler(object):
         --------
         find_best_omega
         """
+        if P_min is None:
+            P_min = min(self.period_range[0], self.period_range[1])
+        if P_max is None:
+            P_max = max(self.period_range[0], self.period_range[1])
         omega_best = self.find_best_omega(omega_min=2 * np.pi / P_max,
                                           omega_max=2 * np.pi / P_min,
                                           Nzooms=Nzooms, verbose=verbose)
@@ -160,11 +230,10 @@ class LombScargle(PeriodicModeler):
     >>> omega = 10
     >>> y = np.sin(omega * t) + dy * rng.randn(100)
     >>> ls = LombScargle().fit(t, y, dy)
-    >>> omega_best = ls.find_best_omega()
-    >>> omega_best
+    >>> ls.best_omega
     10.000707659055472
-    >>> ls.predict(t=0, omega=omega_best)
-    array(-0.012038993444193624)
+    >>> ls.predict([0, 0.5])
+    array([-0.01203899, -0.92698316])
 
     See Also
     --------
@@ -173,12 +242,14 @@ class LombScargle(PeriodicModeler):
     LombScargleMultibandFast
     """
     def __init__(self, center_data=True, fit_offset=True, Nterms=1,
-                 regularization=None, regularize_by_trace=True):
+                 regularization=None, regularize_by_trace=True,
+                 period_range=(0.2, 1.1)):
         self.center_data = center_data
         self.fit_offset = fit_offset
         self.Nterms = int(Nterms)
         self.regularization = regularization
         self.regularize_by_trace = regularize_by_trace
+        self.period_range = period_range
 
         if not self.center_data and not self.fit_offset:
             warnings.warn("Not centering data or fitting offset can lead "
@@ -319,19 +390,7 @@ class LombScargle(PeriodicModeler):
 
         return P.reshape(output_shape)
 
-    def best_params(self, omega):
-        """Compute the maximum likelihood model parameters at frequency omega
-
-        Parameters
-        ----------
-        omega : float
-            The angular frequency at which to compute the best parameters
-
-        Returns
-        -------
-        theta : np.ndarray
-            The array of model parameters for the best-fit model at omega
-        """
+    def _best_params(self, omega):
         if not hasattr(self, 'fit_data_'):
             raise ValueError("Must call fit() before best_params")
 
@@ -339,32 +398,15 @@ class LombScargle(PeriodicModeler):
         XTy = np.dot(Xw.T, self.yw_)
         return np.linalg.solve(XTX, XTy)
 
-    def predict(self, t, omega):
-        """Compute the best-fit model at ``t`` for a given frequency omega
-
-        Parameters
-        ----------
-        t : float or array_like
-            times at which to predict
-        omega : float
-            The angular frequency at which to compute the best parameters
-
-        Returns
-        -------
-        y : np.ndarray
-            predicted model values at times t
-        """
-        if not hasattr(self, 'fit_data_'):
-            raise ValueError("Must call fit() before predict")
-
+    def _predict(self, t, omega, filts=None):
         t = np.asarray(t)
         outshape = t.shape
-        theta = self.best_params(omega)
+        theta = self._best_params(omega)
         X = self._construct_X(omega, weighted=False, t=t.ravel())
         return np.reshape(self.ymean_ + np.dot(X, theta), outshape)
 
 
-class LombScargleAstroML(PeriodicModeler):
+class LombScargleAstroML(LombScargle):
     """Lomb-Scargle Periodogram Implementation using AstroML
 
     This is a generalized periodogram implementation which uses the periodogram
@@ -401,29 +443,14 @@ class LombScargleAstroML(PeriodicModeler):
     LombScargleMultibandFast
     """
     def __init__(self, fit_offset=True, center_data=True,
-                 slow_version=False):
+                 slow_version=False, period_range=(0.2, 1.1)):
+        LombScargle.__init__(self, Nterms=1, center_data=center_data,
+                             fit_offset=fit_offset, period_range=period_range)
         if slow_version:
             from astroML.time_series._periodogram import lomb_scargle
         else:
             from astroML.time_series import lomb_scargle
         self._LS_func = lomb_scargle
-        self.fit_offset = fit_offset
-        self.center_data = center_data
-
-    def fit(self, t, y, dy):
-        """Fit the Periodogram model to the data.
-
-        Parameters
-        ----------
-        t : array_like, one-dimensional
-            sequence of observation times
-        y : array_like, one-dimensional
-            sequence of observed values
-        dy : float or array_like
-            errors on observed values
-        """
-        self.fit_data_ = dict(t=t, y=y, dy=dy)
-        return self
 
     def periodogram(self, omegas):
         """Compute the periodogram at the given angular frequencies
@@ -481,13 +508,14 @@ class LombScargleMultiband(LombScargle):
     """
     def __init__(self, Nterms_base=1, Nterms_band=1,
                  reg_base=None, reg_band=1E-6, regularize_by_trace=True,
-                 center_data=True):
+                 center_data=True, period_range=(0.2, 1.1)):
         self.Nterms_base = Nterms_base
         self.Nterms_band = Nterms_band
         self.reg_base = reg_base
         self.reg_band = reg_band
         self.regularize_by_trace = regularize_by_trace
         self.center_data = center_data
+        self.period_range = period_range
 
     def fit(self, t, y, dy, filts):
         """Fit the multiterm Periodogram model to the data.
@@ -590,31 +618,11 @@ class LombScargleMultiband(LombScargle):
         else:
             return np.transpose(np.vstack(cols))
 
-    def predict(self, t, filts, omega):
-        """Compute the best-fit model at ``t`` for a given frequency omega
-        and given filters
-
-        Parameters
-        ----------
-        t : float or array_like
-            times at which to predict
-        filts : array_like
-            the array specifying the filter/bandpass for each observation
-        omega : float
-            The angular frequency at which to compute the best parameters
-
-        Returns
-        -------
-        y : np.ndarray
-            predicted model values at times t
-        """
-        if not hasattr(self, 'fit_data_'):
-            raise ValueError("Must call fit() before predict")
-
+    def _predict(self, t, omega, filts=None):
         vals = set(np.unique(filts))
         if not vals.issubset(self.unique_filts_):
             raise ValueError("filts does not match training data: "
-                             "{0}".format(self.unique_filts - vals))
+                             "{0}".format(set(self.unique_filts_) - vals))
 
         t, filts = np.broadcast_arrays(t, filts)
         output_shape = t.shape
@@ -628,7 +636,7 @@ class LombScargleMultiband(LombScargle):
             j = np.where(self.unique_filts_ == filt)[0][0]
             ymeans[i] = self.ymean_by_filt_[j]
 
-        theta = self.best_params(omega)
+        theta = self._best_params(omega)
         X = self._construct_X(omega, weighted=False, t=t, filts=filts)
         return (ymeans + np.dot(X, theta)).reshape(output_shape)
 
@@ -653,10 +661,12 @@ class LombScargleMultibandFast(PeriodicModeler):
     LombScargleAstroML
     LombScargleMultiband
     """
-    def __init__(self, Nterms=1, BaseModel=LombScargle):
+    def __init__(self, Nterms=1, BaseModel=LombScargle,
+                 period_range=(0.2, 1.1)):
         # Note: center_data must be True, or else the chi^2 weighting will fail
         self.Nterms = Nterms
         self.BaseModel = BaseModel
+        self.period_range = period_range
 
     def fit(self, t, y, dy, filts):
         """Fit the multiterm Periodogram model to the data.
@@ -704,49 +714,14 @@ class LombScargleMultibandFast(PeriodicModeler):
         chi2_0 = np.array([np.sum(model.yw_ ** 2) for model in self.models_])
         return np.dot(chi2_0 / chi2_0.sum(), powers)
 
-    def best_params(self, omega):
-        """Compute the maximum likelihood model parameters at frequency omega
-
-        Parameters
-        ----------
-        omega : float
-            The angular frequency at which to compute the best parameters
-
-        Returns
-        -------
-        theta : np.ndarray
-            The array of model parameters for the best-fit model at omega
-        """
-        if not hasattr(self, 'fit_data_'):
-            raise ValueError("must call fit() before periodogram()")
-
+    def _best_params(self, omega):
         return np.asarray([model.best_params(omega) for model in self.models_])
 
-    def predict(self, t, filts, omega):
-        """Compute the best-fit model at ``t`` for a given frequency omega
-        and given filters
-
-        Parameters
-        ----------
-        t : float or array_like
-            times at which to predict
-        filts : array_like
-            the array specifying the filter/bandpass for each observation
-        omega : float
-            The angular frequency at which to compute the best parameters
-
-        Returns
-        -------
-        y : np.ndarray
-            predicted model values at times t
-        """
-        if not hasattr(self, 'fit_data_'):
-            raise ValueError("must call fit() before periodogram()")
-
+    def _predict(self, t, omega, filts=None):
         vals = set(np.unique(filts))
         if not vals.issubset(self.unique_filts_):
             raise ValueError("filts does not match training data: "
-                             "{0}".format(self.unique_filts - vals))
+                             "{0}".format(set(self.unique_filts_) - vals))
 
         t, filts = np.broadcast_arrays(t, filts)
 
