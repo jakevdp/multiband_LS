@@ -1,13 +1,16 @@
 """
 Data downloaders for the multiband_LS stuff
 """
+
+__all__ = ['fetch_rrlyrae_templates', 'fetch_light_curves',
+           'fetch_lc_params', 'fetch_lc_fit_params']
+
 import os
 import tarfile
 import gzip
 from io import BytesIO
 
 import numpy as np
-
 from astroML.datasets.tools import download_with_progress_bar
 
 
@@ -26,6 +29,7 @@ SESAR_RRLYRAE_URL = 'http://www.astro.washington.edu/users/bsesar/S82_RRLyr/'
 
 
 class RRLyraeLC(object):
+    """Container for accessing RR Lyrae Light Curve data."""
     def __init__(self, filename, dirname='table1'):
         self.data = tarfile.open(filename)
         self.dirname = dirname
@@ -95,6 +99,9 @@ class RRLyraeLC(object):
             return t, y, dy
 
     def get_metadata(self, lcid):
+        """Get the parameters derived from the fit for the given id.
+        This is table 2 of Sesar 2010
+        """
         if self._metadata is None:
             self._metadata = fetch_lc_params()
         i = np.where(self._metadata['id'] == lcid)[0]
@@ -103,6 +110,9 @@ class RRLyraeLC(object):
         return self._metadata[i[0]]
 
     def get_obsmeta(self, lcid):
+        """Get the observation metadata for the given id.
+        This is table 3 of Sesar 2010
+        """
         if self._obsdata is None:
             self._obsdata = fetch_lc_fit_params()
         i = np.where(self._obsdata['id'] == lcid)[0]
@@ -168,6 +178,7 @@ def fetch_lc_fit_params(data_dir=None):
 
 
 class RRLyraeTemplates(object):
+    """Container to access the RR Lyrae templates from Sesar 2010"""
     def __init__(self, filename, dirname='table1'):
         self.data = tarfile.open(filename)
         self.dirname = dirname
@@ -189,6 +200,7 @@ class RRLyraeTemplates(object):
     
 
 def fetch_rrlyrae_templates(data_dir=None):
+    """Access the RR Lyrae template data (table 1 of Sesar 2010)"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
     save_loc = os.path.join(data_dir, 'RRLyr_ugriz_templates.tar.gz')
