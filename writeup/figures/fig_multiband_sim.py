@@ -1,6 +1,6 @@
 """
-Here we plot a typical approach to multi-band Lomb-Scargle: treating each band
-separately, and taking a majority vote between the bands.
+Here we plot a typical approach to the multi-band periodogram: treating each
+band separately, and taking a majority vote between the bands.
 """
 
 import sys
@@ -40,7 +40,7 @@ mags = np.array([rrlyrae.generated(band, t, err=dy, corrected=False)
 
 periods = np.linspace(0.2, 0.9, 1000)
 omegas = 2 * np.pi / periods
-P = [LombScargleAstroML().fit(t, m, dy).power(omegas) for m in mags]
+P = [LombScargleAstroML().fit(t, m, dy).periodogram(omegas) for m in mags]
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1, bottom=0.15)
@@ -58,13 +58,13 @@ for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
     offset = 4 - i
     ax[1].plot(periods, Pi + offset, lw=1)
     ax[1].text(0.89, 0.7 + offset, band, fontsize=14, ha='right', va='top')
-ax[1].set_title('Lomb-Scargle in Each Band')
+ax[1].set_title('Periodogram in Each Band')
 ax[1].set_ylim(0, 5)
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].set_xlabel('Period (days)')
-ax[1].set_ylabel('Lomb-Scargle Power + offset')
+ax[1].set_ylabel('power + offset')
 
-fig.savefig('fig01.pdf')
+fig.savefig('fig04.pdf')
 
 #----------------------------------------------------------------------
 # Second figure:
@@ -77,12 +77,13 @@ mags = mags[np.arange(Nobs) % 5, np.arange(Nobs)]
     
 masks = [(filts == band) for band in 'ugriz']
 
-P = [LombScargleAstroML().fit(t[mask], mags[mask], dy[mask]).power(omegas)
+P = [LombScargleAstroML().fit(t[mask], mags[mask],
+                              dy[mask]).periodogram(omegas)
      for mask in masks]
     
 LS_multi = LombScargleMultiband(Nterms_base=1, Nterms_band=0)
 LS_multi.fit(t, mags, dy, filts)
-P_multi = LS_multi.power(omegas)
+P_multi = LS_multi.periodogram(omegas)
 
 fig = plt.figure(figsize=(10, 4))
 gs = plt.GridSpec(4, 2,
@@ -105,19 +106,19 @@ for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
     offset = 4 - i
     ax[1].plot(periods, Pi + offset, lw=1)
     ax[1].text(0.89, 1 + offset, band, fontsize=14, ha='right', va='top')
-ax[1].set_title('Lomb-Scargle in Each Band')
+ax[1].set_title('Standard Periodogram in Each Band')
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].xaxis.set_major_formatter(plt.NullFormatter())
-ax[1].set_ylabel('Lomb-Scargle Power + offset')
+ax[1].set_ylabel('power + offset')
     
 ax[2].plot(periods, P_multi, lw=1, color='gray')
-ax[2].set_title('Multiband Lomb-Scargle')
+ax[2].set_title('Multiband Periodogram')
 ax[2].set_ylim(0, 0.8)
 ax[2].set_yticks([0, 0.4, 0.8])
 ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
 
-fig.savefig('fig02.pdf')
+fig.savefig('fig05.pdf')
 
 #----------------------------------------------------------------------
 # Write the results to file
@@ -128,6 +129,6 @@ df['mag'] = mags
 df['dmag'] = dy
 df = df.sort('t')
 
-df.to_csv('fig01data.csv', sep=' ', float_format='%.4f', index=False)
+df.to_csv('fig_data.dat', sep=' ', float_format='%.4f', index=False)
 
 plt.show()
