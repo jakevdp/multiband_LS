@@ -293,7 +293,7 @@ Note that the effect of this regularization term is to add a diagonal term to th
 
 \todo{Show a regularized model?}
 
-\section{Moving to Multiple Bands}
+\section{A Multiple-Band Model}
 
 To compute a periodogram for multi-band data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which allows us to specify an arbitrary linear model covering our data. We will construct a multi-term Fourier model with the following features:
 \begin{enumerate}
@@ -330,7 +330,22 @@ this regularization will look like
 \end{equation}
 where $\epsilon$ is some small fraction of the trace of the matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. We'll see an example of this in action in \sect{Simulated}.
 
-\todo{Talk about the $N_{base} = 0$, $N_{band} = 1$ case. This is equivalent to fitting a floating-mean Lomb-Scargle independently to each band, and constructing a weighted sum of each individual periodogram.}
+The final remaining piece is our assumption that the data are centered (i.e. \eq{ycentered}). This is required so that the simple form of the reference $\chi^2_0$ remains valid. For the multiband model, this assumption requires that the data satisfy \eq{ycentered} {\it within each band}.
+
+\subsection{Relationship of Multiband and Single-band approaches}
+There is a special case of the multi-band approach when $N_{base}=0$ and $N_{band}=1$. In this case, the $X$ matrix can be arranged to be block-diagonal, and the computation can be split into an independent single-band computation for each of the $K$ bands. For band $k$, denote the single-band periodogram as
+\begin{equation}
+  P_N^{(k)}(\omega) = 1 - \frac{\chi^2_{min, k}(\omega)}{\chi^2_{0,k}}
+\end{equation}
+The full multiband periodogram is given by
+\begin{equation}
+  P_N(\omega) = 1 - \frac{\sum_{k=1}^K\chi^2_{min, k}(\omega)}{\sum_{k=1}^K\chi^2_{0,k}}
+\end{equation}
+and it can easily be shown that the $P_N$ can be constructed as a weighted sum of $P_N^{(k)}$:
+\begin{equation}
+  P_N(\omega) = \frac{\sum_{k=1}^K\left[\chi^2_{0,k}P_N^{k}\right]}{\sum_{k=1}^K\chi^2_{0,k}}
+\end{equation}
+where, recall $\chi^2_{0,k}$ is simply the $\chi^2$ of the data in each band about the mean. This tells us how we can construct a particular case of the multi-term periodogram from a weighted sum of periodograms in each band. Here the weights reflect both how many measurements there are in each band, and how poorly those measurements are fit by a simple constant reference model.
 
 \section{Examples}
 Here we'll show several examples of the multiband periodogram method in action.
@@ -374,6 +389,9 @@ Using the typical approach from the literature prior to this paper, we individua
 \end{figure}
 
 \fig{multi_example} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the Lomb-Scargle fits to the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period band-by-band. With the multiband approach (here computed for $N_{base}=1$ and $N_{band}=0$), as seen in the lower-right panel of \fig{multi_example}, the period is cleanly recovered.
+
+
+\todo{Compare different options of $N_{base}$ and $N_{band}$?}
 
 
 \subsection{Stripe 82}
