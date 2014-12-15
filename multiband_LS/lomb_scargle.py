@@ -43,19 +43,19 @@ class PeriodicModeler(object):
     def _best_params(self, omega):
         raise NotImplementedError()
 
-    def predict(self, t, omega=None, filts=None):
+    def predict(self, t, filts=None, omega=None):
         """Compute the best-fit model at ``t`` for a given frequency omega
 
         Parameters
         ----------
         t : float or array_like
             times at which to predict
-        omega : float (optional)
-            The angular frequency at which to compute the best parameters.
-            if not specified, it will be computed via self.find_best_omega().
         filts : array_like (optional)
             the array specifying the filter/bandpass for each observation. This
             is used only in multiband periodograms.
+        omega : float (optional)
+            The angular frequency at which to compute the best parameters.
+            if not specified, it will be computed via self.find_best_omega().
 
         Returns
         -------
