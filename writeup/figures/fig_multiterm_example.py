@@ -17,7 +17,6 @@ from multiband_LS.generated import RRLyraeObject
 from multiband_LS.lomb_scargle import LombScargle
 
 
-
 # Choose a Sesar 2010 object to base our fits on
 lcid = 1019544
 rrlyrae = RRLyraeObject(lcid, random_state=0)

@@ -20,6 +20,7 @@ from multiband_LS.lomb_scargle import LombScargleAstroML, LombScargleMultiband
 # Choose a Sesar 2010 object to base our fits on
 lcid = 1019544
 rrlyrae = RRLyraeObject(lcid, random_state=0)
+print("Extinction A_r = {0:.4f}".format(rrlyrae.obsmeta['rExt']))
 
 # Generate data in a 6-month observing season
 Nobs = 60
@@ -64,7 +65,7 @@ ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].set_xlabel('Period (days)')
 ax[1].set_ylabel('power + offset')
 
-fig.savefig('fig04.pdf')
+fig.savefig('fig05.pdf')
 
 #----------------------------------------------------------------------
 # Second figure:
@@ -118,7 +119,7 @@ ax[2].set_yticks([0, 0.4, 0.8])
 ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
 
-fig.savefig('fig05.pdf')
+fig.savefig('fig06.pdf')
 
 #----------------------------------------------------------------------
 # Write the results to file
