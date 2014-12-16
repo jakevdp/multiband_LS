@@ -61,7 +61,7 @@
 
 
 \begin{abstract}
-  This paper introduces the {\it multiband periodogram} a general extension of the well-known Lomb-Scargle method for detecting periodic signals in time-domain data.
+  This paper introduces the {\it multiband periodogram} a general extension of the standard Lomb-Scargle approach to detecting periodic signals in time-domain data.
 \end{abstract}
 
 \keywords{
@@ -208,9 +208,9 @@ The matrix-based formulation of \eq{LombScargle2} sacrifices some potential comp
 \begin{enumerate}
   \item It is trivially extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the noise matrix $\Sigma$
   \item It is trivially extended to more sophisticated linear models by appropriately modifying the design matrix $X_\omega$.
-  \item It is trivially extended to L2-regularized likelihoods by adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
+  \item It is trivially extended to Tikhonov/L2-regularized likelihoods by adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
 \end{enumerate}
-In the remainder of this section, we'll explore a few of these modifications.
+In the remainder of this section, we'll explore a few of these modifications and how they affect the periodogram and resulting model fits.
 
 
 \subsection{Stationary Sinusoid with Floating Mean}
@@ -221,18 +221,18 @@ In the remainder of this section, we'll explore a few of these modifications.
   \includegraphics[width=\textwidth]{fig02.pdf}
   \caption{
     An illustration of the effect of the floating mean model for biased data.
-    The data consist of 80 observations drawn from a sinusoidal model; all observations with magnitude fainter than 16 are masked, as shown in the left panel. The standard and floating-mean periodograms are computed from the unmasked data; these are shown in the right panel. Because of this biased observing pattern, the mean of the observed data is not a good predictor of the true mean, and the standard model fails to recover the true period of 0.622 days, while the floating mean model still finds the correct period.
+    The data consist of 80 observations drawn from a sinusoidal model. To mimick a potentially damaging selection effect, all observations with magnitude fainter than 16 are removed (indicated by the light-gray points). The standard and floating-mean periodograms are computed from the remaining data; these fits are shown over the data in the right panel. Because of this biased observing pattern, the mean of the observed data is not a good predictor of the true mean, and the standard model fails to recover the true period of 0.622 days, while the floating mean model still finds the correct period.
   }
   \figlabel{floating_mean}
 \end{figure}
 
-As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citet{Zechmeister09}. This adjusts the classic Lomb-Scargle algorithm by using a model with a floating mean, which can be more accurate for certain observing cadences:
+As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citet{Zechmeister09}. This adjusts the classic normalized periodogram by allowing the mean of the model to be fit alongside the amplitudes:
 
 \begin{equation}
   y(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
 
-While \citet{Zechmeister09} details a formalism to express this floating-mean model (which they call a ``generalized periodogram'') similarly to \eq{LombScargle}, in the matrix formalism all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
+This model can be more accurate than the standard periodogram for certain observing cadences and selection functions. While \citet{Zechmeister09} details a formalism to express this floating-mean model (which they call a ``generalized periodogram'') similarly to \eq{LombScargle}, in the matrix formalism all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
 
 For well-sampled data, there is little difference between a standard periodogram and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases: an example of this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias. Because of this bias, the mean of the observed data to be a poor predictor of the true mean, which makes it so that the standard approach fails to find a suitable fit to the data. The floating-mean approach is able to adjust for this, resulting in a periodogram which detects the input period of 0.622 days.
 
@@ -248,7 +248,7 @@ For well-sampled data, there is little difference between a standard periodogram
   \figlabel{multiterm_example}
 \end{figure}
 
-The classic Lomb-Scargle approach is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to use a multiple-term sinusoidal model. With $M$ terms, there are $2M + 1$ free parameters, and the model is given by:
+As mentioned above, the standard periodogram is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to use a multiple-term sinusoidal model. With $M$ terms, there are $2M + 1$ free parameters, and the model is given by:
 
 \begin{equation}
   y(t|\omega,\theta) = \theta_0 + \sum_{n=1}^M \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]
@@ -300,10 +300,10 @@ To compute a periodogram for multi-band data, we'll take advantage of many of th
   \item An $M_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
   \item An $M_{band}$-term truncated Fourier fit which models the residual of each band from the overall variability.
 \end{enumerate}
-The total number of parameters for $N_{filt}$ filters is then $M = (2M_{base} + 1) + N_{filt}(2M_{band} + 1)$. The model looks as follows, for a band $b$:
+The total number of parameters for $K$ filters is then $M_K = (2M_{base} + 1) + K(2M_{band} + 1)$. The model looks as follows, for a band $b$:
 \begin{eqnarray}
-  y(t|\omega,\theta,b) = &&\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]\\ 
-  &+& \theta^{(b)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(b)}_{2n - 1}\sin(n\omega t) + \theta^{(b)}_{2n}\cos(n\omega t)\right].
+  y(t|\omega,\theta,b) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
+  &\theta^{(b)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(b)}_{2n - 1}\sin(n\omega t) + \theta^{(b)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
 The important feature is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(b)}$ are fit within each band.
 
@@ -314,14 +314,14 @@ X_\omega^{(1,0)} = \left[
 \begin{array}{cccccccc}
 1 & \sin(\omega t_1) & \cos(\omega t_1) & 1 & 0 & 0 & 0 & 0\\
 1 & \sin(\omega t_2) & \cos(\omega t_2) & 0 & 1 & 0 & 0 & 0\\
-1 & \sin(\omega t_3) & \cos(\omega t_3) & 1 & 0 & 0 & 0 & 0\\
+1 & \sin(\omega t_3) & \cos(\omega t_3) & 0 & 0 & 0 & 1 & 0\\
 1 & \sin(\omega t_4) & \cos(\omega t_4) & 0 & 0 & 1 & 0 & 0\\
 \vdots & \vdots & \vdots & & & \vdots & &\\
-1 & \sin(\omega t_N) & \cos(\omega t_N) & 0 & 0 & 0 & 0 & 1\\
+1 & \sin(\omega t_N) & \cos(\omega t_N) & 0 & 1 & 0 & 0 & 0\\
 \end{array}
 \right]
 \end{equation}
-Here the structure of the final five columns indicates the band observed at the given time: the first row is a $u$-band measurement, the second is a $g$-band, the third is a $u$-band, etc.
+Here the nonzero entries of the final five columns indicate the band observed at the given time: the first row is a $u$-band measurement, the second is a $g$-band, the third is a $i$-band, etc.
 
 From reasoning about the free parameters, or by examining the above matrix it is easy to see that some of the parameters will be degenerate (i.e. $X_\omega$ is low-rank). Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each of the band columns. In order to proceed, then, we'll either have to correct this model deficiency, or use a regularization term on one of the offending parameters. We'll choose the latter here, and regularize all the band columns to drive the common behavior into the base model. For the above matrix,
 this regularization will look like
@@ -368,7 +368,7 @@ Here we'll show several examples of the multiband periodogram method in action.
 \end{figure}
 
 \fig{adhoc_example} shows a simulated RR Lyrae light curve based on a template from \citet{Sesar2010}. The observations take place on 60 random nights over a 6-month period, and each night all five bands ({\it u,g,r,i,z}) are recorded. The left panel of \fig{adhoc_example} shows the observations folded as a function of phase.
-Using the typical approach from the literature prior to this paper, we individually compute the Lomb-Scargle periodogram within each band: the results are shown in the right panel. Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band.\footnote{\label{foot1}
+Using the typical approach from the literature prior to this paper, we individually compute the standard normalized periodogram within each band: the results are shown in the right panel. Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band.\footnote{\label{foot1}
   An aliasing effect is readily apparent in the left panel of \fig{adhoc_example}: these additional peaks are due to beat frequencies between the true period $P$ and the observing cadence of $\sim 1$ day. That is, for nightly observations, we'd expect excess power to be found at frequencies $P / (1 + nP)$ for a positive or negative integer $n$. For the current work, we'll ignore this (important) piece of the problem; for a thorough discussion of aliasing within astronomical time series, see \citet{Roberts87}.}
 
 
@@ -379,7 +379,7 @@ Using the typical approach from the literature prior to this paper, we individua
     Another realization of the data from \fig{adhoc_example}, with only a single
     band observed each night (i.e. 12 observations per band, spread over 180
     days). In this case, single-band data is not sufficient to recover the
-    Lomb-Scargle peaks, and the classic band-by-band approach fails.
+    periodogram peaks, and the classic band-by-band approach fails.
     By utilizing all the data at once with the multiband approach
     (with $N_{base}=1,~N_{band}=0$),
     we faithfully reconstruct the periodogram and recover
@@ -388,7 +388,7 @@ Using the typical approach from the literature prior to this paper, we individua
   \figlabel{multi_example}
 \end{figure}
 
-\fig{multi_example} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the Lomb-Scargle fits to the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period band-by-band. With the multiband approach (here computed for $N_{base}=1$ and $N_{band}=0$), as seen in the lower-right panel of \fig{multi_example}, the period is cleanly recovered.
+\fig{multi_example} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the periodograms derived from the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period band-by-band. With the multiband approach (here computed for $N_{base}=1$ and $N_{band}=0$), as seen in the lower-right panel of \fig{multi_example}, the period is cleanly recovered.
 
 
 \todo{Compare different options of $N_{base}$ and $N_{band}$?}
