@@ -97,4 +97,4 @@ def interact_multifit():
         ax3.set_xlabel('r')
 
     return interact(plot_multifit, object_index=[0, len(lcids) - 1],
-                    Nterms_base=[1, 10], Nterms_band=[0, 10])
+                    Nterms_base=[0, 10], Nterms_band=[0, 10])

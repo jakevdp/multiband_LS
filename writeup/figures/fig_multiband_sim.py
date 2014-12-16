@@ -81,18 +81,14 @@ masks = [(filts == band) for band in 'ugriz']
 P = [LombScargleAstroML().fit(t[mask], mags[mask],
                               dy[mask]).periodogram(omegas)
      for mask in masks]
-    
-LS_multi = LombScargleMultiband(Nterms_base=1, Nterms_band=0)
-LS_multi.fit(t, mags, dy, filts)
-P_multi = LS_multi.periodogram(omegas)
 
 fig = plt.figure(figsize=(10, 4))
-gs = plt.GridSpec(4, 2,
+gs = plt.GridSpec(5, 2,
                   left=0.07, right=0.95, bottom=0.15,
-                  wspace=0.1, hspace=0.5)
+                  wspace=0.1, hspace=0.6)
 ax = [fig.add_subplot(gs[:, 0]),
-      fig.add_subplot(gs[:3, 1]),
-      fig.add_subplot(gs[3, 1])]
+      fig.add_subplot(gs[:-2, 1]),
+      fig.add_subplot(gs[-2:, 1])]
     
 for band, mask in zip('ugriz', masks):
     ax[0].errorbar((t[mask] / rrlyrae.period) % 1, mags[mask], dy[mask],
@@ -106,16 +102,25 @@ ax[0].set_ylabel('magnitude')
 for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
     offset = 4 - i
     ax[1].plot(periods, Pi + offset, lw=1)
-    ax[1].text(0.89, 1 + offset, band, fontsize=14, ha='right', va='top')
+    ax[1].text(0.89, 1 + offset, band,
+               fontsize=10, ha='right', va='top')
 ax[1].set_title('Standard Periodogram in Each Band')
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].xaxis.set_major_formatter(plt.NullFormatter())
-ax[1].set_ylabel('power + offset')
+ax[1].set_ylabel('power + offset' + 30 * ' ')
     
-ax[2].plot(periods, P_multi, lw=1, color='gray')
+for (i, Nbase, Nband) in [(0, 1, 0), (1, 0, 1)]:
+    LS_multi = LombScargleMultiband(Nterms_base=Nbase, Nterms_band=Nband)
+    LS_multi.fit(t, mags, dy, filts)
+    P_multi = LS_multi.periodogram(omegas)
+    ax[2].plot(periods, P_multi + i, lw=1, color='gray')
+    ax[2].text(0.89, 1.0 + i,
+               "Nbase={0}, Nband={1}".format(Nbase, Nband),
+               fontsize=10, ha='right', va='top')
+
 ax[2].set_title('Multiband Periodogram')
-ax[2].set_ylim(0, 0.8)
-ax[2].set_yticks([0, 0.4, 0.8])
+ax[2].set_ylim(0, 2.0)
+ax[2].set_yticks([0, 1.0, 2.0])
 ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
 
