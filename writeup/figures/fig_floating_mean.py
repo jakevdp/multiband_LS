@@ -43,8 +43,11 @@ tfit = rrlyrae.period * phasefit
 periods = np.linspace(0.2, 1.1, 1000)
 omegas = 2 * np.pi / periods
 
-fig, ax = plt.subplots(1, 2, figsize=(10, 4))
-fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1, bottom=0.15)
+fig = plt.figure(figsize=(10, 4))
+gs = plt.GridSpec(2, 2, left=0.07, right=0.95, wspace=0.15, bottom=0.15)
+ax = [fig.add_subplot(gs[:, 0]),
+      fig.add_subplot(gs[0, 1]),
+      fig.add_subplot(gs[1, 1])]
 
 ax[0].errorbar(phase[mask], mag[mask], dmag[mask], fmt='o',
                color='#666666')
@@ -53,6 +56,7 @@ ax[0].errorbar(phase[~mask], mag[~mask], dmag[~mask], fmt='o',
 ax[0].invert_yaxis()
 
 for fit_offset in [False, True]:
+    i = int(fit_offset)
     model = LombScargle(fit_offset=fit_offset).fit(t[mask],
                                                    mag[mask], dmag[mask])
     P = model.periodogram(omegas)
@@ -60,22 +64,22 @@ for fit_offset in [False, True]:
         label = 'floating mean'
     else:
         label = 'standard'
-    ax[0].plot(phasefit, model.predict(tfit, omega=2 * np.pi / rrlyrae.period),
-               label=label)
-    ax[1].plot(periods, P + 1 - fit_offset, lw=1)
-    ax[1].text(1.08, 0.5 + 1 - fit_offset, label, ha='right')
+    lines = ax[0].plot(phasefit,
+                       model.predict(tfit, omega=2 * np.pi / rrlyrae.period),
+                       label=label)
+    ax[1 + i].plot(periods, P, lw=1, c=lines[0].get_color())
+    ax[1 + i].set_title('{0} Periodogram'.format(label.title()))
+    ax[1 + i].set_ylabel('power')
+    ax[1 + i].set_ylim(0, 1)
+    ax[1 + i].set_xlim(0.2, 1.1)
 
 ax[0].legend(loc='upper left')
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')
 ax[0].set_title('Phased data (period=0.622 days)')
 
-ax[1].set_xlabel('Period (days)')
-ax[1].set_ylabel('power + offset')
-ax[1].set_ylim(0, 2)
-ax[1].set_xlim(0.2, 1.1)
-ax[1].yaxis.set_major_formatter(plt.NullFormatter())
-ax[1].set_title('Periodogram for each model')
+ax[1].xaxis.set_major_formatter(plt.NullFormatter())
+ax[2].set_xlabel('Period (days)')
 
 plt.savefig('fig02.pdf')
 plt.show()

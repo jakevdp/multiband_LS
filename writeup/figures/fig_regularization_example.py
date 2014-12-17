@@ -41,7 +41,7 @@ phasefit = np.linspace(0, 1, 1000)
 tfit = rrlyrae.period * phasefit
 
 fig = plt.figure(figsize=(10, 4))
-gs = plt.GridSpec(2, 2, left=0.07, right=0.95, wspace=0.1, bottom=0.15)
+gs = plt.GridSpec(2, 2, left=0.07, right=0.95, wspace=0.15, bottom=0.15)
 ax = [fig.add_subplot(gs[:, 0]),
       fig.add_subplot(gs[0, 1]),
       fig.add_subplot(gs[1, 1])]
@@ -54,7 +54,7 @@ ylim = ax[0].get_ylim()
 Nterms = 20
 sigma_r_inv =  np.vstack([np.arange(Nterms + 1),
                           np.arange(Nterms + 1)]).T.ravel()[1:] ** 2
-models = [None, 0.5 * sigma_r_inv ** 2]
+models = [0.5 * sigma_r_inv ** 2, None]
 
 for i, reg in enumerate(models):
     model = LombScargle(Nterms=Nterms, regularization=reg,
@@ -76,7 +76,7 @@ for i, reg in enumerate(models):
     ax[1 + i].set_ylabel('power')
     ax[1 + i].set_xlim(0.2, 1.4)
     ax[1 + i].set_ylim(0, 1)
-    ax[1 + i].yaxis.set_major_formatter(plt.NullFormatter())
+    #ax[1 + i].yaxis.set_major_formatter(plt.NullFormatter())
 
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')

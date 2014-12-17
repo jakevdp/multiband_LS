@@ -15,10 +15,12 @@ def find_best_period(lcid, rrlyrae, Nterms_base=1, Nterms_band=0):
     return LS.best_period
 
 
+lcids = list(rrlyrae.ids)
+
 cache = CacheResults('results_1_0', verbose=True)
-periods_1_0 = cache.call_iter(find_best_period, rrlyrae.ids,
+periods_1_0 = cache.call_iter(find_best_period, lcids,
                               args=(rrlyrae, 1, 0))
 
 cache = CacheResults('results_0_1', verbose=True)
-periods_0_1 = cache.call_iter(find_best_period, rrlyrae.ids,
+periods_0_1 = cache.call_iter(find_best_period, lcids,
                               args=(rrlyrae, 0, 1))

@@ -50,7 +50,7 @@
 
 \begin{document}
 
-\title{Multiband Periodograms of Astronomical Sources}
+\title{Periodograms for Multi-band Astronomical Time Series}
 
 \newcommand{\escience}{1}
 \newcommand{\uwastro}{2}
@@ -72,33 +72,33 @@
 
 \section{Introduction}
 
-The detection and quantification of periodicity in time-varying signals is an important area of data analysis within modern astronomical surveys.
-For evenly-spaced data, the {\it Schuster periodogram}, introduced in 1905, gives a quantitative measure of the periodicity of data as a function of the angular frequency $\omega$. For data $\{d_k\}_{k=1}^N$ measured at equal intervals $t_k = t_0 + k\Delta t$, the Schuster periodogram, which measures the spectral power as a function of the angular frequency, is given by
+The detection and quantification of periodicity in time-varying signals is an important area of data analysis within modern time-domain astronomical surveys.
+For evenly-spaced data, the {\it Schuster periodogram}, introduced in 1905, gives a quantitative measure of the periodicity of data as a function of the angular frequency $\omega$. For data $\{y_k\}_{k=1}^N$ measured at equal intervals $t_k = t_0 + k\Delta t$, the Schuster periodogram, which measures the spectral power as a function of the angular frequency, is given by
 \begin{equation}
   \eqlabel{Schuster}
-  C(\omega) = \frac{1}{N}\left| \sum_{k=1}^N d_k e^{i\omega t_k} \right|^2,
+  C(\omega) = \frac{1}{N}\left| \sum_{k=1}^N y_k e^{i\omega t_k} \right|^2,
 \end{equation}
 and can be computed very efficiently using the Fast Fourier Transform.
 
-Because astronomical observing cadences are rarely so uniform, many have looked at extending the ideas behind the periodogram to work with unevenly-sampled data. Most famously, \citep{Lomb76} and \citep{Scargle82} extended earlier work to define the {\it normalized periodogram}:
+Because astronomical observing cadences are rarely so uniform, many have looked at extending the ideas behind the periodogram to work with unevenly-sampled data. Most famously, \citet{Lomb76} and \citet{Scargle82} extended earlier work to define the {\it normalized periodogram}:
 \begin{equation}
   \eqlabel{LombScargle}
   P_N(\omega) = \frac{1}{2\sigma^2}\left[
-    \frac{\left[\sum_k(d_k - \bar{d})\cos\omega(t_k - \tau)\right]^2}
+    \frac{\left[\sum_k(y_k - \bar{d})\cos\omega(t_k - \tau)\right]^2}
     {\sum_k \cos^2\omega(t_k - \tau)}
     +
-    \frac{\left[\sum_k(d_k - \bar{d})\sin\omega(t_k - \tau)\right]^2}
+    \frac{\left[\sum_k(y_k - \bar{d})\sin\omega(t_k - \tau)\right]^2}
     {\sum_k \sin^2\omega(t_k - \tau)}
 \right],
 \end{equation}
-where $\bar{d}$ is the mean and $\sigma^2$ is the variance of the data $\{d_k\}$, and $\tau$ is the time-offset which makes $P_N(\omega)$ independent of a translation in $t$ \citep[See][for an in-depth discussion]{NumRec}. \citep{Lomb76} showed that this offset has a more important effect: namely, it makes $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
+where $\bar{d}$ is the mean and $\sigma^2$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which makes $P_N(\omega)$ independent of a translation in $t$ \citep[See][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this offset has a deeper effect: namely, it makes $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
 
 \begin{equation}
   \eqlabel{SingleModel}
   d(t) = A\sin(\omega t + \phi).
 \end{equation}
 
-This long-recognized connection between spectral power and least squares fitting methods was solidified by \citep{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citep{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
+This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
 
 \todo{Add a paragraph about Supersmoother \citep{Reimann94}, CARMA \citep{Kelly14}, and other methods}
 
@@ -113,7 +113,7 @@ In this section we will give a quick quantitative introduction to the least squa
 \begin{equation}
   D = \{t_k, y_k, \sigma_k\}_{k=1}^N
 \end{equation}
-where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. Without loss of generality we will assume that the data $y_k$ are centered such that the measurements satisfy
+where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. Without loss of generality we will assume that the data $y_k$ are centered such that the measurements within each band satisfy
 \begin{equation}
   \eqlabel{ycentered}
   \frac{\sum_k w_ky_k}{\sum_k w_k} = 0
@@ -136,13 +136,11 @@ For the single-term Fourier model, it can be shown \citep[See, e.g.][]{ICVG2014}
   \eqlabel{chi2PN}
   \chi_{min}^2(\omega) = \chi^2_0[1 - P_N(\omega)]
 \end{equation}
-where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle} and $\chi^2_0$ is the reference $\chi^2$ for a constant model, which due to the assumption in \eq{ycentered} is simply $\chi^2_0 = \sum_k (y_k/\sigma_k)^2$
+where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle} and $\chi^2_0$ is the reference $\chi^2$ for a constant model, which due to the assumption in \eq{ycentered} is simply $\chi^2_0 = \sum_k (y_k/\sigma_k)^2$.
 
 
 \subsubsection{Matrix Formalism}
-
-These quantities can be expressed more compactly by defining the following matrices:
-
+The expressions related to the stationary sinusoid model can be expressed more compactly by defining the following matrices:
 \begin{equation}
 X_\omega = \left[
 \begin{array}{cc}
@@ -169,21 +167,18 @@ y_N\\
 \end{array}
 \right]
 \end{equation}
-
-With these definitions, the model in \eq{simplemodel} is a simple linear product: $y(t|\omega,\theta) = X_\omega\theta$ and the model and reference $\chi^2$ can be written
+With these definitions, the model in \eq{simplemodel} can be expressed as a simple linear product: $y(t|\omega,\theta) = X_\omega\theta$, and the model and reference $\chi^2$ can be written
 
 \begin{eqnarray}
   \chi^2(\omega) &=& (y - X_\omega\theta)^T\Sigma^{-1}(y - X_\omega\theta)\\
   \chi^2_0 &=& y^T \Sigma^{-1} y
 \end{eqnarray}
-The normalized periodogram can be computed by finding the minimum of $\chi^2(\omega)$ via standard methods and plugging the result into \eq{chi2PN} to find
+The expression for the normalized periodogram can be computed by finding the value of $\theta$ which minizes $\chi^2(\omega)$ via standard methods and plugging the result into \eq{chi2PN} to find
 \begin{equation}
   \eqlabel{LombScargle2}
   P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
 \end{equation}
-This expression is equivalent to \eq{LombScargle} in the case that $\Sigma \propto I$.
-
-\fig{basic_example} shows an example periodogram for a simulated RR Lyrae light curve based on a template from \citet{Sesar2010}. The particular RR Lyrae star has a period of 0.622 days, and the observations take place on 60 random nights over a 6-month period.  The left panel of the figure shows the input data, and the right panels show the result of a simple Lomb-Scargle periodogram on the data.
+Take note that this expression is equivalent to \eq{LombScargle} in the homoscedastic case with $\Sigma \propto \sigma^2 I$.
 
 \subsubsection{Simple Period Finding}
 \sectlabel{simple_period}
@@ -197,23 +192,25 @@ This expression is equivalent to \eq{LombScargle} in the case that $\Sigma \prop
   \figlabel{basic_example}
 \end{figure}
 
-In the upper right, we see the normalized periodogram as a function of period. While the power does peak at the true period of 0.622 days, an aliasing effect is apparent. These additional peaks are due to beat frequencies between the true period $P$ and the observing cadence of $\sim 1$ day. That is, for nightly observations, we'd expect excess power to be found at frequencies $P / (1 + nP)$ for a positive or negative integer $n$. This explains the prominent peak at $0.383$. For the current work, we'll ignore this (important) piece of the period-finding problem; for a thorough discussion of aliasing within astronomical time series, see \citet{Roberts87}.
+As an example of the standard periodogram in action, we perform a simple single-band harmonic analysis of simulated $r$-band observations of an RR Lyrae light curve, based on empirical templates derived in \citet{Sesar2010} (\fig{basic_example}). The observations are of a star with a period of 0.622 days, and take place on 60 random nights over a 6-month period, as seen in the left panel.
 
-The lower-right panel shows the maximum likelihood interpretation of this periodogram: it is a measure of the normalized $\chi^2$ for a single-term sinusoidal model. Here we visualize the data from the left panel, but folded as a function of phase with the best-fit single-term model over-plot. Here its apparent that the single-term model is biased: RR Lyrae are much more complicated than a simple sinusoid. Nevertheless, the simplistic sinusoidal model does well to zero-in
+The upper-right panel shows the normalized periodogram for this source as a function of period. While the power does peak at the true period of 0.622 days, an aliasing effect is readily apparent near $P=0.38$. This additional peak is due to beat frequency between the true period $P$ and the observing cadence of $\sim 1$ day. This beat frequency is the first in a large sequence: for nightly observations, we'd expect to find excess power at periods That is, for nightly observations, we'd expect excess power to be found at frequencies $P_n = P / (1 + nP)$ days, for any positive or negative integer $n$. The strong alias in \fig{basic_example} corresponds to the $n=1$ beat period $P_n=0.383$. Though it is possible to carefully correct for such aliasing via the estimated window function \citep[e.g.][]{Roberts87}, we'll ignore this detail in the current work.
 
-\subsubsection{Discussion}
-We have shown two forms of the classic normalized periodogram: \eq{LombScargle} and \eq{LombScargle2}. Though the two expressions are equivalent, they each have distinct advantages. The expression in \eq{LombScargle} avoids the explicit construction of a matrix, and thus can be computed very efficiently. In particular, through some computational tricks involving the FFT, expressions of the form of \eq{LombScargle} can be evaluated for $N$ frequencies in $\mathcal{O}[\log{N}]$ time \citep{Press89}.
+The lower-right panel of \fig{basic_example} shows the maximum likelihood interpretation of this periodogram: it is a measure of the normalized $\chi^2$ for a single-term sinusoidal model. Here we visualize the data from the left panel, but folded as a function of phase with the best-fit single-term model over-plot. Here its apparent that the single-term model is biased: RR Lyrae light curves are, in general, much more complicated than a simple sinusoid. Nevertheless, the simplistic sinusoidal model does well is able to recover the correct frequency to a high degree of accuracy (roughly related to the width of the peak) and significance (roughly related to the height of the peak). For a more complete introduction to and discussion of the single-term normalized periodogram, refer to, e.g. \citet{Bretthorst88} or \citet{ICVG2014}.
 
-The matrix-based formulation of \eq{LombScargle2} sacrifices some potential computational efficiency in order to attain several advantages:
+\subsection{Extending the Periodogram}
+We have shown two forms of the classic normalized periodogram: \eq{LombScargle} and \eq{LombScargle2}. Though the two expressions are equivalent, they each have distinct advantages. The expression in \eq{LombScargle} avoids the explicit construction of a matrix, and thus can be computed very efficiently. Furthermore, through some computational tricks taking advantage of the Fast Fourier Transform, expressions of the form of \eq{LombScargle} can be evaluated exactly for $N$ frequencies in $\mathcal{O}[\log{N}]$ time \citep{Press89}.
+
+The matrix-based formulation of \eq{LombScargle2}, though slower than the Fourier-derived formulation, is a more general expression and allows several advantages:
 \begin{enumerate}
-  \item It is trivially extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the noise matrix $\Sigma$
+  \item It is trivially extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the noise covariance matrix $\Sigma$
   \item It is trivially extended to more sophisticated linear models by appropriately modifying the design matrix $X_\omega$.
-  \item It is trivially extended to Tikhonov/L2-regularized likelihoods by adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
+  \item It is trivially extended to include Tikhonov/L2-regularization terms by adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
 \end{enumerate}
 In the remainder of this section, we'll explore a few of these modifications and how they affect the periodogram and resulting model fits.
 
 
-\subsection{Stationary Sinusoid with Floating Mean}
+\subsubsection{Stationary Sinusoid with Floating Mean}
 \sectlabel{floating_mean}
 
 \begin{figure}
@@ -227,35 +224,36 @@ In the remainder of this section, we'll explore a few of these modifications and
 \end{figure}
 
 As an example of one of these generalizations, consider the {\it generalized Lomb-Scargle} method of \citet{Zechmeister09}. This adjusts the classic normalized periodogram by allowing the mean of the model to be fit alongside the amplitudes:
-
 \begin{equation}
   y(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
+This model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the modifications required to the harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
 
-This model can be more accurate than the standard periodogram for certain observing cadences and selection functions. While \citet{Zechmeister09} details a formalism to express this floating-mean model (which they call a ``generalized periodogram'') similarly to \eq{LombScargle}, in the matrix formalism all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}.
+For well-sampled data, there is usually very little difference between a standard periodogram and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (right panel). Because of this selection effect, the mean of the observed data are a poor predictor of the true mean, causing the standard fixed-mean method to poorly fit the data. The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
 
-For well-sampled data, there is little difference between a standard periodogram and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases: an example of this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias. Because of this bias, the mean of the observed data to be a poor predictor of the true mean, which makes it so that the standard approach fails to find a suitable fit to the data. The floating-mean approach is able to adjust for this, resulting in a periodogram which detects the input period of 0.622 days.
 
-\subsection{Truncated Fourier Models}
+\subsubsection{Truncated Fourier Models}
 \sectlabel{multiterm}
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{fig03.pdf}
   \caption{
-    An illustration of a periodogram based on the truncated Fourier model. The data are the same as those in \fig{basic_example}. 
+    An illustration of a periodogram based on the truncated Fourier model.
+    The data are the same as those in \fig{basic_example}. Note that the
+    higher-order models will show periodogram peaks at multiples of the true
+    fundamental frequency $P_0$: this is because for integer $n$ less than
+    the number of Fourier terms in the model, $P_0$ is a higher harmonic of
+    the model at $P=nP_0$.
   }
   \figlabel{multiterm_example}
 \end{figure}
 
-As mentioned above, the standard periodogram is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to use a multiple-term sinusoidal model. With $M$ terms, there are $2M + 1$ free parameters, and the model is given by:
-
+As mentioned above, the standard periodogram is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to instead use a multiple-term sinusoidal model, with frequencies at integer multiples of the fundamental frequency. With $M$ terms, there are $2M + 1$ free parameters, and the model is given by
 \begin{equation}
-  y(t|\omega,\theta) = \theta_0 + \sum_{n=1}^M \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]
+  y(t|\omega,\theta) = \theta_0 + \sum_{n=1}^M \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right].
 \end{equation}
-
-Because this remains a linear model, it can be easily accommodated into the matrix formalism above. For example, an $M = 2$-term model can be constructed by building a design matrix $X_\omega$ with $2M + 1 = 5$ columns:
-
+Because this remains a linear model, it can be easily accommodated into the matrix formalism above. For example, an $M = 2$-term floating-mean model can be constructed by building a design matrix $X_\omega$ with $2M + 1 = 5$ columns:
 \begin{equation}
 X_\omega^{(2)} = \left[
 \begin{array}{ccccc}
@@ -267,17 +265,33 @@ X_\omega^{(2)} = \left[
 \end{array}
 \right]
 \end{equation}
-Using $X_\omega^{(2)}$ in \eq{LombScargle2} will result in a two-term periodogram. In general, we can fit an $M$-term periodogram by simply adding terms to the fit. \fig{multiterm_example} shows a few examples of this multiterm Fourier approach as applied to a simulated RR Lyrae light curve constructed from templates derived in \citet{Sesar2010}. There are several important features of this figure that give us insight into the subtleties of this type of fit:
+Computing the power via \eq{LombScargle2} using $X_\omega^{(2)}$ will give the two-term periodogram. As $M$ grows, the size of the design matrix grows, but the periodogram can be computed in the same manner. \fig{multiterm_example} shows a few examples of this multiterm Fourier approach as applied to the simulated RR Lyrae light curve from \fig{basic_example}. There are several important features of this figure that give us insight into the subtleties of this type of multiterm fit.
 
-First, we see in the right panel that all three models show a significant spike at the true period of $P_0 = 0.622$. The higher-order models, however, also show a a spike of poer at $P_1 = 2 P_0$: the reason for this is that the fundamental model of the single-term model at $P_0$ is the first harmonic of the 2-term model at $2P_0$, so the higher-order models contain this single-term result.
+First, we see in the right panel that all three models show a significant spike at the true period of $P_0 = 0.622$. The higher-order models, however, also show a a spike in power at $P_1 = 2 P_0$: the reason for this is that for and $M>1$-term model, the period $P_0$ is the first harmonic of a model with fundamental frequency $2P_0$, and the higher-order models contain the single-period result.
 
-Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram is directly related to the $\chi^2$ of the fit. A more complicated model will have the flexibility to conform to the data at {\it all frequencies}, and thus the observed ``power'' is stronger at all frequencies.
+Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram is directly related to the $\chi^2$ of the fit at each frequency. Because of the increased model complexity of a higher-order model, it is able to better fit the data at all periods, not just the true period. Thus the observed ``power'' of a higher-order model will be everywhere higher than the power of a lower-order model.
 
-\subsection{Regularized Models}
+\subsubsection{Regularized Models}
 \sectlabel{regularization}
-The previous sections raise the question: how complicated a model should we use? If we added many terms to the truncated Fourier series, we might fit the data perfectly, but eventually we would {\it overfit} the data: that is, our model is fitting the noise rather than the signal. This can be avoided by explicitly truncating the series, but another approach is to use a {\it regularization} term to enforce a less complicated model.
 
-A regularization term is an explicit penalty on the magnitude of the model parameters $\theta$, and can take any number of forms. For computational simplicity here we'll use an {\it L2 regularization} (also known as Tikhonov Regularization), which is a quadratic penalty term in the model parameters. This is mathematically equivalent to the Bayesian approach of using a Gaussian prior on the model parameters.
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{fig04.pdf}
+  \caption{
+    The effect of regularization on a high-order model. The data is the same as
+    those in \fig{basic_example}. We fit a 20-term truncated Fourier model to
+    the data, with and without a regularization term. Without regularization,
+    the model oscillates widely to fit the noise in the data. The
+    regularization term effectively damps the higher-order Fourier modes and
+    removes this oscillating behavior, leading to a model which is much more
+    robust to noise in the data.
+  }
+  \figlabel{regularized_example}
+\end{figure}
+
+The previous sections raise the question: how complicated a model should we use? It is easily shown that as we add more terms to the fit, the model will come closer and closer to the observed data. When the number of model parameters equals the number of data points, we can expect to fit the data {\it perfectly} (though in most cases numerical inaccuracies in the fit prevent a truly perfect fit). For very high-order models, the result become very sensitive to the noise in the data, and we say we have {\it over-fit} the data. This can be addressed by explicitly truncating the series, but we can also use a {\it regularization} term to mathematically ensure a less complicated model.
+
+A regularization term is an explicit penalty on the magnitude of the model parameters $\theta$, and can take a number of forms. For computational simplicity here we'll use an {\it L2 regularization} (also known as Tikhonov Regularization), which is a quadratic penalty term in the model parameters added to the $\chi^2$. Mathematically, this is equivalent to the Bayesian approach of using a Gaussian prior on the model parameters.
 
 We'll encode our regularization in the matrix $\Lambda = {\rm diag}([\lambda_1, \lambda_2 \cdots \lambda_M])$ for a model with $M$ parameters, and our expression for $\chi^2$ becomes
 \begin{equation}
@@ -289,26 +303,24 @@ Minimizing this $\chi^2$, solving for $\theta$, and plugging into the expression
   \eqlabel{LombScargleReg}
   P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega + \Lambda]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
 \end{equation}
-Note that the effect of this regularization term is to add a diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$, which has the additional feature that it corrects ill-posed models. This feature of the regularization will become important below.
+Notice that the effect of this regularization term is to add a diagonal penalty term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$, which has the additional feature that it can correct ill-posed models where the normal matrix is not invertible. This feature of the regularization will become important below.
 
-\todo{Show a regularized model?}
+In \fig{regularized_example}, we compare a regularized and unregularized 20-term truncated Fourier model on our simulated RR Lyrae light curve. We use $\lambda = 0$ on the offset term, and make $\lambda_j$ progressively larger for each harmonic component. The result of the regularized model is less over-fitting to the input data, and a more distinct peaks in the associated periodogram.
 
 \section{A Multiple-Band Model}
-
 To compute a periodogram for multi-band data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which allows us to specify an arbitrary linear model covering our data. We will construct a multi-term Fourier model with the following features:
 \begin{enumerate}
   \item An $M_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
-  \item An $M_{band}$-term truncated Fourier fit which models the residual of each band from the overall variability.
+  \item An $M_{band}$-term truncated Fourier fit which models the residual of each band from this overall variability.
 \end{enumerate}
-The total number of parameters for $K$ filters is then $M_K = (2M_{base} + 1) + K(2M_{band} + 1)$. The model looks as follows, for a band $b$:
+The total number of parameters for $K$ filters is then $M_K = (2M_{base} + 1) + K(2M_{band} + 1)$. As a result, for each band $b$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
-  y(t|\omega,\theta,b) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
+  y_b(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
   &\theta^{(b)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(b)}_{2n - 1}\sin(n\omega t) + \theta^{(b)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
-The important feature is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(b)}$ are fit within each band.
+The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(b)}$ are determined individually.
 
-We can build the matrix form of this model by building a sparse $X_{\omega}$ matrix with $M$ columns. Each row corresponds to a single observation through a single band; columns corresponding to the base model and the observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $X_\omega$ matrix with $N_{base}=1$ and $N_{band}=0$ (that is, a single sinusoid model with independent offsets to each band) will look as follows:
-
+We can construct the normalized periodogram for this model by building a sparse design matrix with $M_K$ columns. Each row corresponds to a single observation through a single band. Columns corresponding to the base model and the matching observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $N_{base}=1$ and $N_{band}=0$ model corresponds to one with a simple single-term periodic base frequency, and an independent constant offset term in each band. The associated design matrix will look as follows:
 \begin{equation}
 X_\omega^{(1,0)} = \left[
 \begin{array}{cccccccc}
@@ -321,31 +333,35 @@ X_\omega^{(1,0)} = \left[
 \end{array}
 \right]
 \end{equation}
-Here the nonzero entries of the final five columns indicate the band observed at the given time: the first row is a $u$-band measurement, the second is a $g$-band, the third is a $i$-band, etc.
+Here the nonzero entries of the final five columns indicate the $ugriz$ band of the given observation: the first row is a $u$-band measurement, the second is a $g$-band, the third is a $i$-band, etc.
 
-From reasoning about the free parameters, or by examining the above matrix it is easy to see that some of the parameters will be degenerate (i.e. $X_\omega$ is low-rank). Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each of the band columns. In order to proceed, then, we'll either have to correct this model deficiency, or use a regularization term on one of the offending parameters. We'll choose the latter here, and regularize all the band columns to drive the common behavior into the base model. For the above matrix,
-this regularization will look like
+From reasoning about the free parameters, or by examining the above matrix it is easy to see that some of the parameters will be degenerate: i.e. $X_\omega$ is low-rank, and the problem is ill-posed. Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each of the band columns. Mathematically, the result of this is that the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$ will be non-invertible, and thus the periodogram is ill-defined. In order to proceed, then, we'll either have to use a different model, or use a cleverly-constructed regularization term on one of the offending parameters.
+
+We'll choose the latter here, and regularize all the band columns while leaving the base columns un-regularized: for the above matrix, this regularization will look like
 \begin{equation}
-  \Lambda = {\rm diag}([0, 0, 0, \epsilon, \epsilon, \epsilon, \epsilon, \epsilon])
+  \Lambda^{(1,0)} = {\rm diag}([0, 0, 0, \epsilon, \epsilon, \epsilon, \epsilon, \epsilon])
 \end{equation}
-where $\epsilon$ is some small fraction of the trace of the matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. We'll see an example of this in action in \sect{Simulated}.
+where $\epsilon$ is some small fraction of the trace of the normal matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. The logic of this choice of regularization is that any component of the model which is common to all bands will be accounted for in the base terms: only components of the fit that differ in each band will affect the band terms. Setting $\epsilon$ to some small fraction of the trace ensures that the regularization effect will be small. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. We'll see an example of this in action in \sect{Simulated}.
 
-The final remaining piece is our assumption that the data are centered (i.e. \eq{ycentered}). This is required so that the simple form of the reference $\chi^2_0$ remains valid. For the multiband model, this assumption requires that the data satisfy \eq{ycentered} {\it within each band}.
+The final remaining piece to mention is our assumption in \eq{ycentered} that the data are centered. This is required so that the simple form of the reference $\chi^2_0$ remains valid. For the multiband model, this assumption requires that the data satisfy \eq{ycentered} {\it within each band}: equivalently, we could lift this assumption and compute the reference $\chi^2_0$ of the multiband model with an independent floating mean within each band; the results will be identical.
 
 \subsection{Relationship of Multiband and Single-band approaches}
-There is a special case of the multi-band approach when $N_{base}=0$ and $N_{band}=1$. In this case, the $X$ matrix can be arranged to be block-diagonal, and the computation can be split into an independent single-band computation for each of the $K$ bands. For band $k$, denote the single-band periodogram as
+\sectlabel{relationship}
+There is a special case of the multi-band approach when $N_{base}=0$ and $N_{band}=1$. In this case, the base offset can be removed completely and the $X$ matrix can be arranged to be block-diagonal. A block-diagonal design matrix in a linear model indicates that components of the model are being solved independently: here the independent components are a standard single-band generalized periodogram within each of the $K$ bands.
+
+For band $k$, we'll denote the single-band normalized periodogram as
 \begin{equation}
   P_N^{(k)}(\omega) = 1 - \frac{\chi^2_{min, k}(\omega)}{\chi^2_{0,k}}
 \end{equation}
 The full multiband periodogram is given by
 \begin{equation}
-  P_N(\omega) = 1 - \frac{\sum_{k=1}^K\chi^2_{min, k}(\omega)}{\sum_{k=1}^K\chi^2_{0,k}}
+  P_N^{(0,1)}(\omega) = 1 - \frac{\sum_{k=1}^K\chi^2_{min, k}(\omega)}{\sum_{k=1}^K\chi^2_{0,k}}
 \end{equation}
 and it can easily be shown that the $P_N$ can be constructed as a weighted sum of $P_N^{(k)}$:
 \begin{equation}
-  P_N(\omega) = \frac{\sum_{k=1}^K\left[\chi^2_{0,k}P_N^{k}\right]}{\sum_{k=1}^K\chi^2_{0,k}}
+  P_N^{(0,1)}(\omega) = \frac{\sum_{k=1}^K\left[\chi^2_{0,k}P_N^{k}\right]}{\sum_{k=1}^K\chi^2_{0,k}}.
 \end{equation}
-where, recall $\chi^2_{0,k}$ is simply the $\chi^2$ of the data in each band about the mean. This tells us how we can construct a particular case of the multi-term periodogram from a weighted sum of periodograms in each band. Here the weights reflect both how many measurements there are in each band, and how poorly those measurements are fit by a simple constant reference model.
+This tells us how we can construct a particular case of the multi-term periodogram from a weighted sum of periodograms in each band. Here the weights reflect both how many measurements there are in each band, as well as how much those measurements deviate from a simple constant reference model.
 
 \section{Examples}
 Here we'll show several examples of the multiband periodogram method in action.
@@ -355,7 +371,7 @@ Here we'll show several examples of the multiband periodogram method in action.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{fig04.pdf}
+  \includegraphics[width=\textwidth]{fig05.pdf}
   \caption{
     An illustration of the typical approach to multiband periodograms,
     in which each band is fit individually. The data consists of 60 coeval
@@ -367,14 +383,10 @@ Here we'll show several examples of the multiband periodogram method in action.
   \figlabel{adhoc_example}
 \end{figure}
 
-\fig{adhoc_example} shows a simulated RR Lyrae light curve based on a template from \citet{Sesar2010}. The observations take place on 60 random nights over a 6-month period, and each night all five bands ({\it u,g,r,i,z}) are recorded. The left panel of \fig{adhoc_example} shows the observations folded as a function of phase.
-Using the typical approach from the literature prior to this paper, we individually compute the standard normalized periodogram within each band: the results are shown in the right panel. Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band.\footnote{\label{foot1}
-  An aliasing effect is readily apparent in the left panel of \fig{adhoc_example}: these additional peaks are due to beat frequencies between the true period $P$ and the observing cadence of $\sim 1$ day. That is, for nightly observations, we'd expect excess power to be found at frequencies $P / (1 + nP)$ for a positive or negative integer $n$. For the current work, we'll ignore this (important) piece of the problem; for a thorough discussion of aliasing within astronomical time series, see \citet{Roberts87}.}
-
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{fig05.pdf}
+  \includegraphics[width=\textwidth]{fig06.pdf}
   \caption{
     Another realization of the data from \fig{adhoc_example}, with only a single
     band observed each night (i.e. 12 observations per band, spread over 180
@@ -385,13 +397,17 @@ Using the typical approach from the literature prior to this paper, we individua
     we faithfully reconstruct the periodogram and recover
     the dominant power at period $P=0.622$ days.
   } 
-  \figlabel{multi_example}
+  \figlabel{multiband_sim}
 \end{figure}
 
-\fig{multi_example} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the periodograms derived from the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period band-by-band. With the multiband approach (here computed for $N_{base}=1$ and $N_{band}=0$), as seen in the lower-right panel of \fig{multi_example}, the period is cleanly recovered.
+\todo{We need the bottom-right panel to be bigger! It's our money result! How do we arrange the plot to do this? Also: label it new style and old style.}
 
+\fig{adhoc_example} shows a simulated multiband version of the RR Lyrae light curve from \fig{basic_example}. The observations take place on 60 random nights over a 6-month period, and each night all five bands ({\it u,g,r,i,z}) are recorded. The left panel of \fig{adhoc_example} shows the observations folded as a function of phase.
+Using the typical approach from the literature prior to this paper, we individually compute the standard normalized periodogram within each band: the results are shown in the right panel. Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band, up to the aliasing effect discussed in \sect{simple_period}.
 
-\todo{Compare different options of $N_{base}$ and $N_{band}$?}
+\fig{multiband_sim} shows the same 60 nights of data, except that each night only a {\it single} band observation is recorded. The left panel again shows the observations as a function of phase, and the right panel shows the periodograms derived from the data. Now, with only 12 observations for each indiviudal band, there is not enough data to accurately determine the period within each single band. With the multiband approach (here computed for $(N_{base},N_{band})=(1,0)$ and $(0,1)$), seen in the lower-right panel of \fig{multiband_sim}, the period is cleanly recovered.
+
+Here we can clearly see the difference between the $(0,1)$ model, which we'll call {\it old-style}, and the $(1,0)$ model, which we'll call {\it new-style}. The old-style model, as discussed in \sectlabel{relationship}, is equivalent to a weighted sum of single-band periodograms for each individual band. The model thus has effectively 15 free parameters, and the phase and amplitude of each band varies individually. As with the truncated Fourier series, this added complexity leads to higher power at off-frequencies. The new-style model, on the other hand, is effectively a 7-parameter model where a single oscillation phase and amplitude is used to describe all of the data. The only flexibility allowed in individual bands is the constant offset. This lower-parameter model produces a periodogram which nicely recovers the input frequency, and has a background level qualitatively similar to that of the single-band observations in \fig{adhoc_example}.
 
 
 \subsection{Stripe 82}
