@@ -61,7 +61,20 @@
 
 
 \begin{abstract}
-  This paper introduces the {\it multiband periodogram} a general extension of the standard Lomb-Scargle approach to detecting periodic signals in time-domain data.
+This paper introduces the {\it multiband periodogram}, a general extension of the standard 
+Lomb-Scargle approach for detecting periodic signals in time-domain data. In addition to 
+advantanges of the Lomb-Scargle method such as treatment of non-uniform sampling and
+heteroscedastic errors, the multiband periodogram significantly improves period finding for randomly 
+sampled multi-band light curves (e.g., Pan-STARRS, DES and LSST). The light curves in 
+each band are modeled as arbitrary truncated Fourier series, with the period and phase 
+shared across all bands. The key aspect is the use of Tikhonov regularization which drives
+most of the variability into the so-called base model common to all bands, while 
+fits for individual bands describe residuals relative to the base model and typically require
+lower-order Fourier series. This decrease in the required number of fit parameters is the
+main reason for improved performance. We use simulated light curves 
+and randomly subsampled SDSS Stripe 82 data to demonstrate the superiority of this 
+method compared to other methods from the literature. The python implementation of 
+this method  is made publicly available as part of the astroML distribution. 
 \end{abstract}
 
 \keywords{
@@ -71,6 +84,64 @@
 }
 
 \section{Introduction}
+
+Many types of variable stars show periodic flux variability \citep{EM2008}. Periodic variable stars are important 
+both for testing models of stellar evolution and for using such stars as distance indicators (e.g., Cepheids 
+and RR Lyrae stars). One of the first and main goals of the analysis is to detect variability and to estimate the 
+period and its uncertainty. A number of parametric and non-parametric methods have been proposed to 
+estimate the period of an astronomical time series \citep[e.g.,][and references therein]{Graham13}.
+
+The most popular non-parametric method is the phase dispersion minimization (PDM) introduced by \cite{PDM1978}. 
+Dispersion per bin is computed for binned phased light curves evaluated for a grid of trial periods. The best
+period minimizes the dispersion per bin.  A similar and related non-parametric method that has been recently 
+gaining popularity is the Supersmoother routine \citep{Reimann94}. It uses a running mean or running linear 
+regression on the data to fit the observations as a function of phase to a range of periods. The best period 
+minimizes a figure-of-merit, adopted as weighted sum of absolute residuals around the running mean. 
+Neither the Supersmoother algorithm nor the PDM method require a priori knowledge of the light curve shape. 
+We note that neither method produces posterior probability distribution for the period but rather a single point 
+estimate. 
+
+The most popular parametric method is the Lomb-Scargle periodogram (discussed in detail in \S~\ref{sec:periodograms}.
+The Lomb-Scargle periodogram is related to the $\chi^2$ for a least-square fit of a single sinusoid to data
+and can treat non-uniformly sampled time series with heteroscedastic measurement uncertainties. 
+The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different
+frequencies are not orthogonal. As a result, the periodogram has many local maxima and thus in practice the global 
+maximum of the periodogram is found by grid search \citep[for details see, e.g.][]{ICVG2014}.
+A more general parameteric method based on the use of continuous-time autoregressive moving average (CARMA) model
+was recently introduced by \citep{Kelly14}. CARMA models can also treat non-uniformly sampled time series with 
+heteroscedastic measurement uncertainties, and can handle complex variability patterns. 
+
+A weakness of the above methods is that they require homogeneous measurements -- for astronomy data, this means 
+that successive measurements must be taken through a single photometric bandpass (filter). This has not been a major
+problem for past surveys because measurements are generally taken through a single photometric filter 
+\citep [e.g. LINEAR,][]{LINEAR1}, or nearly-simultaneously in all bands at each observation \citep [e.g. SDSS,][]{Sesar2010}.
+For the case of simultaneously taken multi-band measurements, \cite{Suveges12} utilized the principal component
+method to optimaly extract the best period. Their method is essentially a multi-band generalization of the well-known
+two-band Welch-Stetson variability index \citep{Stetson1996}. Unfortunately, when data in each band are taken at
+different times, the  principal component approach in not applicable. In such cases, past studies have generally relied 
+on \adhoc{} methods such as a majority vote among multiple single-band estimates of the 
+periodogram \citep[e.g.,][]{Oluseyi12}. 
+
+For surveys that obtain multi-band data one band at a time, such as Pan-STARRS \citep{Kaiser2010} and DES \citep{Flaugher08},
+and for future multicolor surveys such as LSST \citep{Ivezic08LSST}, this \adhoc{} approach is not optimal. In order to take 
+advantage of the full information content in available data, it would be desirable to have a single estimate of the periodogram 
+which accounts for all observed data in a manner which is not dependent on the underlying spectrum of the object. 
+We propose such a method in this paper. 
+
+The proposed method is essentially a generalization of the Lomb-Scargle method to 
+multi-band case. The light curves in  each band are modeled as arbitrary truncated Fourier series, 
+with the period and phase shared across all bands. The key aspect is the use of Tikhonov regularization 
+(discussed in detail in \S \ref{regularization}) which drives most of the variability into the so-called base 
+model common to all bands, while fits for individual bands describe residuals relative to the base model 
+and typically require lower-order Fourier series. This decrease in the required number of fit parameters is the
+main reason for improved performance. 
+
+In \S 2, we provide a brief overview of periodograms, including the matrix-based formulation used in this work. 
+XXX Finish this paragraph after the paper is nearly completed... 
+
+
+
+\section{Brief Overview of Periodograms \label{sec:periodograms}} 
 
 The detection and quantification of periodicity in time-varying signals is an important area of data analysis within modern time-domain astronomical surveys.
 For evenly-spaced data, the {\it Schuster periodogram}, introduced in 1905, gives a quantitative measure of the periodicity of data as a function of the angular frequency $\omega$. For data $\{y_k\}_{k=1}^N$ measured at equal intervals $t_k = t_0 + k\Delta t$, the Schuster periodogram, which measures the spectral power as a function of the angular frequency, is given by
@@ -83,15 +154,15 @@ and can be computed very efficiently using the Fast Fourier Transform.
 Because astronomical observing cadences are rarely so uniform, many have looked at extending the ideas behind the periodogram to work with unevenly-sampled data. Most famously, \citet{Lomb76} and \citet{Scargle82} extended earlier work to define the {\it normalized periodogram}:
 \begin{equation}
   \eqlabel{LombScargle}
-  P_N(\omega) = \frac{1}{2\sigma^2}\left[
-    \frac{\left[\sum_k(y_k - \bar{d})\cos\omega(t_k - \tau)\right]^2}
+  P_N(\omega) = \frac{1}{2\,V}\left[
+    \frac{\left[\sum_k(y_k - \bar{y})\cos\omega(t_k - \tau)\right]^2}
     {\sum_k \cos^2\omega(t_k - \tau)}
     +
-    \frac{\left[\sum_k(y_k - \bar{d})\sin\omega(t_k - \tau)\right]^2}
+    \frac{\left[\sum_k(y_k - \bar{y})\sin\omega(t_k - \tau)\right]^2}
     {\sum_k \sin^2\omega(t_k - \tau)}
 \right],
 \end{equation}
-where $\bar{d}$ is the mean and $\sigma^2$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which makes $P_N(\omega)$ independent of a translation in $t$ \citep[See][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this offset has a deeper effect: namely, it makes $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
+where $\bar{y}$ is the mean and $V$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which makes $P_N(\omega)$ independent of a translation in $t$ \citep[see][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this offset has a deeper effect: namely, it makes $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
 
 \begin{equation}
   \eqlabel{SingleModel}
@@ -100,16 +171,10 @@ where $\bar{d}$ is the mean and $\sigma^2$ is the variance of the data $\{y_k\}$
 
 This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
 
-\todo{Add a paragraph about Supersmoother \citep{Reimann94}, CARMA \citep{Kelly14}, and other methods}
-
-A weakness with the above methods is that they require homogeneous measurements -- for astronomy data, this means that successive measurements must be taken through a single band. This has not been a problem for past surveys, as measurements are generally taken through a single photometric filter (e.g. LINEAR, ??), or in all bands at each observation (e.g. SDSS, ??). In such cases, past studies have generally relied on \adhoc{} methods such as a majority vote among multiple single-band estimates of the periodogram.
-
-For future multicolor surveys such as LSST, this \adhoc{} approach will not be sufficient. In order to take advantage of the full available data, it would be desirable to have a single estimate of the periodogram which accounts for all observed data in a manner which is not dependent on the underlying spectrum of the object. We propose such a method below.
-
 
 \section{Background: Matrix Formalism for Periodograms}
 
-In this section we will give a quick quantitative introduction to the least squares fitting formulation of the normalized periodogram of \eq{LombScargle}. We'll denote our $N$ observed data points as
+In this section we present a quick quantitative introduction to the least squares fitting formulation of the normalized periodogram of \eq{LombScargle}. We denote $N$ observed data points as
 \begin{equation}
   D = \{t_k, y_k, \sigma_k\}_{k=1}^N
 \end{equation}
@@ -127,9 +192,9 @@ The normalized periodogram of \eq{LombScargle} can be derived from the normalize
   \eqlabel{simplemodel}
   y(t|\omega,\theta) = \theta_1\sin(\omega t) + \theta_2\cos(\omega t).
 \end{equation}
-We can find the maximum likelihood estimate of the parameters $\theta$ by minimizing the $\chi^2$ of the model, which is given by
+For a given $\omega$, we can find the maximum likelihood estimate of the parameters $\theta$ by minimizing the $\chi^2$ of the model, which is given by
 \begin{equation}
-  \chi^2(\omega) = \sum_k \frac{[y_k - y(t_k|\omega,\theta)]^2}{2\sigma_k^2}.
+  \chi^2(\omega) = \sum_k \frac{[y_k - y(t_k|\omega,\theta)]^2}{\sigma_k^2}.
 \end{equation}
 For the single-term Fourier model, it can be shown \citep[See, e.g.][]{ICVG2014} that
 \begin{equation}
@@ -178,7 +243,8 @@ The expression for the normalized periodogram can be computed by finding the val
   \eqlabel{LombScargle2}
   P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
 \end{equation}
-Take note that this expression is equivalent to \eq{LombScargle} in the homoscedastic case with $\Sigma \propto \sigma^2 I$.
+We note that this expression is equivalent to \eq{LombScargle} in the homoscedastic case with $\Sigma \propto V I$.
+
 
 \subsubsection{Simple Period Finding}
 \sectlabel{simple_period}
@@ -205,7 +271,8 @@ The matrix-based formulation of \eq{LombScargle2}, though slower than the Fourie
 \begin{enumerate}
   \item It is trivially extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the noise covariance matrix $\Sigma$
   \item It is trivially extended to more sophisticated linear models by appropriately modifying the design matrix $X_\omega$.
-  \item It is trivially extended to include Tikhonov/L2-regularization terms by adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
+  \item It is trivially extended to include Tikhonov/L2-regularization (see \S \ref{regularization} for more details)  terms by 
+               adding an appropriate diagonal term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$.
 \end{enumerate}
 In the remainder of this section, we'll explore a few of these modifications and how they affect the periodogram and resulting model fits.
 
@@ -271,8 +338,8 @@ First, we see in the right panel that all three models show a significant spike 
 
 Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram is directly related to the $\chi^2$ of the fit at each frequency. Because of the increased model complexity of a higher-order model, it is able to better fit the data at all periods, not just the true period. Thus the observed ``power'' of a higher-order model will be everywhere higher than the power of a lower-order model.
 
-\subsubsection{Regularized Models}
-\sectlabel{regularization}
+\subsubsection{Regularized Models \label{regularization}}
+
 
 \begin{figure}
   \centering
@@ -293,7 +360,7 @@ The previous sections raise the question: how complicated a model should we use?
 
 A regularization term is an explicit penalty on the magnitude of the model parameters $\theta$, and can take a number of forms. For computational simplicity here we'll use an {\it L2 regularization} (also known as Tikhonov Regularization), which is a quadratic penalty term in the model parameters added to the $\chi^2$. Mathematically, this is equivalent to the Bayesian approach of using a Gaussian prior on the model parameters.
 
-We'll encode our regularization in the matrix $\Lambda = {\rm diag}([\lambda_1, \lambda_2 \cdots \lambda_M])$ for a model with $M$ parameters, and our expression for $\chi^2$ becomes
+We encode our regularization in the matrix $\Lambda = {\rm diag}([\lambda_1, \lambda_2 \cdots \lambda_M])$ for a model with $M$ parameters, and our expression for ``regularized'' $\chi^2$ becomes
 \begin{equation}
   \eqlabel{chi2reg}
   \chi_\Lambda^2(\omega) = (y - X_\omega\theta)^T\Sigma^{-1}(y - X_\omega\theta) + \theta^T\Lambda\theta
@@ -306,6 +373,7 @@ Minimizing this $\chi^2$, solving for $\theta$, and plugging into the expression
 Notice that the effect of this regularization term is to add a diagonal penalty term to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$, which has the additional feature that it can correct ill-posed models where the normal matrix is not invertible. This feature of the regularization will become important below.
 
 In \fig{regularized_example}, we compare a regularized and unregularized 20-term truncated Fourier model on our simulated RR Lyrae light curve. We use $\lambda = 0$ on the offset term, and make $\lambda_j$ progressively larger for each harmonic component. The result of the regularized model is less over-fitting to the input data, and a more distinct peaks in the associated periodogram.
+
 
 \section{A Multiple-Band Model}
 To compute a periodogram for multi-band data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which allows us to specify an arbitrary linear model covering our data. We will construct a multi-term Fourier model with the following features:
