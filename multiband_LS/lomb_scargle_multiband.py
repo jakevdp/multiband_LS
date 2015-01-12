@@ -3,7 +3,7 @@ from __future__ import division, print_function
 import numpy as np
 
 from .modeler import PeriodicModeler
-from.lomb_scargle import LombScargle, LombScargleAstroML
+from.lomb_scargle import LombScargle
 
 
 class LombScargleMultiband(LombScargle):
@@ -135,17 +135,19 @@ class LombScargleMultiband(LombScargle):
         else:
             return np.transpose(np.vstack(cols))
 
-    def _predict(self, t, omega, filts=None):
+    def _predict(self, t, filts, period):
         vals = set(np.unique(filts))
         if not vals.issubset(self.unique_filts_):
             raise ValueError("filts does not match training data: "
-                             "{0}".format(set(self.unique_filts_) - vals))
+                             "input: {0} output: {1}"
+                             "".format(set(self.unique_filts_), set(vals)))
 
         t, filts = np.broadcast_arrays(t, filts)
         output_shape = t.shape
 
         t = t.ravel()
         filts = filts.ravel()
+        omega = 2 * np.pi / period
 
         # TODO: broadcast this
         ymeans = np.zeros(len(filts))
@@ -172,8 +174,8 @@ class LombScargleMultibandFast(PeriodicModeler):
         LinearScanOptimizer will be used.
     Nterms : integer (default = 1)
         Number of fourier terms to use in themodel
-    BaseModel : class type (default = LombScargleAstroML)
-        The base model to use for each individual band
+    BaseModel : class type (default = LombScargle)
+        The base model to use for each individual band.
 
     See Also
     --------
@@ -181,11 +183,10 @@ class LombScargleMultibandFast(PeriodicModeler):
     LombScargleAstroML
     LombScargleMultiband
     """
-    def __init__(self, optimizer=None, Nterms=1, BaseModel=LombScargleAstroML):
+    def __init__(self, optimizer=None, Nterms=1, BaseModel=LombScargle):
         # Note: center_data must be True, or else the chi^2 weighting will fail
         self.Nterms = Nterms
         self.BaseModel = BaseModel
-        self.period_range = period_range
         PeriodicModeler.__init__(self, optimizer)
 
     def _fit(self, t, y, dy, filts):
@@ -206,16 +207,17 @@ class LombScargleMultibandFast(PeriodicModeler):
         return np.asarray([model._best_params(omega)
                            for model in self.models_])
 
-    def _predict(self, t, period, filts):
+    def _predict(self, t, filts, period):
         vals = set(np.unique(filts))
         if not vals.issubset(self.unique_filts_):
             raise ValueError("filts does not match training data: "
-                             "{0}".format(set(self.unique_filts_) - vals))
+                             "input: {0} output: {1}"
+                             "".format(set(self.unique_filts_), set(vals)))
 
         t, filts = np.broadcast_arrays(t, filts)
 
         result = np.zeros(t.shape, dtype=float)
         masks = ((filts == f) for f in self.unique_filts_)
         for model, mask in zip(self.models_, masks):
-            result[mask] = model.predict(t[mask], period)
+            result[mask] = model.predict(t[mask], period=period)
         return result

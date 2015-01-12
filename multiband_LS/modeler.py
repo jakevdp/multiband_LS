@@ -38,7 +38,7 @@ class PeriodicModeler(object):
         else:
             self.t, self.y, self.dy, self.filts = np.broadcast_arrays(t, y, dy,
                                                                       filts)
-        self._fit(t, y, dy, filts)
+        self._fit(self.t, self.y, self.dy, filts=self.filts)
         return self
 
     def predict(self, t, filts=None, period=None):
@@ -67,12 +67,13 @@ class PeriodicModeler(object):
             t = np.asarray(t)
             if self.filts is not None:
                 raise ValueError("filts must be passed")
-            result = self._predict(t.ravel(), filts, period)
+            result = self._predict(t.ravel(), filts=filts, period=period)
         else:
             t, filts = np.broadcast_arrays(t, filts)
             if self.filts is None:
                 raise ValueError("filts passed to predict(), but not to fit()")
-            result = self._predict(t.ravel(), filts.ravel(), period)
+            result = self._predict(t.ravel(), filts=filts.ravel(),
+                                   period=period)
         return result.reshape(t.shape)
 
     def score(self, periods):
@@ -92,6 +93,8 @@ class PeriodicModeler(object):
         """
         periods = np.asarray(periods)
         return self._score(periods.ravel()).reshape(periods.shape)
+
+    periodogram = score
 
     @property
     def best_period(self):

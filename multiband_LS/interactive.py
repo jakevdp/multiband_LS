@@ -4,7 +4,7 @@ Utilities for creating IPython interactive plots to explore data & fits
 import numpy as np
 from IPython.html.widgets import interact
 from .data import fetch_light_curves
-from .lomb_scargle import LombScargleMultiband
+from . import LombScargleMultiband
 
 
 def interact_data():
@@ -60,7 +60,7 @@ def interact_multifit():
                                      Nterms_band=Nterms_band)
         model.fit(t, y, dy, filts)
         tfit = np.linspace(0, period, 500)[:, None]
-        yfits = model.predict(tfit, ['u', 'g', 'r', 'i', 'z'], omega)
+        yfits = model.predict(tfit, ['u', 'g', 'r', 'i', 'z'], period=period)
         colors = plt.rcParams['axes.color_cycle']
         
         ax0 = fig.add_subplot(gs[:2, :2])

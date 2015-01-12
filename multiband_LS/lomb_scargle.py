@@ -195,6 +195,8 @@ class LombScargleAstroML(LombScargle):
     optimizer : PeriodicOptimizer instance
         Optimizer to use to find the best period. If not specified, the
         LinearScanOptimizer will be used.
+    Nterms : int (default = 1)
+        Number of terms for the fit. Only Nterms=1 is currently supported.
     center_data : boolean (default = True)
         If True, then compute the weighted mean of the input data and subtract
         before fitting the model.
@@ -221,8 +223,11 @@ class LombScargleAstroML(LombScargle):
     LombScargleMultiband
     LombScargleMultibandFast
     """
-    def __init__(self, optimizer=None, fit_offset=True, center_data=True,
-                 slow_version=False):
+    def __init__(self, optimizer=None, Nterms=1, fit_offset=True,
+                 center_data=True, slow_version=False):
+        if Nterms != 1:
+            raise ValueError("Only Nterms=1 is supported")
+
         LombScargle.__init__(self, optimizer=optimizer, Nterms=1,
                              center_data=center_data, fit_offset=fit_offset)
         if slow_version:
