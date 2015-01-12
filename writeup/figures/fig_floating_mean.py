@@ -40,7 +40,7 @@ mask = mag < 16.05
 phasefit = np.linspace(0, 1, 1000)
 tfit = rrlyrae.period * phasefit
 
-periods = np.linspace(0.2, 1.1, 1000)
+periods = np.linspace(0.2, 1.4, 1000)
 omegas = 2 * np.pi / periods
 
 fig = plt.figure(figsize=(10, 4))
@@ -71,7 +71,7 @@ for fit_offset in [False, True]:
     ax[1 + i].set_title('{0} Periodogram'.format(label.title()))
     ax[1 + i].set_ylabel('power')
     ax[1 + i].set_ylim(0, 1)
-    ax[1 + i].set_xlim(0.2, 1.1)
+    ax[1 + i].set_xlim(0.2, 1.4)
 
 ax[0].legend(loc='upper left')
 ax[0].set_xlabel('phase')

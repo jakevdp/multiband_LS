@@ -11,9 +11,12 @@ class CacheResults(object):
         self.cache_dir = os.path.abspath(cache_dir)
         self.verbose = verbose
 
-    def key_to_file(self, f, key):
+    def key_to_file(self, funcname, key):
         return os.path.join(self.cache_dir,
-                            "_{0}_{1}.npy".format(f.__name__, key))
+                            "_{0}_{1}.npy".format(funcname, key))
+
+    def __call__(self, *args, **kwargs):
+        return self.call(*args, **kwargs)
 
     def call(self, f, key, overwrite=False, args=None, kwargs=None):
         if args is None:
@@ -24,7 +27,7 @@ class CacheResults(object):
         if not os.path.exists(self.cache_dir):
             os.makedirs(self.cache_dir)
 
-        cache_file = self.key_to_file(f, key)
+        cache_file = self.key_to_file(f.__name__, key)
         if os.path.exists(cache_file) and not overwrite:
             result = np.load(cache_file)
         else:
@@ -41,3 +44,23 @@ class CacheResults(object):
     def call_iter(self, f, keys, overwrite=False, args=None, kwargs=None):
         return np.array([self.call(f, key, overwrite, args, kwargs)
                          for key in keys])
+
+    def call_iter_parallel(self, f, keys, overwrite=False, args=None,
+                           kwargs=None, client_args=None, client_kwds=None):
+        from IPython import parallel
+        if client_args is None:
+            client_args = ()
+        if client_kwds is None:
+            client_kwds = {}
+
+        try:
+            client = parallel.Client(*client_args, **client_kwds)
+        except FileNotFoundError:
+            raise ValueError("Cannot start the cluster. Did you run this?\n"
+                             " $ ipcluster start")
+
+        lbv = client.load_balanced_view()
+
+        results = lbv.map_sync(self, keys, overwrite=overwrite,
+                               args=args, kwargs=kwargs)
+        return np.array(list(results))

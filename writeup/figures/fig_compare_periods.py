@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 import os, sys; sys.path.append(os.path.abspath('../..'))
 
 import numpy as np
@@ -5,10 +7,19 @@ from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
-from multiband_LS import LombScargleAstroML, LombScargleMultiband
+from multiband_LS import (LombScargleAstroML, LombScargleMultiband,
+                          SuperSmoother)
 from multiband_LS.memoize import CacheResults
 from multiband_LS.data import fetch_light_curves
 rrlyrae = fetch_light_curves()
+
+
+def approx_mode(a, axis=0, tol=1E-3):
+    a_trunc = a // tol
+    vals, counts = mode(a_trunc, axis)
+    mask = (a_trunc == vals)
+    # mean of each row
+    return np.sum(a * mask, axis) / np.sum(mask, axis)
 
 
 def find_best_period_adhoc(lcid):
@@ -45,16 +56,41 @@ def compute_all_periods(Nterms_base, Nterms_band):
                            args=(rrlyrae, Nterms_base, Nterms_band))
 
 
+def find_best_period_supersmoother(lcid, rrlyrae):
+    t, y, dy = rrlyrae.get_lightcurve(lcid)
+    res = []
+
+    for i in range(t.shape[1]):
+        ti, yi, dyi = t[:, i], y[:, i], dy[:, i]
+        mask = (np.isnan(ti) | np.isnan(yi) | np.isnan(dyi))
+        ti, yi, dyi = ti[~mask], yi[~mask], dyi[~mask]
+    
+        model = SuperSmoother(period_range=(0.2, 1.2))
+        model.fit(ti, yi, dyi)
+        res.append(model.best_period)
+    return res
+
+
+def compute_all_periods_supersmoother():
+    lcids = list(rrlyrae.ids)
+    cache = CacheResults('results_supersmoother', verbose=True)
+    results = cache.call_iter(find_best_period_supersmoother, lcids,
+                              args=(rrlyrae,))
+    return np.array(results)
+
+
 new_periods = compute_all_periods(1, 0)
 old_periods = compute_all_periods(0, 1)
 sesar_periods = np.array([rrlyrae.get_metadata(lcid)['P']
                                   for lcid in rrlyrae.ids])
-adhoc_periods = mode(compute_all_periods_adhoc(), 1)[0]
+adhoc_periods = approx_mode(compute_all_periods_adhoc(), 1)
+#ssm_periods = approx_mode(compute_all_periods_supersmoother(), 1)
 
 
 fig, ax = plt.subplots()
-ax.plot(sesar_periods, new_periods, 'o', alpha=0.5, ms=5)
+#ax.plot(sesar_periods, new_periods, 'o', alpha=0.5, ms=5)
 #ax.plot(sesar_periods, adhoc_periods, 'o', alpha=0.5, ms=5)
+ax.plot(adhoc_periods, new_periods, 'o', alpha=0.5, ms=5)
 
 P1 = np.linspace(0.1, 1.2)
 ax.plot(P1, P1, ':k', alpha=0.7, lw=1, zorder=1)
