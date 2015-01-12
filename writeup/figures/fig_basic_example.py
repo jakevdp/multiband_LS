@@ -31,10 +31,8 @@ nights = nights[:Nobs]
 t = 57000 + nights + 0.05 * rng.randn(Nobs)
 dmag = 0.06 + 0.01 * rng.randn(Nobs)
 mag = rrlyrae.generated('r', t, err=dmag, corrected=False)
-omega_best = 2 * np.pi / rrlyrae.period
 
 periods = np.linspace(0.2, 1.4, 1000)
-omegas = 2 * np.pi / periods
 
 phase = (t / rrlyrae.period) % 1
 phasefit = np.linspace(0, 1, 1000)
@@ -58,10 +56,9 @@ model = LombScargle().fit(t, mag, dmag)
 phase = (t / model.best_period) % 1
 phasefit = np.linspace(0, 1, 1000)
 tfit = model.best_period * phasefit
-P = model.periodogram(omegas)
         
-lines = ax[2].plot(periods, model.periodogram(omegas), lw=1)
-ax[1].plot(phasefit, model.predict(tfit, omega=omega_best),
+lines = ax[2].plot(periods, model.periodogram(periods), lw=1)
+ax[1].plot(phasefit, model.predict(tfit),
            c=lines[0].get_color())
 ax[1].invert_yaxis()
 

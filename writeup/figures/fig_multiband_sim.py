@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
 from multiband_LS.generated import RRLyraeObject
-from multiband_LS.lomb_scargle import LombScargleAstroML, LombScargleMultiband
+from multiband_LS import LombScargleAstroML, LombScargleMultiband
 
 
 # Choose a Sesar 2010 object to base our fits on
@@ -40,8 +40,7 @@ mags = np.array([rrlyrae.generated(band, t, err=dy, corrected=False)
 # Compute the lomb-scargle periodogram in each band
 
 periods = np.linspace(0.2, 0.9, 1000)
-omegas = 2 * np.pi / periods
-P = [LombScargleAstroML().fit(t, m, dy).periodogram(omegas) for m in mags]
+P = [LombScargleAstroML().fit(t, m, dy).periodogram(periods) for m in mags]
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1, bottom=0.15)
@@ -79,7 +78,7 @@ mags = mags[np.arange(Nobs) % 5, np.arange(Nobs)]
 masks = [(filts == band) for band in 'ugriz']
 
 P = [LombScargleAstroML().fit(t[mask], mags[mask],
-                              dy[mask]).periodogram(omegas)
+                              dy[mask]).periodogram(periods)
      for mask in masks]
 
 fig = plt.figure(figsize=(10, 4))
@@ -112,7 +111,7 @@ ax[1].set_ylabel('power + offset' + 30 * ' ')
 for (i, Nbase, Nband) in [(0, 1, 0), (1, 0, 1)]:
     LS_multi = LombScargleMultiband(Nterms_base=Nbase, Nterms_band=Nband)
     LS_multi.fit(t, mags, dy, filts)
-    P_multi = LS_multi.periodogram(omegas)
+    P_multi = LS_multi.periodogram(periods)
     ax[2].plot(periods, P_multi + i, lw=1, color='gray')
     ax[2].text(0.89, 1.0 + i,
                "Nbase={0}, Nband={1}".format(Nbase, Nband),
