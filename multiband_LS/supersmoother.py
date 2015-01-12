@@ -1,99 +1,81 @@
-from __future__ import division, print_function
+from __future__ import print_function, division
+
+"""
+Supersmoother code for periodic modeling
+"""
+import numpy as np
+
 
 try:
     import supersmoother as ssm
 except ImportError:
-    raise ImportError("Package supersmoother required "
-                      "(``pip install supersmoother``)")
+    raise ImportError("Package supersmoother is required. "
+                      "Use ``pip install supersmoother`` to install")
 
-import numpy as np
 
-from .base import PeriodicModeler
+from .modeler import PeriodicModeler
 
 
 class SuperSmoother(PeriodicModeler):
-    """SuperSmoother periodogram implementation
+    """Periodogram based on Friedman's SuperSmoother.
+
+    Parameters
+    ----------
+    optimizer : PeriodicOptimizer instance
+        Optimizer to use to find the best period. If not specified, the
+        LinearScanOptimizer will be used.
+
+    Examples
+    --------
+    >>> rng = np.random.RandomState(0)
+    >>> t = 100 * rng.rand(100)
+    >>> dy = 0.1
+    >>> omega = 10
+    >>> y = np.sin(omega * t) + dy * rng.randn(100)
+    >>> ssm = SuperSmoother().fit(t, y, dy)
+    >>> ssm.best_period
+    0.62826749832108475
+    >>> ssm.score(ls.best_period)
+    array(0.9951882158877049)
+    >>> ssm.predict([0, 0.5])
+    array([ 0.06759746, -0.90006247])
 
     See Also
     --------
     LombScargle
     """
-    def __init__(self, period_range=(0.2, 1.1)):
-        self.period_range = period_range
+    def __init__(self, optimizer=None):
+        PeriodicModeler.__init__(self, optimizer)
 
-    def fit(self, t, y, dy=1.0, filts=None):
-        """Fit the Supersmoother model to the data.
+    def _fit(self, t, y, dy, filts):
+        if filts is not None:
+            raise NotImplementedError("``filts`` keyword is not supported")
 
-        Parameters
-        ----------
-        t : array_like, one-dimensional
-            sequence of observation times
-        y : array_like, one-dimensional
-            sequence of observed values
-        dy : float or array_like
-            errors on observed values
-        """
-        t, y, dy = np.broadcast_arrays(t, y, dy)
-        self.fit_data_ = dict(t=t, y=y, dy=dy)
-
-        # TODO: mu should actually be a weighted median, probably...
+        # TODO: this should actually be a weighted median, probably...
         mu = np.sum(y / dy ** 2) / np.sum(1 / dy ** 2)
         self.baseline_err = np.mean(abs((y - mu) / dy))
 
-        return self
+    def _predict(self, t, filts, period):
+        model = ssm.SuperSmoother().fit(self.t % period, self.y, self.dy)
+        return model.predict(t % period)
 
-    def _predict(self, t, omega, filts=None):
-        t_out = t
-        period = 2 * np.pi / omega
-
-        t, y, dy = (self.fit_data_[key] for key in ['t', 'y', 'dy'])
-
-        N = len(t)
-        N4 = N // 4
-        N2 = N // 2
-        t = np.concatenate([t, t])
-        y = np.concatenate([y, y])
-        dy = np.concatenate([dy, dy])
-        phase = t % period
-        phase[N: N + N2] += period
-        phase[N + N2:] -= period
-        isort = np.argsort(phase)[N4: -N4]
-        phase, yp, dyp = phase[isort], y[isort], dy[isort]
-
-        model = ssm.SuperSmoother().fit(phase, yp, dyp)
-        return model.predict(t_out % period)
-
-    def periodogram(self, omegas):
-        """Compute the periodogram at the given angular frequencies
-
-        Parameters
-        ----------
-        omegas : array_like
-            Array of angular frequencies at which to compute
-            the periodogram
-
-        Returns
-        -------
-        periodogram : np.ndarray
-            Array of normalized powers (between 0 and 1) for each frequency
-        """
-        period = 2 * np.pi / np.asarray(omegas)
-        t, y, dy = (self.fit_data_[key] for key in ['t', 'y', 'dy'])
-
+    def _score(self, periods):
         # double-up the data to allow periodicity on the fits
-        N = len(t)
+        N = len(self.t)
         N4 = N // 4
-        t = np.concatenate([t, t])
-        y = np.concatenate([y, y])
-        dy = np.concatenate([dy, dy])
+        t = np.concatenate([self.t, self.t])
+        y = np.concatenate([self.y, self.y])
+        dy = np.concatenate([self.dy, self.dy])
 
         results = []
-        for p in period.ravel():
+        for p in periods:
             # compute doubled phase and sort
             phase = t % p
             phase[N:] += p
-            isort = np.argsort(phase)[N4: -N4]
-            phase, yp, dyp = phase[isort], y[isort], dy[isort]
+            isort = np.argsort(phase)[N4: N + 3 * N4]
+            phase = phase[isort]
+            yp = y[isort]
+            dyp = dy[isort]
 
             # compute model
             model = ssm.SuperSmoother().fit(phase, yp, dyp, presorted=True)
@@ -102,9 +84,5 @@ class SuperSmoother(PeriodicModeler):
             resids = model.cv_residuals()[N4: N4 + N]
             results.append(1 - np.mean(np.abs(resids)) / self.baseline_err)
 
-        return np.asarray(results).reshape(period.shape)
-
-        
-
-
+        return np.asarray(results)
         
