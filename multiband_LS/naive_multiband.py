@@ -47,7 +47,7 @@ class NaiveMultiband(PeriodicModeler):
                              "".format(set(self.model_.keys()), fset))
         
         result = np.zeros_like(t)
-        for filt, model in self.models_.items()
+        for filt, model in self.models_.items():
             mask = (filts == filt)
             result[mask] = model.predict(t[mask], period)
         return result
@@ -56,12 +56,41 @@ class NaiveMultiband(PeriodicModeler):
         raise NotImplementedError("score is not implmented for NaiveMultiband")
 
     def scores(self, periods):
+        """Compute the scores under the various models
+
+        Parameters
+        ----------
+        periods : array_like
+            array of periods at which to compute scores
+
+        Returns
+        -------
+        scores : dict
+            Dictionary of scores. Dictionary keys are the unique filter names
+            passed to fit()
+        """
         return dict([(filt, model.score(periods))
                      for (filt, model) in self.models_.items()])
 
+    def best_periods(self):
+        """Compute the scores under the various models
+
+        Parameters
+        ----------
+        periods : array_like
+            array of periods at which to compute scores
+
+        Returns
+        -------
+        best_periods : dict
+            Dictionary of best periods. Dictionary keys are the unique filter
+            names passed to fit()
+        """
+        periods = self.optimizer._compute_candidate_periods(self)
+        return dict([(filt, periods[np.argmax(score)])
+                     for (filt, score) in self.scores(periods)])
+
     @property
     def best_period(self):
-        periods = self.optimizer._compute_candidate_periods(self)
-        scores = self.scores(periods)
-        best_period = [periods[np.argmax(score)] for score in scores.values()]
+        best_periods = self.best_periods()
         return mode_range(best_period, tol=1E-2)
