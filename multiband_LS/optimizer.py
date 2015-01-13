@@ -13,7 +13,7 @@ class PeriodicOptimizer(object):
     def find_best_period(self):
         raise NotImplementedError()
 
-    def find_period_candidates(self, n_candidates):
+    def find_top_N_periods(self, N):
         raise NotImplementedError()
 
 
@@ -25,7 +25,7 @@ class LinearScanOptimizer(PeriodicOptimizer):
         self.verbose = verbose
         self.step_frac = step_frac
 
-    def find_best_period(self, model):
+    def _compute_candidate_periods(self, model):
         # Compute the candidate periods
         tmin, tmax = np.min(model.t), np.max(model.t)
         omega_min = 2 * np.pi / np.max(self.period_range)
@@ -35,13 +35,18 @@ class LinearScanOptimizer(PeriodicOptimizer):
         width = 2 * np.pi / (tmax - tmin)
         omega_step = self.step_frac * width
 
+        omegas = np.arange(omega_min, omega_max, omega_step)
+        periods = 2 * np.pi / omegas
+
+        return periods
+
+    def find_best_period(self, model):
+        periods = self._compute_candidate_periods(model)
+
         if self.verbose:
             print("Finding optimal frequency:")
             print(" - Using omega_step = {0:.5f}".format(omega_step))
             sys.stdout.flush()
-
-        omegas = np.arange(omega_min, omega_max, omega_step)
-        periods = 2 * np.pi / omegas
 
         # compute the first pass
         if self.verbose:
