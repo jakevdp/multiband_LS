@@ -2,11 +2,6 @@
 Here we plot a typical approach to the multi-band periodogram: treating each
 band separately, and taking a majority vote between the bands.
 """
-
-import sys
-import os
-sys.path.append(os.path.abspath('../..'))
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -14,7 +9,8 @@ import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
 from multiband_LS.generated import RRLyraeObject
-from multiband_LS import LombScargleAstroML, LombScargleMultiband
+from multiband_LS import (LombScargleAstroML, LombScargleMultiband,
+                          NaiveMultiband)
 
 
 # Choose a Sesar 2010 object to base our fits on
@@ -34,13 +30,15 @@ t = 57000 + nights + 0.05 * rng.randn(Nobs)
 dy = 0.06 + 0.01 * rng.randn(Nobs)
 mags = np.array([rrlyrae.generated(band, t, err=dy, corrected=False)
                  for band in 'ugriz'])
+filts = np.array([f for f in 'ugriz'])
 
 #----------------------------------------------------------------------
 # First figure:
 # Compute the lomb-scargle periodogram in each band
 
 periods = np.linspace(0.2, 0.9, 1000)
-P = [LombScargleAstroML().fit(t, m, dy).periodogram(periods) for m in mags]
+model = NaiveMultiband(LombScargleAstroML).fit(t, mags, dy, filts[:, None])
+P = model.scores(periods)
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1, bottom=0.15)
@@ -54,9 +52,9 @@ ax[0].set_title('Folded Data (P={0:.3f} days)'.format(rrlyrae.period))
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')
 
-for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
+for i, band in enumerate(filts):
     offset = 4 - i
-    ax[1].plot(periods, Pi + offset, lw=1)
+    ax[1].plot(periods, P[band] + offset, lw=1)
     ax[1].text(0.89, 0.7 + offset, band, fontsize=14, ha='right', va='top')
 ax[1].set_title('Periodogram in Each Band')
 ax[1].set_ylim(0, 5)
@@ -77,9 +75,8 @@ mags = mags[np.arange(Nobs) % 5, np.arange(Nobs)]
     
 masks = [(filts == band) for band in 'ugriz']
 
-P = [LombScargleAstroML().fit(t[mask], mags[mask],
-                              dy[mask]).periodogram(periods)
-     for mask in masks]
+model = NaiveMultiband(LombScargleAstroML).fit(t, mags, dy, filts)
+P = model.scores(periods)
 
 fig = plt.figure(figsize=(10, 4))
 gs = plt.GridSpec(5, 2,
@@ -98,16 +95,16 @@ ax[0].set_title('Folded Data (P={0:.3f} days)'.format(rrlyrae.period))
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')
 
-for i, (Pi, band) in enumerate(zip(P, 'ugriz')):
+for i, band in enumerate('ugriz'):
     offset = 4 - i
-    ax[1].plot(periods, Pi + offset, lw=1)
+    ax[1].plot(periods, P[band] + offset, lw=1)
     ax[1].text(0.89, 1 + offset, band,
                fontsize=10, ha='right', va='top')
 ax[1].set_title('Standard Periodogram in Each Band')
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].xaxis.set_major_formatter(plt.NullFormatter())
 ax[1].set_ylabel('power + offset' + 30 * ' ')
-    
+
 for (i, Nbase, Nband) in [(0, 1, 0), (1, 0, 1)]:
     LS_multi = LombScargleMultiband(Nterms_base=Nbase, Nterms_band=Nband)
     LS_multi.fit(t, mags, dy, filts)

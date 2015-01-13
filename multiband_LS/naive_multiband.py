@@ -28,10 +28,10 @@ class NaiveMultiband(PeriodicModeler):
         self.kwargs = kwargs
 
     def _fit(self, t, y, dy, filts):
-        t, y, dy, filts = np.broadcast_arrays(filts)
+        t, y, dy, filts = np.broadcast_arrays(t, y, dy, filts)
         unique_filts = np.unique(filts)
 
-        masks = [(filts == filt) for filt in self.unique_filts_]
+        masks = [(filts == filt) for filt in unique_filts]
         self.models_ = dict([(filt,
                               self.BaseModel(*self.args,
                                              **self.kwargs).fit(t[mask],
