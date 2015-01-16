@@ -9,6 +9,7 @@ from __future__ import division, print_function
 import numpy as np
 
 from .modeler import PeriodicModeler
+from .lomb_scargle import LombScargle
 from .utils import mode_range
 
 
@@ -22,10 +23,12 @@ class NaiveMultiband(PeriodicModeler):
     *args, **kwargs :
         additional arguments are passed to BaseModel on construction.
     """
-    def __init__(self, BaseModel, *args, **kwargs):
+    def __init__(self, optimizer=None, BaseModel=LombScargle,
+                 *args, **kwargs):
         self.BaseModel = BaseModel
         self.args = args
         self.kwargs = kwargs
+        PeriodicModeler.__init__(self, optimizer)
 
     def _fit(self, t, y, dy, filts):
         t, y, dy, filts = np.broadcast_arrays(t, y, dy, filts)
@@ -88,9 +91,9 @@ class NaiveMultiband(PeriodicModeler):
         """
         periods = self.optimizer._compute_candidate_periods(self)
         return dict([(filt, periods[np.argmax(score)])
-                     for (filt, score) in self.scores(periods)])
+                     for (filt, score) in self.scores(periods).items()])
 
     @property
     def best_period(self):
-        best_periods = self.best_periods()
-        return mode_range(best_period, tol=1E-2)
+        best_periods = np.asarray(list(self.best_periods().values()))
+        return mode_range(best_periods, tol=1E-2)

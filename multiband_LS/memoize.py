@@ -46,15 +46,13 @@ class CacheResults(object):
                          for key in keys])
 
     def call_iter_parallel(self, f, keys, overwrite=False, args=None,
-                           kwargs=None, client_args=None, client_kwds=None):
+                           kwargs=None, client_args=None, client_kwargs=None):
         from IPython import parallel
-        if client_args is None:
-            client_args = ()
-        if client_kwds is None:
-            client_kwds = {}
+        client_args = client_args or ()
+        client_kwargs = client_kwargs or {}
 
         try:
-            client = parallel.Client(*client_args, **client_kwds)
+            client = parallel.Client(*client_args, **client_kwargs)
         except FileNotFoundError:
             raise ValueError("Cannot start the cluster. Did you run this?\n"
                              " $ ipcluster start")

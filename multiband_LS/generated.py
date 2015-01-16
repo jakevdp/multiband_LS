@@ -6,6 +6,9 @@ from .data import fetch_rrlyrae_templates, fetch_light_curves
 
 
 class RRLyraeObject(object):
+    """
+    TODO: document this class & methods
+    """
     lcdata = fetch_light_curves()
     templates = fetch_rrlyrae_templates()
 
