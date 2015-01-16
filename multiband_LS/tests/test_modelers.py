@@ -2,8 +2,8 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_
 from nose import SkipTest
 
-from .. import (LombScargle, LombScargleAstroML,
-                LombScargleMultiband, LombScargleMultibandFast)
+from .. import (LombScargle, LombScargleAstroML, SuperSmoother,
+                LombScargleMultiband, LombScargleMultibandFast, NaiveMultiband)
 
 
 def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
@@ -14,6 +14,47 @@ def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
     dy = dy * (0.5 + rng.rand(N))
     y += dy * rng.randn(N)
     return t, y, dy
+
+
+def test_smoketest():
+    t, y, dy = _generate_data()
+    periods = np.linspace(0.2, 1.0, 5)
+
+    def check_model(Model):
+        model = Model()
+        model.fit(t, y, dy)
+
+        # Make optimization fast
+        model.optimizer.period_range = (0.5, 0.52)
+        model.optimizer.n_zooms = 0
+        model.best_period
+
+        model.score(periods)
+        model.predict(t)
+
+    for Model in (LombScargle, LombScargleAstroML, SuperSmoother):
+        yield check_model, Model
+
+
+def test_smoketest_multiband():
+    t, y, dy = _generate_data()
+    periods = np.linspace(0.2, 1.0, 5)
+    filts = np.arange(len(t)) % 3
+
+    def check_model(Model):
+        model = Model()
+        model.fit(t, y, dy, filts)
+
+        # Make optimization fast
+        model.optimizer.period_range = (0.5, 0.52)
+        model.optimizer.n_zooms = 0
+        model.best_period
+
+        model.predict(t, filts)
+
+    for Model in (LombScargleMultiband, NaiveMultiband,
+                  LombScargleMultibandFast):
+        yield check_model, Model
 
 
 def test_lomb_scargle(N=100, omega=10):

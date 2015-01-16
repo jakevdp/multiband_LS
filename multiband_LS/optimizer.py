@@ -35,21 +35,19 @@ class LinearScanOptimizer(PeriodicOptimizer):
         width = 2 * np.pi / (tmax - tmin)
         omega_step = self.step_frac * width
 
-        omegas = np.arange(omega_min, omega_max, omega_step)
+        omegas = np.arange(omega_min, omega_max + omega_step, omega_step)
         periods = 2 * np.pi / omegas
 
         return periods
 
     def find_best_period(self, model):
         periods = self._compute_candidate_periods(model)
+        omegas = 2 * np.pi / periods
+        omega_step = omegas[1] - omegas[0]
 
         if self.verbose:
             print("Finding optimal frequency:")
             print(" - Using omega_step = {0:.5f}".format(omega_step))
-            sys.stdout.flush()
-
-        # compute the first pass
-        if self.verbose:
             print(" - Computing periods at {0:.0f} steps".format(len(periods)))
             sys.stdout.flush()
 
@@ -57,17 +55,18 @@ class LinearScanOptimizer(PeriodicOptimizer):
         i = np.argsort(score)[-self.n_zooms:]
 
         # zoom-in on the peaks and do a second pass
-        omegas = np.concatenate([np.linspace(omega - 3 * omega_step,
-                                             omega + 3 * omega_step, 500)
-                                 for omega in omegas[i]])
-        periods = 2 * np.pi / omegas
+        if self.n_zooms > 0:
+            omegas = np.concatenate([np.linspace(omega - 3 * omega_step,
+                                                 omega + 3 * omega_step, 500)
+                                     for omega in omegas[i]])
+            periods = 2 * np.pi / omegas
 
-        if self.verbose:
-            print(" - Zooming & computing periods at {0:.0f} further steps"
-                  "".format(len(periods)))
-            sys.stdout.flush()
+            if self.verbose:
+                print(" - Zooming & computing periods at {0:.0f} further steps"
+                      "".format(len(periods)))
+                sys.stdout.flush()
 
-        score = model.score(periods)
+            score = model.score(periods)
 
         return periods[np.argmax(score)]
         
