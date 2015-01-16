@@ -2,6 +2,8 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from ..modeler import PeriodicModeler
+from .. import LombScargle, LombScargleAstroML, SuperSmoother
+from .. import LombScargleMultiband, LombScargleMultibandFast, NaiveMultiband
 
 
 class FakeModeler(PeriodicModeler):
@@ -40,4 +42,53 @@ def test_modeler_base():
     # test the predict function
     assert_allclose(model.predict(t, filts), 1)
 
-    
+
+def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
+    """Generate some data for testing"""
+    rng = np.random.RandomState(rseed)
+    t = 20 * (2 * np.pi / omega) * rng.rand(N)
+    y = theta[0] + theta[1] * np.sin(omega * t) + theta[2] * np.cos(omega * t)
+    dy = dy * (0.5 + rng.rand(N))
+    y += dy * rng.randn(N)
+    return t, y, dy
+
+
+def test_modelers_smoketest():
+    t, y, dy = _generate_data()
+    periods = np.linspace(0.2, 1.0, 5)
+
+    def check_model(Model):
+        model = Model()
+        model.fit(t, y, dy)
+
+        # Make optimization fast
+        model.optimizer.period_range = (0.5, 0.52)
+        model.optimizer.n_zooms = 0
+        model.best_period
+
+        model.score(periods)
+        model.predict(t)
+
+    for Model in (LombScargle, LombScargleAstroML, SuperSmoother):
+        yield check_model, Model
+
+
+def test_multiband_modelers_smoketest():
+    t, y, dy = _generate_data()
+    periods = np.linspace(0.2, 1.0, 5)
+    filts = np.arange(len(t)) % 3
+
+    def check_model(Model):
+        model = Model()
+        model.fit(t, y, dy, filts)
+
+        # Make optimization fast
+        model.optimizer.period_range = (0.5, 0.52)
+        model.optimizer.n_zooms = 0
+        period = model.best_period
+
+        model.predict(t, filts)
+
+    for Model in (LombScargleMultiband, NaiveMultiband,
+                  LombScargleMultibandFast):
+        yield check_model, Model

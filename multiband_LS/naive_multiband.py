@@ -52,7 +52,7 @@ class NaiveMultiband(PeriodicModeler):
         result = np.zeros_like(t)
         for filt, model in self.models_.items():
             mask = (filts == filt)
-            result[mask] = model.predict(t[mask], period)
+            result[mask] = model.predict(t[mask], period=period)
         return result
 
     def _score(self, periods):

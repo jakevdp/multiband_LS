@@ -1,9 +1,8 @@
 import numpy as np
-from numpy.testing import assert_allclose, assert_
+from numpy.testing import assert_allclose, assert_, assert_equal
 from nose import SkipTest
 
-from .. import (LombScargle, LombScargleAstroML, SuperSmoother,
-                LombScargleMultiband, LombScargleMultibandFast, NaiveMultiband)
+from .. import LombScargle, LombScargleAstroML
 
 
 def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
@@ -16,47 +15,6 @@ def _generate_data(N=100, omega=10, theta=[10, 2, 3], dy=1, rseed=0):
     return t, y, dy
 
 
-def test_smoketest():
-    t, y, dy = _generate_data()
-    periods = np.linspace(0.2, 1.0, 5)
-
-    def check_model(Model):
-        model = Model()
-        model.fit(t, y, dy)
-
-        # Make optimization fast
-        model.optimizer.period_range = (0.5, 0.52)
-        model.optimizer.n_zooms = 0
-        model.best_period
-
-        model.score(periods)
-        model.predict(t)
-
-    for Model in (LombScargle, LombScargleAstroML, SuperSmoother):
-        yield check_model, Model
-
-
-def test_smoketest_multiband():
-    t, y, dy = _generate_data()
-    periods = np.linspace(0.2, 1.0, 5)
-    filts = np.arange(len(t)) % 3
-
-    def check_model(Model):
-        model = Model()
-        model.fit(t, y, dy, filts)
-
-        # Make optimization fast
-        model.optimizer.period_range = (0.5, 0.52)
-        model.optimizer.n_zooms = 0
-        model.best_period
-
-        model.predict(t, filts)
-
-    for Model in (LombScargleMultiband, NaiveMultiband,
-                  LombScargleMultibandFast):
-        yield check_model, Model
-
-
 def test_lomb_scargle(N=100, omega=10):
     """Test whether the standard and generalized lomb-scargle
     give close to the same results for non-centered data"""
@@ -64,11 +22,15 @@ def test_lomb_scargle(N=100, omega=10):
     omegas = np.linspace(1, omega + 1, 100)
     periods = 2 * np.pi / omegas
 
-    P1 = LombScargle(fit_offset=True).fit(t, y, dy).score(periods)
-    P2 = LombScargle(fit_offset=False).fit(t, y, dy).score(periods)
+    def check_model(Model):
+        P1 = Model(fit_offset=True).fit(t, y, dy).score(periods)
+        P2 = Model(fit_offset=False).fit(t, y, dy).score(periods)
 
-    rms = np.sqrt(np.mean((P1 - P2) ** 2))
-    assert_(rms < 0.005)
+        rms = np.sqrt(np.mean((P1 - P2) ** 2))
+        assert_(rms < 0.005)
+
+    for Model in [LombScargle, LombScargleAstroML]:
+        yield check_model, Model
 
 
 def test_dy_scalar(N=100, omega=10):
@@ -81,29 +43,12 @@ def test_dy_scalar(N=100, omega=10):
     omegas = np.linspace(1, omega + 1, 100)
     periods = 2 * np.pi / omegas
 
-    def compare(cls):
-        P1 = cls().fit(t, y, dy).score(periods)
-        P2 = cls().fit(t, y, dy[0]).score(periods)
+    def check_model(Model):
+        assert_equal(Model().fit(t, y, dy).score(periods),
+                     Model().fit(t, y, dy[0]).score(periods))
 
-        assert_allclose(P1, P2)
-
-    for cls in [LombScargle, LombScargleAstroML]:
-        yield compare, cls
-
-
-def test_lomb_scargle_multiband(N=100, omega=10):
-    """Test that results are the same with/without filter labels"""
-    t, y, dy = _generate_data(N, omega)
-    omegas = np.linspace(1, omega + 1, 100)
-    periods = 2 * np.pi / omegas
-
-    model = LombScargle(center_data=False, fit_offset=True)
-    P_singleband = model.fit(t, y, dy).score(periods)
-
-    filts = np.ones(N)
-    model = LombScargleMultibandFast()
-    P_multiband = model.fit(t, y, dy, filts).score(periods)
-    assert_allclose(P_multiband, P_singleband)
+    for Model in [LombScargle, LombScargleAstroML]:
+        yield check_model, Model
 
 
 def test_vs_astroML(N=100, omega=10):
@@ -166,19 +111,3 @@ def test_best_params(N=100, omega=10):
             theta_best = model._best_params(omega)
             assert_allclose(theta_true, theta_best[:3], atol=0.2)
 
-
-def test_lomb_scargle_multiband(N=100, omega=10):
-    """Test that results are the same with/without filter labels"""
-    t, y, dy = _generate_data(N, omega)
-    omegas = np.linspace(1, omega + 1, 100)
-    periods = 2 * np.pi / omegas
-
-    model = LombScargle(center_data=False, fit_offset=True)
-    P_singleband = model.fit(t, y, dy).score(periods)
-
-    filts = np.ones(N)
-    model_mb = LombScargleMultiband(center_data=False)
-    P_multiband = model_mb.fit(t, y, dy, filts).score(periods)
-    assert_allclose(P_multiband, P_singleband)
-    assert_allclose(model._best_params(omega),
-                    model_mb._best_params(omega)[:3])
