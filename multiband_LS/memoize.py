@@ -44,21 +44,3 @@ class CacheResults(object):
     def call_iter(self, f, keys, overwrite=False, args=None, kwargs=None):
         return np.array([self.call(f, key, overwrite, args, kwargs)
                          for key in keys])
-
-    def call_iter_parallel(self, f, keys, overwrite=False, args=None,
-                           kwargs=None, client_args=None, client_kwargs=None):
-        from IPython import parallel
-        client_args = client_args or ()
-        client_kwargs = client_kwargs or {}
-
-        try:
-            client = parallel.Client(*client_args, **client_kwargs)
-        except FileNotFoundError:
-            raise ValueError("Cannot start the cluster. Did you run this?\n"
-                             " $ ipcluster start")
-
-        lbv = client.load_balanced_view()
-
-        results = lbv.map_sync(self, keys, overwrite=overwrite,
-                               args=args, kwargs=kwargs)
-        return np.array(list(results))
