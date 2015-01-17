@@ -10,8 +10,13 @@ class PeriodicOptimizer(object):
         self.args = args
         self.kwargs = kwargs
 
-    def find_best_periods(self, model, n_periods=1):
+    def find_best_periods(self, model, n_periods=5, return_scores=False):
         raise NotImplementedError()
+
+    def best_period(self, model):
+        periods = self.find_best_periods(model, n_periods=1,
+                                         return_scores=False)
+        return periods[0]
 
 
 class LinearScanOptimizer(PeriodicOptimizer):
@@ -38,7 +43,7 @@ class LinearScanOptimizer(PeriodicOptimizer):
         self.first_pass_coverage = first_pass_coverage
         self.final_pass_coverage = final_pass_coverage
         
-    def find_best_periods(self, model, n_periods=1):
+    def find_best_periods(self, model, n_periods=5, return_scores=False):
         """Find the `n_periods` best periods in the model"""
 
         # compute the estimated peak width from the data range
@@ -69,14 +74,17 @@ class LinearScanOptimizer(PeriodicOptimizer):
         minscore = score.min()
         n_candidates = max(5, 2 * n_periods)
         candidate_freqs = np.zeros(n_candidates)
+        candidate_scores = np.zeros(n_candidates)
         for i in range(n_candidates):
             j = np.argmax(score)
             candidate_freqs[i] = omegas[j]
+            candidate_scores[i] = score[j]
             score[max(0, j - N):(j + N)] = minscore
         
         # If required, do a final pass on these unique at higher resolution
         if self.final_pass_coverage <= self.first_pass_coverage:
             best_periods =  2 * np.pi / candidate_freqs[:n_periods]
+            best_scores = candidate_scores[:n_periods]
         else:
             final_step = width / self.final_pass_coverage
             steps = np.arange(-omega_step, omega_step + final_step, final_step)
@@ -89,15 +97,15 @@ class LinearScanOptimizer(PeriodicOptimizer):
                       "steps".format(periods.size))
                 sys.stdout.flush()
 
-            score = model.score(periods)
-            best_scores = score.max(1)
-            j = np.argmax(score, 1)
+            scores = model.score(periods)
+            best_scores = scores.max(1)
+            j = np.argmax(scores, 1)
             i = np.argsort(best_scores)[::-1]
 
-            best_periods = periods[i, j]
+            best_periods = periods[i, j[i]]
+            best_scores = best_scores[i]
 
-        if n_periods == 1:
-            return best_periods[0]
+        if return_scores:
+            return best_periods[:n_periods], best_scores[:n_periods]
         else:
             return best_periods[:n_periods]
-        

@@ -10,7 +10,7 @@ class PeriodicModeler(object):
     def __init__(self, optimizer=None, *args, **kwargs):
         if optimizer is None:
             optimizer = LinearScanOptimizer()
-        if not hasattr(optimizer, 'find_best_periods'):
+        if not hasattr(optimizer, 'best_period'):
             raise ValueError("optimizer must be an PeriodicOptimizer instance. "
                              "{0} not valid".format(optimizer))
         self.optimizer = optimizer
@@ -105,7 +105,7 @@ class PeriodicModeler(object):
 
     def _calc_best_period(self):
         """Compute the best period using the optimizer"""
-        return self.optimizer.find_best_periods(self, 1)
+        return self.optimizer.best_period(self)
 
     def _score(self, periods):
         """Compute the score of the model given the periods"""
