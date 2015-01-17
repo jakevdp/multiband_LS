@@ -37,7 +37,8 @@ filts = np.array([f for f in 'ugriz'])
 # Compute the lomb-scargle periodogram in each band
 
 periods = np.linspace(0.2, 0.9, 1000)
-model = NaiveMultiband(LombScargleAstroML).fit(t, mags, dy, filts[:, None])
+model = NaiveMultiband(BaseModel=LombScargleAstroML)
+model.fit(t, mags, dy, filts[:, None])
 P = model.scores(periods)
 
 fig, ax = plt.subplots(1, 2, figsize=(10, 4))
@@ -75,7 +76,7 @@ mags = mags[np.arange(Nobs) % 5, np.arange(Nobs)]
     
 masks = [(filts == band) for band in 'ugriz']
 
-model = NaiveMultiband(LombScargleAstroML).fit(t, mags, dy, filts)
+model = NaiveMultiband(BaseModel=LombScargleAstroML).fit(t, mags, dy, filts)
 P = model.scores(periods)
 
 fig = plt.figure(figsize=(10, 4))
@@ -105,7 +106,7 @@ ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].xaxis.set_major_formatter(plt.NullFormatter())
 ax[1].set_ylabel('power + offset' + 30 * ' ')
 
-for (i, Nbase, Nband) in [(0, 1, 0), (1, 0, 1)]:
+for (i, Nbase, Nband) in [(0, 1, 0)]:#, (1, 0, 1)]:
     LS_multi = LombScargleMultiband(Nterms_base=Nbase, Nterms_band=Nband)
     LS_multi.fit(t, mags, dy, filts)
     P_multi = LS_multi.periodogram(periods)
@@ -115,8 +116,8 @@ for (i, Nbase, Nband) in [(0, 1, 0), (1, 0, 1)]:
                fontsize=10, ha='right', va='top')
 
 ax[2].set_title('Multiband Periodogram')
-ax[2].set_ylim(0, 2.0)
-ax[2].set_yticks([0, 1.0, 2.0])
+ax[2].set_yticks([0, 0.5, 1.0])
+ax[2].set_ylim(0, 1.0)
 ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
 
