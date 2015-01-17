@@ -3,11 +3,16 @@ Tools for computing periods with various methods
 """
 import contextlib
 import numpy
+import os
 from IPython import parallel
 
 import multiband_LS
 from multiband_LS.data import fetch_light_curves
 from multiband_LS.memoize import CacheResults
+
+
+DIRNAME = os.path.dirname(os.path.abspath(__file__))
+print("ComputePeriods home directory: {0}".format(DIRNAME))
 
 
 def best_period_Multiband(lcid, rrlyrae,
@@ -25,12 +30,15 @@ def best_period_Multiband(lcid, rrlyrae,
     return ls.best_period
 
 
-def periods_Multiband(lcids, Nterms_base=1, Nterms_band=0,
-                      func=best_period_Multiband):
+def periods_Multiband(lcids=None, Nterms_base=1, Nterms_band=0,
+                      func=best_period_Multiband, dirname=DIRNAME):
     """Compute and cache best periods for the given light curve ids"""
     cachedir = 'results_multiband_{0}_{1}'.format(Nterms_base, Nterms_band)
+    cachedir = os.path.join(dirname, cachedir)
     cache = CacheResults(cachedir, verbose=True)
     rrlyrae = fetch_light_curves()
+    if lcids is None:
+        lcids = rrlyrae.ids
     results = cache.call_iter(func, lcids,
                               args=(rrlyrae, Nterms_base, Nterms_band))
     return numpy.asarray(results)
@@ -50,17 +58,22 @@ def best_period_SuperSmoother(lcid, rrlyrae, filt='g'):
     return ssm.best_period
 
 
-def periods_SuperSmoother(lcids, filt='g', func=best_period_SuperSmoother):
+def periods_SuperSmoother(lcids=None, filt='g',
+                          func=best_period_SuperSmoother, dirname=DIRNAME):
     """Compute and cache best periods for the given light curve ids"""
     cachedir = 'results_supersmoother_{0}'.format(filt)
+    cachedir = os.path.join(dirname, cachedir)
     cache = CacheResults(cachedir, verbose=True)
     rrlyrae = fetch_light_curves()
+    if lcids is None:
+        lcids = rrlyrae.ids
     results = cache.call_iter(func, lcids, args=(rrlyrae, filt))
     return numpy.asarray(results)
 
 
 def parallelize(func, *client_args, **client_kwargs):
-    """Parallelize a function"""
+    """Parallelize one of the above functions"""
+
     @contextlib.wraps(func)
     def wrapper(lcids, *args, **kwargs):
         try:
@@ -73,6 +86,7 @@ def parallelize(func, *client_args, **client_kwargs):
 
         dview = client.direct_view()
         with dview.sync_imports():
+            import os
             import numpy
             import multiband_LS
             from multiband_LS.memoize import CacheResults
@@ -104,6 +118,6 @@ periods_SuperSmoother_parallel = parallelize(periods_SuperSmoother)
 
 if __name__ == '__main__':
     rrlyrae = fetch_light_curves()
-    ids = list(rrlyrae.ids)[:10]
+    ids = list(rrlyrae.ids)
     print(periods_Multiband_parallel(ids))
-    print(periods_SuperSmoother_parallel(ids))
+    #print(periods_SuperSmoother_parallel(ids))

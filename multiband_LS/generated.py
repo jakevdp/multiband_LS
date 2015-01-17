@@ -6,8 +6,23 @@ from .data import fetch_rrlyrae_templates, fetch_light_curves
 
 
 class RRLyraeObject(object):
-    """
-    TODO: document this class & methods
+    """Generate RR Lyrae light curves from Sesar 2010 lightcurves
+
+    Parameters
+    ----------
+    lcid : int
+        Valid light curve ID from the Sesar 2010 RR Lyrae dataset
+    random_state : int
+        Random number generator seed
+
+    Attributes
+    ----------
+    lcdata : RRLyraeLC object
+        Container for the RR Lyrae light curve dataset
+    templates : RRLyraeTemplates object
+        Container for the RR Lyrae template dataset
+    period : float
+        Period of the RR Lyrae object
     """
     lcdata = fetch_light_curves()
     templates = fetch_rrlyrae_templates()

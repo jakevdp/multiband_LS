@@ -1,17 +1,15 @@
-from __future__ import print_function, division
-
 """
 Supersmoother code for periodic modeling
 """
-import numpy as np
+from __future__ import print_function, division
 
+import numpy as np
 
 try:
     import supersmoother as ssm
 except ImportError:
     raise ImportError("Package supersmoother is required. "
                       "Use ``pip install supersmoother`` to install")
-
 
 from .modeler import PeriodicModeler
 
@@ -60,7 +58,8 @@ class SuperSmoother(PeriodicModeler):
         return model.predict(t % period)
 
     def _score(self, periods):
-        # double-up the data to allow periodicity on the fits
+        # double-up the data to account for periodicity.
+        # TODO: push periodicity to the supersmoother package
         N = len(self.t)
         N4 = N // 4
         t = np.concatenate([self.t, self.t])
