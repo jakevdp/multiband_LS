@@ -15,11 +15,6 @@ def test_linear_scan():
 
     model = LombScargle(optimizer=optimizer).fit(t, y, dy)
 
-    # test candidate periods
-    candidate_periods = optimizer._compute_candidate_periods(model)
-    assert_allclose(candidate_periods.min(), 0.8, atol=0.02)
-    assert_allclose(candidate_periods.max(), 1.2)
-
     # test finding best period
-    best_period = optimizer.find_best_period(model)
+    best_period = optimizer.find_best_periods(model)
     assert_allclose(best_period, 1, atol=1E-4)

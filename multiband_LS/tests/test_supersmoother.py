@@ -25,7 +25,7 @@ def test_supersmoother(N=100, omega=10):
     model = SuperSmoother().fit(t, y, dy)
     model.optimizer.period_range = (2 * np.pi / (omega + 1),
                                     2 * np.pi / (omega - 1))
-    model.optimizer.n_zooms = 0
+    model.optimizer.final_pass_coverage = 0
     assert_allclose(omega, 2 * np.pi / model.best_period, rtol=0.02)
 
 

@@ -63,7 +63,7 @@ def test_modelers_smoketest():
 
         # Make optimization fast
         model.optimizer.period_range = (0.5, 0.52)
-        model.optimizer.n_zooms = 0
+        model.optimizer.final_pass_coverage = 0
         model.best_period
 
         model.score(periods)
@@ -84,7 +84,7 @@ def test_multiband_modelers_smoketest():
 
         # Make optimization fast
         model.optimizer.period_range = (0.5, 0.52)
-        model.optimizer.n_zooms = 0
+        model.optimizer.final_pass_coverage = 0
         period = model.best_period
 
         model.predict(t, filts)

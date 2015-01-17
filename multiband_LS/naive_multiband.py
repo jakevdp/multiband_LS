@@ -89,9 +89,11 @@ class NaiveMultiband(PeriodicModeler):
             Dictionary of best periods. Dictionary keys are the unique filter
             names passed to fit()
         """
-        periods = self.optimizer._compute_candidate_periods(self)
-        return dict([(filt, periods[np.argmax(score)])
-                     for (filt, score) in self.scores(periods).items()])
+        for (key, model) in self.models_.items():
+            model.optimizer = self.optimizer
+
+        return dict((filt, model.best_period)
+                     for (filt, model) in self.models_.items())
 
     @property
     def best_period(self):
