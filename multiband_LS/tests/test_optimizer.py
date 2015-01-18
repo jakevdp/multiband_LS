@@ -20,6 +20,7 @@ def test_linear_scan():
     assert_allclose(best_period, 1, atol=1E-4)
 
     # test finding N best periods
-    best_periods, best_scores = optimizer.find_best_periods(model, 5)
+    best_periods, best_scores = optimizer.find_best_periods(model, 5,
+                                                            return_scores=True)
     assert_allclose(model.score(best_periods), best_scores)
     assert_allclose(best_periods[0], best_period)

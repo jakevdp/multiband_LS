@@ -31,8 +31,9 @@ SESAR_RRLYRAE_URL = 'http://www.astro.washington.edu/users/bsesar/S82_RRLyr/'
 class RRLyraeLC(object):
     """Container for accessing RR Lyrae Light Curve data."""
     def __init__(self, filename, dirname='table1'):
-        self.data = tarfile.open(filename)
+        self.filename = filename
         self.dirname = dirname
+        self.data = tarfile.open(filename)
         self._metadata = None
         self._obsdata = None
 
@@ -121,7 +122,38 @@ class RRLyraeLC(object):
         return self._obsdata[i[0]]
 
 
-def fetch_light_curves(data_dir=None):
+class PartialRRLyraeLC(RRLyraeLC):
+    """Class to get a partial Stripe 82 light curve: one band per night"""
+    @classmethod
+    def from_rrlyrae(cls, rrlyrae, rseed=0):
+        return cls(filename=rrlyrae.filename,
+                   dirname=rrlyrae.dirname,
+                   rseed=rseed)
+
+    def __init__(self, filename, dirname='table1', rseed=0):
+        self.rseed = rseed
+        RRLyraeLC.__init__(self, filename, dirname)
+
+    def get_lightcurve(self, star_id, return_1d=True):
+        if not return_1d:
+            raise ValueError("partial can only return 1D data")
+            
+        t, y, dy = RRLyraeLC.get_lightcurve(self, star_id, return_1d=False)
+
+        rng = np.random.RandomState(self.rseed)
+        r = np.arange(len(t))
+        obs = rng.randint(0, 5, len(t))
+        t, y, dy = t[r, obs], y[r, obs], dy[r, obs]
+        filts = np.array(list('ugriz'))[obs]
+
+        mask = ~np.isnan(t + y + dy)
+        t, y, dy, filts = t[mask], y[mask], dy[mask], filts[mask]
+
+        return t, y, dy, filts
+
+
+
+def fetch_light_curves(data_dir=None, partial=False):
     """Fetch light curves from Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
@@ -132,7 +164,10 @@ def fetch_light_curves(data_dir=None):
         buf = download_with_progress_bar(url)
         open(save_loc, 'bw').write(buf)
 
-    return RRLyraeLC(save_loc)
+    if partial:
+        return PartialRRLyraeLC(save_loc)
+    else:
+        return RRLyraeLC(save_loc)
 
 
 def fetch_lc_params(data_dir=None):
