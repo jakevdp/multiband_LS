@@ -103,6 +103,11 @@ class PeriodicModeler(object):
             self._best_period = self._calc_best_period()
         return self._best_period
 
+    def find_best_periods(self, n_periods=5, return_scores=False):
+        """Find the top several best periods for the model"""
+        return self.optimizer.find_best_periods(self, n_periods,
+                                                return_scores=return_scores)
+
     def _calc_best_period(self):
         """Compute the best period using the optimizer"""
         return self.optimizer.best_period(self)
