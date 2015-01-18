@@ -1,6 +1,8 @@
 """
 Tools for computing periods with various methods
 """
+import os, sys; sys.path.append(os.path.abspath('../..'))
+
 import contextlib
 import numpy
 import os
@@ -27,7 +29,7 @@ def best_period_Multiband(lcid, rrlyrae,
                                            Nterms_band=Nterms_band)
     ls.optimizer.period_range = (0.2, 1.2)
     ls.fit(t, y, dy, filts)
-    return ls.best_period
+    return ls.find_best_periods(5)
 
 
 def periods_Multiband(lcids=None, Nterms_base=1, Nterms_band=0,
@@ -55,7 +57,7 @@ def best_period_SuperSmoother(lcid, rrlyrae, filt='g'):
     ssm = multiband_LS.SuperSmoother()
     ssm.optimizer.period_range = (0.2, 1.2)
     ssm.fit(t, y, dy)
-    return ssm.best_period
+    return ssm.find_best_periods(5)
 
 
 def periods_SuperSmoother(lcids=None, filt='g',
@@ -120,4 +122,4 @@ if __name__ == '__main__':
     rrlyrae = fetch_light_curves()
     ids = list(rrlyrae.ids)
     print(periods_Multiband_parallel(ids))
-    #print(periods_SuperSmoother_parallel(ids))
+    print(periods_SuperSmoother_parallel(ids))
