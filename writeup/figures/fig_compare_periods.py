@@ -1,6 +1,9 @@
 """
 Plot figures comparing periods between multiband lomb scargle,
 supersmoother, and Sesar 2010.
+
+Note: results used here are computed using the ``compute_results.py`` script
+in this directory.
 """
 from __future__ import print_function, division
 
@@ -11,13 +14,11 @@ from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
-from multiband_LS import (LombScargleAstroML, LombScargleMultiband,
-                          SuperSmoother)
-from multiband_LS.memoize import CacheResults
+from multiband_LS import LombScargleMultiband
+from compute_results import SuperSmoother1Band
 from multiband_LS.data import fetch_light_curves
 
 from compute_results import get_period_results
-from compute_rrlyrae_periods import periods_Multiband, periods_SuperSmoother
 
 
 
@@ -66,14 +67,58 @@ def plot_period_comparison(ax, Px_all, Py,
             size=10, ha='right', va='bottom')
 
 
-def plot_periods(ssm_file, mbls_file):
-    rrlyrae = fetch_light_curves()
+def plot_example_lightcurve(rrlyrae, lcid):
+    fig = plt.figure(figsize=(10, 4))
 
+    gs = plt.GridSpec(2, 2,
+                      left=0.07, right=0.95, wspace=0.1,
+                      bottom=0.15, top=0.9)
+    ax = [fig.add_subplot(gs[:, 0]),
+          fig.add_subplot(gs[0, 1]),
+          fig.add_subplot(gs[1, 1])]
+
+    t, y, dy, filts = rrlyrae.get_lightcurve(lcid, True)
+
+    # don't plot data with huge errorbars
+    mask = (dy < 1)
+    t, y, dy, filts = t[mask], y[mask], dy[mask], filts[mask]
+    period = rrlyrae.get_metadata(lcid)['P']
+    phase = (t % period) / period
+
+    for band in 'ugriz':
+        mask = (filts == band)
+        ax[0].errorbar(phase[mask], y[mask], dy[mask],
+                       fmt='.', label=band)
+    ax[0].legend(loc='upper left', ncol=3)
+    ax[0].set(xlabel='phase', ylabel='magnitude',
+              title='Folded Data (P={0:.3f} days)'.format(period))
+    ylim = ax[0].get_ylim()
+    ax[0].set_ylim(ylim[1], ylim[0] - 0.2 * (ylim[1] - ylim[0]))
+
+    periods = np.linspace(0.2, 1.0, 4000)
+
+    models = [SuperSmoother1Band(band='g'),
+              LombScargleMultiband(Nterms_base=1, Nterms_band=0)]
+
+    for axi, model in zip(ax[1:], models):
+        model.fit(t, y, dy, filts)
+        axi.plot(periods, model.score(periods), lw=1)
+        axi.set_ylim(0, 1)
+
+    ax[1].xaxis.set_major_formatter(plt.NullFormatter())
+    ax[1].set_title("SuperSmoother on g-band")
+    ax[2].set_title("Shared-phase Multiband")
+
+    return fig, ax
+    
+
+
+def plot_periods(ssm_file, mbls_file, rrlyrae):
     ids = list(rrlyrae.ids)
     sesar_periods = np.array([rrlyrae.get_metadata(lcid)['P']
                               for lcid in ids])
-    ssm_periods = get_period_results(ssm_file)
-    mbls_periods = get_period_results(mbls_file)
+    ssm_periods = get_period_results(ssm_file, ids)
+    mbls_periods = get_period_results(mbls_file, ids)
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 4), sharex=True, sharey=True)
     fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1,
@@ -93,8 +138,15 @@ def plot_periods(ssm_file, mbls_file):
 
 
 if __name__ == '__main__':
+    rrlyrae = fetch_light_curves()
+    lcid = list(rrlyrae.ids)[4]
+
+    fig, ax = plot_example_lightcurve(rrlyrae, lcid)
+    fig.savefig('fig07a.pdf')
+
     fig, ax = plot_periods(ssm_file='results/supersmoother_g.npy',
-                           mbls_file='results/multiband_1_0.npy')
-    fig.savefig('fig07.pdf')
+                           mbls_file='results/multiband_1_0.npy',
+                           rrlyrae=rrlyrae)
+    fig.savefig('fig07b.pdf')
     plt.show()
     
