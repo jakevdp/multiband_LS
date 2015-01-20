@@ -85,3 +85,46 @@ class SuperSmoother(PeriodicModeler):
 
         return np.asarray(results)
         
+
+class SuperSmootherMultiband(PeriodicModeler):
+    """
+    Simple multi-band SuperSmoother, with each band smoothed independently
+    
+    Parameters
+    ----------
+    optimizer : PeriodicOptimizer instance
+        Optimizer to use to find the best period. If not specified, the
+        LinearScanOptimizer will be used.
+    BaseModel : class type (default = SuperSmoother)
+        The base model to use for each individual band.
+    """
+    def __init__(self, optimizer=None, BaseModel=SuperSmoother):
+        self.BaseModel = BaseModel
+        PeriodicModeler.__init__(self, optimizer)
+
+    def _fit(self, t, y, dy, filts):
+        self.unique_filts_ = np.unique(filts)
+        masks = [(filts == f) for f in self.unique_filts_]
+        self.models_ = [self.BaseModel().fit(t[m], y[m], dy[m]) for m in masks]
+
+    def _score(self, periods):
+        # Total score is the sum of powers weighted by chi2-normalization
+        powers = np.array([model.score(periods) for model in self.models_])
+        baselines = np.array([model.baseline_err for model in self.models_])
+        return np.dot(baselines / baselines.sum(), powers)
+
+    def _predict(self, t, filts, period):
+        vals = set(np.unique(filts))
+        if not vals.issubset(self.unique_filts_):
+            raise ValueError("filts does not match training data: "
+                             "input: {0} output: {1}"
+                             "".format(set(self.unique_filts_), set(vals)))
+
+        t, filts = np.broadcast_arrays(t, filts)
+
+        result = np.zeros(t.shape, dtype=float)
+        masks = ((filts == f) for f in self.unique_filts_)
+        for model, mask in zip(self.models_, masks):
+            result[mask] = model.predict(t[mask], period=period)
+        return result
+        
