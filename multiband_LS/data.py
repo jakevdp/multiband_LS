@@ -37,6 +37,12 @@ class RRLyraeLC(object):
         self._metadata = None
         self._obsdata = None
 
+    def __getstate__(self):
+        return (self.filename, self.dirname)
+
+    def __setstate__(self, args):
+        self.__init__(*args)
+
     @property
     def filenames(self):
         return self.data.getnames()
@@ -133,6 +139,12 @@ class PartialRRLyraeLC(RRLyraeLC):
     def __init__(self, filename, dirname='table1', rseed=0):
         self.rseed = rseed
         RRLyraeLC.__init__(self, filename, dirname)
+
+    def __getstate__(self):
+        return (self.filename, self.dirname, self.rseed)
+
+    def __setstate__(self, args):
+        self.__init__(*args)
 
     def get_lightcurve(self, star_id, return_1d=True):
         if not return_1d:
