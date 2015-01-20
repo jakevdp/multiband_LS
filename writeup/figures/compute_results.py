@@ -92,14 +92,30 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
     return results
 
 
-def get_sorted_results(outfile, lcids):
-    unordered_results = np.load(outfile)
+def get_period_results(outfile, lcids=None):
+    """
+    Get the results from the outfile for the associated integer light curve ids
+    """
+    try:
+        unordered_results = np.load(outfile)
+    except FileNotFoundError:
+        raise FileNotFoundError("File {0} not found. You can run the code in "
+                                "compute_results.py to create the file."
+                                "".format(outfile))
+
+    if lcids is None:
+        lcids = fetch_light_curves().ids
+
+    # turn generator into list
+    lcids = list(lcids)
+    dtype = unordered_results.dtype
+
     D = dict(zip(unordered_results['id'], unordered_results['periods']))
     results = np.zeros(len(lcids), dtype=dtype)
     for i, lcid in enumerate(lcids):
         results['id'][i] = lcid
         results['periods'][i] = D[lcid]
-    return results
+    return results['periods']
         
             
 if __name__ == '__main__':

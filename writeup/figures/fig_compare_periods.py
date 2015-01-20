@@ -16,20 +16,14 @@ from multiband_LS import (LombScargleAstroML, LombScargleMultiband,
 from multiband_LS.memoize import CacheResults
 from multiband_LS.data import fetch_light_curves
 
+from compute_results import get_period_results
 from compute_rrlyrae_periods import periods_Multiband, periods_SuperSmoother
 
-rrlyrae = fetch_light_curves()
-
-ids = list(rrlyrae.ids)
-sesar_periods = np.array([rrlyrae.get_metadata(lcid)['P']
-                          for lcid in ids])
-ssm_periods = periods_SuperSmoother(ids)
-mbls_periods = periods_Multiband(ids)
 
 
 def plot_period_comparison(ax, Px_all, Py,
                            beats=[-3, -2, -1, 0, 1, 2, 3],
-                           aliases=[0.5]):
+                           aliases=[]):
     Px = Px_all[:, 0]
 
     ax.plot(Px, Py, 'o', alpha=0.5, ms=5)
@@ -72,17 +66,35 @@ def plot_period_comparison(ax, Px_all, Py,
             size=10, ha='right', va='bottom')
 
 
-fig, ax = plt.subplots(1, 2, figsize=(10, 4), sharex=True, sharey=True)
-fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1,
-                    bottom=0.15, top=0.9)
+def plot_periods(ssm_file, mbls_file):
+    rrlyrae = fetch_light_curves()
 
-plot_period_comparison(ax[0], ssm_periods, sesar_periods)
-plot_period_comparison(ax[1], mbls_periods, sesar_periods, aliases=[])
+    ids = list(rrlyrae.ids)
+    sesar_periods = np.array([rrlyrae.get_metadata(lcid)['P']
+                              for lcid in ids])
+    ssm_periods = get_period_results(ssm_file)
+    mbls_periods = get_period_results(mbls_file)
 
-ax[0].set_xlabel('supersmoother period (days)')
-ax[0].set_ylabel('Sesar 2010 period (days)')
-ax[1].set_xlabel('multiband period (days)')
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4), sharex=True, sharey=True)
+    fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1,
+                        bottom=0.15, top=0.9)
 
-fig.savefig('fig07.pdf')
+    plot_period_comparison(ax[0], ssm_periods, sesar_periods, aliases=[1/2])
+    plot_period_comparison(ax[1], mbls_periods, sesar_periods)
 
-plt.show()
+    ax[0].set_xlabel('supersmoother period (days)')
+    ax[0].set_ylabel('Sesar 2010 period (days)')
+    ax[1].set_xlabel('multiband period (days)')
+
+    ax[0].set_title("SuperSmoother (single-band)", y=1.04)
+    ax[1].set_title("Multiband (1, 0)-model", y=1.04)
+
+    return fig, ax
+
+
+if __name__ == '__main__':
+    fig, ax = plot_periods(ssm_file='results/supersmoother_g.npy',
+                           mbls_file='results/multiband_1_0.npy')
+    fig.savefig('fig07.pdf')
+    plt.show()
+    
