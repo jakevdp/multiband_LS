@@ -198,8 +198,7 @@ class LombScargleMultibandFast(PeriodicModeler):
 
     def _score(self, periods):
         # Total score is the sum of powers weighted by chi2-normalization
-        powers = np.array([model.score(periods)
-                           for model in self.models_])
+        powers = np.array([model.score(periods) for model in self.models_])
         chi2_0 = np.array([np.sum(model.yw_ ** 2) for model in self.models_])
         return np.dot(chi2_0 / chi2_0.sum(), powers)
 
