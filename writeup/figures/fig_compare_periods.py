@@ -14,7 +14,7 @@ from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
-from multiband_LS import LombScargleMultiband
+from multiband_LS import LombScargleMultiband, SuperSmootherMultiband
 from compute_results import SuperSmoother1Band
 from multiband_LS.data import fetch_light_curves
 
@@ -24,10 +24,10 @@ from compute_results import get_period_results
 
 def plot_period_comparison(ax, Px_all, Py,
                            beats=[-3, -2, -1, 0, 1, 2, 3],
-                           aliases=[]):
+                           aliases=[], color=None):
     Px = Px_all[:, 0]
 
-    ax.plot(Px, Py, 'o', alpha=0.5, ms=5)
+    ax.plot(Px, Py, 'o', alpha=0.5, ms=5, color=color)
     P1 = np.linspace(0.1, 1.2)
 
     matches = lambda x, y, tol=0.01: np.sum(abs(x - y) < tol)
@@ -50,7 +50,7 @@ def plot_period_comparison(ax, Px_all, Py,
 
     for n in aliases:
         fn = lambda P, n=n: n * P
-        ax.plot(P1, fn(P1), ':k', alpha=0.7, lw=1, zorder=1)
+        ax.plot(P1, fn(P1), '--', color='gray', alpha=0.7, lw=1, zorder=1)
         if n < 1:
             ax.text(1.21, fn(1.2), str(matches(fn(Px), Py)),
                     size=10, va='center', ha='left', color='gray')
@@ -100,9 +100,11 @@ def plot_example_lightcurve(rrlyrae, lcid):
     models = [SuperSmoother1Band(band='g'),
               LombScargleMultiband(Nterms_base=1, Nterms_band=0)]
 
-    for axi, model in zip(ax[1:], models):
+    colors = seaborn.color_palette()
+
+    for axi, model, color in zip(ax[1:], models, colors):
         model.fit(t, y, dy, filts)
-        axi.plot(periods, model.score(periods), lw=1)
+        axi.plot(periods, model.score(periods), lw=1, color=color)
         axi.set_ylim(0, 1)
 
     ax[1].xaxis.set_major_formatter(plt.NullFormatter())
@@ -124,15 +126,19 @@ def plot_periods(ssm_file, mbls_file, rrlyrae):
     fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1,
                         bottom=0.15, top=0.9)
 
-    plot_period_comparison(ax[0], ssm_periods, sesar_periods, aliases=[1/2])
-    plot_period_comparison(ax[1], mbls_periods, sesar_periods)
+    colors = seaborn.color_palette()
+
+    plot_period_comparison(ax[0], ssm_periods, sesar_periods, aliases=[1/2],
+                           color=colors[0])
+    plot_period_comparison(ax[1], mbls_periods, sesar_periods,
+                           color=colors[1])
 
     ax[0].set_xlabel('supersmoother period (days)')
     ax[0].set_ylabel('Sesar 2010 period (days)')
     ax[1].set_xlabel('multiband period (days)')
 
-    ax[0].set_title("SuperSmoother (single-band)", y=1.04)
-    ax[1].set_title("Multiband (1, 0)-model", y=1.04)
+    ax[0].set_title("SuperSmoother (g-band)", y=1.04)
+    ax[1].set_title("Shared-phase Multiband", y=1.04)
 
     return fig, ax
 

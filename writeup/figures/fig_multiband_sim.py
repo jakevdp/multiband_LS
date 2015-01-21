@@ -49,7 +49,7 @@ for i, band in enumerate('ugriz'):
                    fmt='.', label=band)
 ax[0].set_ylim(18, 14.5)
 ax[0].legend(loc='upper left', fontsize=12, ncol=3)
-ax[0].set_title('Folded Data (P={0:.3f} days)'.format(rrlyrae.period))
+ax[0].set_title('Folded Data, 5 bands per night (P={0:.3f} days)'.format(rrlyrae.period))
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')
 
@@ -57,13 +57,13 @@ for i, band in enumerate(filts):
     offset = 4 - i
     ax[1].plot(periods, P[band] + offset, lw=1)
     ax[1].text(0.89, 0.7 + offset, band, fontsize=14, ha='right', va='top')
-ax[1].set_title('Periodogram in Each Band')
+ax[1].set_title('Standard Periodogram in Each Band')
 ax[1].set_ylim(0, 5)
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].set_xlabel('Period (days)')
 ax[1].set_ylabel('power + offset')
 
-fig.savefig('fig05.pdf')
+fig.savefig('fig05a.pdf')
 
 #----------------------------------------------------------------------
 # Second figure:
@@ -92,7 +92,7 @@ for band, mask in zip('ugriz', masks):
                    fmt='.', label=band)
 ax[0].set_ylim(18, 14.5)
 ax[0].legend(loc='upper left', fontsize=12, ncol=3)
-ax[0].set_title('Folded Data (P={0:.3f} days)'.format(rrlyrae.period))
+ax[0].set_title('Folded Data, 1 band per night (P={0:.3f} days)'.format(rrlyrae.period))
 ax[0].set_xlabel('phase')
 ax[0].set_ylabel('magnitude')
 
@@ -104,7 +104,7 @@ for i, band in enumerate('ugriz'):
 ax[1].set_title('Standard Periodogram in Each Band')
 ax[1].yaxis.set_major_formatter(plt.NullFormatter())
 ax[1].xaxis.set_major_formatter(plt.NullFormatter())
-ax[1].set_ylabel('power + offset' + 30 * ' ')
+ax[1].set_ylabel('power + offset')
 
 for (i, Nbase, Nband) in [(0, 1, 0)]:#, (1, 0, 1)]:
     LS_multi = LombScargleMultiband(Nterms_base=Nbase, Nterms_band=Nband)
@@ -120,8 +120,9 @@ ax[2].set_yticks([0, 0.5, 1.0])
 ax[2].set_ylim(0, 1.0)
 ax[2].yaxis.set_major_formatter(plt.NullFormatter())
 ax[2].set_xlabel('Period (days)')
+ax[2].set_ylabel('power')
 
-fig.savefig('fig06.pdf')
+fig.savefig('fig05b.pdf')
 
 #----------------------------------------------------------------------
 # Write the results to file
