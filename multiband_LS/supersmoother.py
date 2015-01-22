@@ -54,36 +54,15 @@ class SuperSmoother(PeriodicModeler):
         self.baseline_err = np.mean(abs((y - mu) / dy))
 
     def _predict(self, t, filts, period):
-        model = ssm.SuperSmoother().fit(self.t % period, self.y, self.dy)
-        return model.predict(t % period)
+        model = ssm.SuperSmoother(period=period).fit(self.t, self.y, self.dy)
+        return model.predict(t)
 
     def _score(self, periods):
-        # double-up the data to account for periodicity.
-        # TODO: push periodicity to the supersmoother package
-        N = len(self.t)
-        N4 = N // 4
-        t = np.concatenate([self.t, self.t])
-        y = np.concatenate([self.y, self.y])
-        dy = np.concatenate([self.dy, self.dy])
-
-        results = []
-        for p in periods:
-            # compute doubled phase and sort
-            phase = t % p
-            phase[N:] += p
-            isort = np.argsort(phase)[N4: N + 3 * N4]
-            phase = phase[isort]
-            yp = y[isort]
-            dyp = dy[isort]
-
-            # compute model
-            model = ssm.SuperSmoother().fit(phase, yp, dyp, presorted=True)
-
-            # take middle residuals
-            resids = model.cv_residuals()[N4: N4 + N]
-            results.append(1 - np.mean(np.abs(resids)) / self.baseline_err)
-
-        return np.asarray(results)
+        return np.asarray([1 - (ssm.SuperSmoother(period=p)
+                                            .fit(self.t, self.y, self.dy)
+                                            .cv_error(skip_endpoints=False)
+                                / self.baseline_err)
+                           for p in periods])
         
 
 class SuperSmootherMultiband(PeriodicModeler):

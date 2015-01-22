@@ -10,7 +10,7 @@ import numpy as np
 
 from .modeler import PeriodicModeler
 from .lomb_scargle import LombScargle
-from .utils import mode_range
+from .utils import mode_in_range
 
 
 class NaiveMultiband(PeriodicModeler):
@@ -98,4 +98,4 @@ class NaiveMultiband(PeriodicModeler):
     @property
     def best_period(self):
         best_periods = np.asarray(list(self.best_periods().values()))
-        return mode_range(best_periods, tol=1E-2)
+        return mode_in_range(best_periods, tol=1E-2)

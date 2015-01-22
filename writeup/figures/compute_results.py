@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 from multiband_LS.data import fetch_light_curves
-from multiband_LS import LombScargleMultiband, SuperSmoother
+from multiband_LS import LombScargleMultiband, SuperSmoother, SuperSmootherMultiband
 
 
 class SuperSmoother1Band(SuperSmoother):
@@ -130,7 +130,7 @@ if __name__ == '__main__':
     client = Client()
     dview = client.direct_view()
     with dview.sync_imports():
-        from multiband_LS import LombScargleMultiband, SuperSmoother
+        from multiband_LS import LombScargleMultiband, SuperSmoother, SuperSmootherMultiband
 
     # Now time to compute the results. Here are the keywords used throughout:
     kwargs = dict(Nperiods=5, save_every=1, parallel=True, client=client)
@@ -141,6 +141,9 @@ if __name__ == '__main__':
                              outfile='results/multiband_1_0', **kwargs)
     compute_and_save_periods(rrlyrae, SuperSmoother1Band,
                              outfile='results/supersmoother_g', **kwargs)
+    #compute_and_save_periods(rrlyrae, SuperSmootherMultiband,
+    #                         outfile='results/supersmoother_multi',
+    #                         **kwargs)
 
     # Partial Dataset
     compute_and_save_periods(rrlyrae_partial, LombScargleMultiband,
@@ -149,6 +152,9 @@ if __name__ == '__main__':
     compute_and_save_periods(rrlyrae_partial, SuperSmoother1Band,
                              outfile='results/partial_supersmoother_g',
                              **kwargs)
+    #compute_and_save_periods(rrlyrae_partial, SuperSmootherMultiband,
+    #                         outfile='results/partial_supersmoother_multi',
+    #                         **kwargs)
 
 
     # Additional Multiterm Model
