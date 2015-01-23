@@ -32,7 +32,8 @@ class SuperSmoother1Band(SuperSmoother):
 def compute_and_save_periods(rrlyrae, Model, outfile,
                              model_args=None, model_kwds=None,
                              Nperiods=5, save_every=5,
-                             parallel=True, client=None):
+                             parallel=True, client=None,
+                             num_results=None):
     """Function to compute periods and save the results"""
     # Here is the datatype of the results array:
     dtype = [('id', 'int32'), ('periods', '{0:d}float64'.format(Nperiods))]
@@ -51,6 +52,10 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
     else:
         prev_results = np.zeros(0, dtype=dtype)
         lcids = list(rrlyrae.ids)
+
+    # For testing purposes... only find a few results
+    if num_results is not None:
+        lcids = lcids[:num_results]
 
     # Define a function which, given an lcid, computes the desired periods.
     def find_periods(lcid, Nperiods=Nperiods,
@@ -130,7 +135,8 @@ if __name__ == '__main__':
     client = Client()
     dview = client.direct_view()
     with dview.sync_imports():
-        from multiband_LS import LombScargleMultiband, SuperSmoother, SuperSmootherMultiband
+        from multiband_LS import (LombScargleMultiband, SuperSmoother,
+                                  SuperSmootherMultiband)
 
     # Now time to compute the results. Here are the keywords used throughout:
     kwargs = dict(Nperiods=5, save_every=1, parallel=True, client=client)
@@ -158,9 +164,9 @@ if __name__ == '__main__':
 
 
     # Additional Multiterm Model
-    #compute_and_save_periods(rrlyrae, LombScargleMultiband,
-    #                         model_kwds=dict(Nterms_base=0, Nterms_band=1),
-    #                         outfile='results/multiband_0_1', **kwargs)
-    #compute_and_save_periods(rrlyrae_partial, LombScargleMultiband,
-    #                         model_kwds=dict(Nterms_base=0, Nterms_band=1),
-    #                         outfile='results/partial_multiband_0_1', **kwargs)
+    compute_and_save_periods(rrlyrae, LombScargleMultiband,
+                             model_kwds=dict(Nterms_base=0, Nterms_band=1),
+                             outfile='results/multiband_0_1', **kwargs)
+    compute_and_save_periods(rrlyrae_partial, LombScargleMultiband,
+                             model_kwds=dict(Nterms_base=0, Nterms_band=1),
+                             outfile='results/partial_multiband_0_1', **kwargs)
