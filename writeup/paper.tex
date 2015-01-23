@@ -12,22 +12,12 @@
 \usepackage{graphicx}
 \graphicspath{{figures/}}
 
+% Draft watermark:
+%\usepackage{draftwatermark}
+%\SetWatermarkLightness{0.9}
+%\SetWatermarkScale{4}
 
-%\usepackage{listings}
-%\definecolor{lbcolor}{rgb}{0.9,0.9,0.9}
-%\lstset{language=Python,
-%        basicstyle=\footnotesize\ttfamily,
-%        showspaces=false,
-%        showstringspaces=false,
-%        tabsize=2,
-%        breaklines=false,
-%        breakatwhitespace=true,
-%        identifierstyle=\ttfamily,
-%        keywordstyle=\bfseries\color[rgb]{0.133,0.545,0.133},
-%        commentstyle=\color[rgb]{0.133,0.545,0.133},
-%        stringstyle=\color[rgb]{0.627,0.126,0.941},
-%    }
-
+% Some macros
 \newcommand{\todo}[1]{{\color{red} [TODO: #1]}}
 \newcommand{\foreign}[1]{{\it #1}}
 
@@ -51,7 +41,7 @@
 
 \begin{document}
 
-\title{Periodograms for Multi-band Astronomical Time Series}
+\title{Periodograms for Multiband Astronomical Time Series}
 
 \newcommand{\escience}{1}
 \newcommand{\uwastro}{2}
@@ -66,7 +56,7 @@ This paper introduces the {\it multiband periodogram}, a general extension of th
 Lomb-Scargle approach for detecting periodic signals in time-domain data. In addition to 
 advantanges of the Lomb-Scargle method such as treatment of non-uniform sampling and
 heteroscedastic errors, the multiband periodogram significantly improves period finding for randomly 
-sampled multi-band light curves (e.g., Pan-STARRS, DES and LSST). The light curves in 
+sampled multiband light curves (e.g., Pan-STARRS, DES and LSST). The light curves in 
 each band are modeled as arbitrary truncated Fourier series, with the period and phase 
 shared across all bands. The key aspect is the use of Tikhonov regularization which drives
 most of the variability into the so-called base model common to all bands, while 
@@ -74,8 +64,8 @@ fits for individual bands describe residuals relative to the base model and typi
 lower-order Fourier series. This decrease in the required number of fit parameters is the
 main reason for improved performance. We use simulated light curves 
 and randomly subsampled SDSS Stripe 82 data to demonstrate the superiority of this 
-method compared to other methods from the literature. The python implementation of 
-this method  is made publicly available as part of the astroML distribution. 
+method compared to other methods from the literature. The Python implementation of 
+this method is made publicly available as part of the astroML distribution.
 \end{abstract}
 
 \keywords{
@@ -115,21 +105,21 @@ A weakness of the above methods is that they require homogeneous measurements --
 that successive measurements must be taken through a single photometric bandpass (filter). This has not been a major
 problem for past surveys because measurements are generally taken through a single photometric filter 
 \citep [e.g. LINEAR,][]{LINEAR1}, or nearly-simultaneously in all bands at each observation \citep [e.g. SDSS,][]{Sesar2010}.
-For the case of simultaneously taken multi-band measurements, \cite{Suveges12} utilized the principal component
-method to optimaly extract the best period. Their method is essentially a multi-band generalization of the well-known
+For the case of simultaneously taken multiband measurements, \cite{Suveges12} utilized the principal component
+method to optimaly extract the best period. Their method is essentially a multiband generalization of the well-known
 two-band Welch-Stetson variability index \citep{Stetson1996}. Unfortunately, when data in each band are taken at
 different times, the  principal component approach in not applicable. In such cases, past studies have generally relied 
 on \adhoc{} methods such as a majority vote among multiple single-band estimates of the 
 periodogram \citep[e.g.,][]{Oluseyi12}. 
 
-For surveys that obtain multi-band data one band at a time, such as Pan-STARRS \citep{Kaiser2010} and DES \citep{Flaugher08},
+For surveys that obtain multiband data one band at a time, such as Pan-STARRS \citep{Kaiser2010} and DES \citep{Flaugher08},
 and for future multicolor surveys such as LSST \citep{Ivezic08LSST}, this \adhoc{} approach is not optimal. In order to take 
 advantage of the full information content in available data, it would be desirable to have a single estimate of the periodogram 
 which accounts for all observed data in a manner which is not dependent on the underlying spectrum of the object. 
 We propose such a method in this paper. 
 
 The proposed method is essentially a generalization of the Lomb-Scargle method to 
-multi-band case. The light curves in  each band are modeled as arbitrary truncated Fourier series, 
+multiband case. The light curves in  each band are modeled as arbitrary truncated Fourier series, 
 with the period, and optionally the phase, shared across all bands. The key aspect enabling this approach is the use of Tikhonov regularization 
 (discussed in detail in \S \ref{regularization}) which drives most of the variability into the so-called {\it base 
 model} common to all bands, while fits for individual bands describe residuals relative to the base model 
@@ -171,7 +161,7 @@ where $\bar{y}$ is the mean and $V$ is the variance of the data $\{y_k\}$, and $
 This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
 
 While the important features of least squares frequency estimation via Lomb-Scargle periodograms has been discussed elsewhere, we will prevent a brief introduction to the subject in the following section.
-The matrix-based formalism we develop here will make clear how the method can be extended to more sophisticated models, including regularized multi-band methods.
+The matrix-based formalism we develop here will make clear how the method can be extended to more sophisticated models, including regularized multiband methods.
 
 
 \section{Background: Matrix Formalism for Periodograms}
@@ -380,18 +370,18 @@ In \fig{regularized_example}, we compare a regularized and unregularized 20-term
 
 \section{A Multiple-Band Model}
 \sectlabel{multiband}
-To compute a periodogram for multi-band data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which easily accommodates arbitrary linear models covering our data.
+To compute a periodogram for multiband data, we'll take advantage of many of the nice features of the matrix form of the normalized periodogram, which easily accommodates arbitrary linear models covering our data.
 To account for data in multible bands, we will construct a multi-term Fourier model with the following features:
 \begin{enumerate}
-  \item An $M_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
-  \item A set of $M_{band}$-term truncated Fourier fits, each of which models the residual of a single band from this overall variability.
+  \item An $N_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
+  \item A set of $N_{band}$-term truncated Fourier fits, each of which models the residual of a single band from this overall variability.
 \end{enumerate}
-The total number of parameters for $K$ filters is then $M_K = (2M_{base} + 1) + K(2M_{band} + 1)$. As a result, for each band $b$ we have the following model of the observed magnitudes:
+The total number of parameters for $K$ filters is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
-  y_b(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
-  &\theta^{(b)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(b)}_{2n - 1}\sin(n\omega t) + \theta^{(b)}_{2n}\cos(n\omega t)\right].&
+  y_k(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
+  &\theta^{(k)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(k)}_{2n - 1}\sin(n\omega t) + \theta^{(k)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
-The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(b)}$ are determined individually.
+The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(k)}$ are determined individually.
 
 We can construct the normalized periodogram for this model by building a sparse design matrix with $M_K$ columns. Each row corresponds to a single observation through a single band. Columns corresponding to the base model and the matching observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $N_{base}=1$ and $N_{band}=0$ model corresponds to one with a simple single-term periodic base frequency, and an independent constant offset term in each band. The associated design matrix will look as follows:
 \begin{equation}
@@ -413,7 +403,8 @@ We'll choose the latter here, and regularize all the band columns while leaving 
 \begin{equation}
   \Lambda^{(1,0)} = {\rm diag}([0, 0, 0, \epsilon, \epsilon, \epsilon, \epsilon, \epsilon])
 \end{equation}
-where $\epsilon$ is some small fraction of the trace of the normal matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. The logic of this choice of regularization is that any component of the model which is common to all bands will be preferentially reflected in the base terms, with independent behavior reflected in the individual band terms. Setting $\epsilon$ to some small fraction of the trace ensures that the regularization effect on the remaining model will be small. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. We'll see an example of this in action in \sect{Simulated}.
+where $\epsilon$ is some small fraction of the trace of the normal matrix $[X_\omega^T\Sigma^{-1}X_\omega]$. The logic of this choice of regularization is that any component of the model which is common to all bands will be preferentially reflected in the base terms, with independent behavior reflected in the individual band terms. Setting $\epsilon$ to some small fraction of the trace ensures that the regularization effect on the remaining model will be small. With this regularization in place, the model is well-posed and \eq{LombScargleReg} can be used to straightforwardly compute the power. The effective number of free parameters for such a regularized $(N_{base}, N_{band})$ model with $K$ filters is
+$M_K^{eff} = 2N_{base}^{eff} + K(2N_{band} + 1)$ where $N_{base}^{eff} = \max(0, N_{base} - N_{band})$ is the effective number of base terms.
 
 The final remaining piece to mention is our assumption in \eq{ycentered} that the data are centered. This is required so that the simple form of the reference $\chi^2_0$ remains valid. For the multiband model, this assumption requires that the data satisfy \eq{ycentered} {\it within each band}: equivalently, we could lift this assumption and compute the reference $\chi^2_0$ of the multiband model with an independent floating mean within each band; the results will be identical.
 
@@ -421,10 +412,10 @@ This multiband approach, then, actually comprises a set of models indexed by the
 
 \subsection{Relationship of Multiband and Single-band approaches}
 \sectlabel{relationship}
-The multi-phase $N_{base}=0$, $N_{band}=1$ model turns out to be a particularly special case.
-In it, the base offset can be removed completely and the design matrix $X_\omega$ can be arranged to be block-diagonal. A block-diagonal design matrix in a linear model indicates that components of the model are being solved independently: here these independent components are a standard single-band generalized periodogram fit within each of the $K$ bands.
+The {\it multi-phase} $N_{base}=0$, $N_{band}=1$ model turns out to be a particularly special case.
+The base model is a simple global offset which is degenerate with the offsets in each band, so that the design matrix $X_\omega$ can be straightforwardly rearranged as block-diagonal. A block-diagonal design matrix in a linear model indicates that components of the model are being solved independently: here these independent components amount to the single-band floating-mean model from \sect{floating_mean}, fit independently within each of the $K$ bands. This particular multiband model can give us insight into the relationship between single-band and multiband approaches.
 
-For band $k$, we'll denote the standard single-band normalized periodogram as
+For band $k$, we'll denote the single-band floating-mean periodogram as
 \begin{equation}
   P_N^{(k)}(\omega) = 1 - \frac{\chi^2_{min, k}(\omega)}{\chi^2_{0,k}}
 \end{equation}
@@ -438,7 +429,7 @@ and it can easily be shown that the $P_N$ can be constructed as a weighted sum o
 \end{equation}
 This tells us how we can construct a particular case of the multi-term periodogram from a weighted sum of periodograms in each band, where the weights $\chi^2_{0,k}$ reflect both the number of measurements in each band and how much those measurements deviate from a simple constant reference model.
 
-\subsection{Simulated Example of the Multiband Approach}
+\subsection{Multiband Periodogram for Simulated Data}
 \sectlabel{Simulated}
 
 \begin{figure}
@@ -460,18 +451,34 @@ This tells us how we can construct a particular case of the multi-term periodogr
   \figlabel{multiband_sim}
 \end{figure}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{fig06.pdf}
+  \caption{
+    Comparison of the periodograms produced by various multiband models.
+    The data is the same as that used in \fig{multiband_sim}. $N_{base}$ gives
+    the number of Fourier terms in the base model, and $N_{band}$ gives the
+    number of Fourier terms used to fit the residuals around this model within
+    each band. The characteristics discussed with previous figures are also
+    seen here: in particular, the level of ``background noise'' in the
+    periodogram grows with the model complexity $M$,
+  } 
+  \figlabel{multiband_models}
+\end{figure}
+
+Before applying the multiband method to real data, let's explore its effectiveness on a simulated RR Lyrae lightcurve.
 The upper panels of \fig{multiband_sim} show a multiband version of the simulated RR Lyrae light curve from \fig{basic_example}.
 The upper-right panel shows 60 nights of observations spread over a 6-month period, and for each night all five bands ({\it u,g,r,i,z}) are recorded.
 Using the typical approach from the literature prior to this paper, we individually compute the standard normalized periodogram within each band: the results are shown in the upper-right panel.
 Here the data is well-enough sampled that a distinct period of 0.622 days can be recognized within each individual band, up to the aliasing effect discussed in \sect{simple_period}.
 Previous studies have made use of the information in multiple bands to choose between aliases and estimate uncertainties in determined periods \citep[e.g.][]{Oluseyi12,Sesar2010}.
-While this approach is sufficient for well-sampled data, it becomes problematic when the multi-band data is more sparsely sampled.
+While this approach is sufficient for well-sampled data, it becomes problematic when the multiband data is more sparsely sampled.
 
-The lower panels of \fig{multiband_sim} show the same 60 nights of data, except with only a {\it single} band observation recorded each night. The lower-left panel again shows the observations as a function of phase, and the lower-right panels show the periodograms derived from the data. With only 12 observations for each indiviudal band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase multiband approach (i.e. $(N_{base},N_{band})=(1,0)$), shown in the lower-right panel, makes use of all the information in a single model, and clearly recovers the true frequency of 0.622 days.
+The lower panels of \fig{multiband_sim} show the same 60 nights of data, except with only a {\it single} band observation recorded each night. The lower-left panel shows the observations as a function of phase, and the lower-right panels show the periodograms derived from the data. With only 12 observations for each indiviudal band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase multiband approach (i.e. $(N_{base},N_{band})=(1,0)$), shown in the lower-right panel, makes use of all the information in a single model, and clearly recovers the true frequency of 0.622 days.
 
-\todo{Add a figure comparing models for different $(N_{base},N_{band})$ pairs.}
+This shared-phase $(1,0)$ model is only one of the possible multiband options, however: \fig{multiband_models} shows multiband fits to this data for models with various combinations of $(N_{base},N_{band})$. We see here many of the characteristics noted above for single-band models: as discussed in \sect{multiterm}, increasing the number of Fourier terms leads to power at multiples of the fundamental period. Additionally, increasing the model complexity (roughly indexed by the effective number of free parameters $M^{eff}$) tends to increase the background level of the periodogram, potentially obscuring significant peaks. For this reason, models with $N_{base} > N_{band}$ are the most promising: they allow a flexible fit with minimal model complexity.
 
-%Here we can clearly see the difference between the $(0,1)$ model, which we'll call an {\it multi-phase} model, and the $(1,0)$ model, which we'll call {\it single-phase} model. The old-style model, as discussed in \sect{relationship}, is equivalent to a weighted sum of single-band periodograms for each individual band. The model thus has effectively 15 free parameters, and the phase and amplitude of each band varies individually. As with the truncated Fourier series, this added complexity leads to higher power at off-frequencies. The new-style model, on the other hand, is effectively a 7-parameter model where a single oscillation phase and amplitude is used to describe all the variability in the data. The only flexibility allowed in individual bands is the constant offset. This lower-parameter model produces a periodogram which nicely recovers the input frequency, and has a background level qualitatively similar to that of the single-band observations in \fig{adhoc_example}.
+Below, we'll apply the simplest of this class of models, the $(1, 0)$ shared-phase model, to data from the SDSS-2 survey.
 
 
 \section{Application to Stripe 82 RR Lyrae}
@@ -485,7 +492,7 @@ The lower panels of \fig{multiband_sim} show the same 60 nights of data, except 
     The upper panels show a representative lightcurve and periodogram fits, while the bottom panels compare the derived periods to the true periods \citep[Based on a combined SuperSmoother and template-fitting approach; see][]{Sesar2010}.
     Shown for reference are the beat aliases (dotted lines) and the multiplicative alias (dashed line), along with counts of points aligned with each trend.
     The supersmoother algorithm tends to err toward multiplicative aliases, while the multiband algorithm tends to err toward beat frequency aliases.
-    Both methods find the correct period among the top 5 significant peaks nearly 100\% of the time.
+    Both methods find the correct period among the top 5 significant peaks around 99\% of the time.
   } 
   \figlabel{compare_periods}
 \end{figure}
@@ -507,6 +514,7 @@ The lower panels of \fig{multiband_sim} show the same 60 nights of data, except 
 \section{Discussion and Conclusion}
 
 \todo{Discuss issues with aliasing \& window function corrections}
+
 \todo{Discuss issues with physicality of the model?}
 
 

@@ -124,15 +124,14 @@ ax[2].set_ylabel('power')
 
 fig.savefig('fig05b.pdf')
 
-#----------------------------------------------------------------------
-# Write the results to file
-import pandas as pd
-df = pd.DataFrame({'t': t})
-df['band'] = filts
-df['mag'] = mags
-df['dmag'] = dy
-df = df.sort('t')
-
-df.to_csv('fig_data.dat', sep=' ', float_format='%.4f', index=False)
-
 plt.show()
+
+#----------------------------------------------------------------------
+# Uncomment this to Write the results to file
+#import pandas as pd
+#df = pd.DataFrame({'t': t})
+#df['band'] = filts
+#df['mag'] = mags
+#df['dmag'] = dy
+#df = df.sort('t')
+#df.to_csv('fig_data.dat', sep=' ', float_format='%.4f', index=False)

@@ -65,6 +65,18 @@ def plot_period_comparison(ax, Px_all, Py,
     top_matches = np.any((abs(Px_all.T - Py) < 0.01), 0).sum()
     ax.text(1.17, 0.11, "Top 5 Matches: {0}/{1}".format(top_matches, len(Px)),
             size=10, ha='right', va='bottom')
+    
+
+def plot_filter(t, y, verbose=True):
+    """Simple filter which removes unnecessary points for plotting"""
+    dy = y[1:] - y[:-1]
+    mask = (dy[1:] * dy[:-1] <= 0)
+    mask = np.concatenate([[True], mask, [True]])
+
+    if verbose:
+        print("Reducing from {0} to {1} points for plotting"
+              "".format(len(t), mask.sum()))
+    return t[mask], y[mask]
 
 
 def plot_example_lightcurve(rrlyrae, lcid):
@@ -104,7 +116,8 @@ def plot_example_lightcurve(rrlyrae, lcid):
 
     for axi, model, color in zip(ax[1:], models, colors):
         model.fit(t, y, dy, filts)
-        axi.plot(periods, model.score(periods), lw=1, color=color)
+        per, scr = plot_filter(periods, model.score(periods))
+        axi.plot(per, scr, lw=1, color=color)
         axi.set_ylim(0, 1)
 
     ax[1].xaxis.set_major_formatter(plt.NullFormatter())
