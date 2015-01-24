@@ -5,7 +5,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from multiband_LS.data import fetch_light_curves
+from multiband_LS.data import fetch_rrlyrae
 from multiband_LS import LombScargleMultiband, SuperSmoother, SuperSmootherMultiband
 
 
@@ -109,7 +109,7 @@ def get_period_results(outfile, lcids=None):
                                 "".format(outfile))
 
     if lcids is None:
-        lcids = fetch_light_curves().ids
+        lcids = fetch_rrlyrae().ids
 
     # turn generator into list
     lcids = list(lcids)
@@ -124,8 +124,8 @@ def get_period_results(outfile, lcids=None):
         
             
 if __name__ == '__main__':
-    rrlyrae = fetch_light_curves()
-    rrlyrae_partial = fetch_light_curves(partial=True)
+    rrlyrae = fetch_rrlyrae()
+    rrlyrae_partial = fetch_rrlyrae(partial=True)
 
     if not os.path.exists('results'):
         os.makedirs('results')

@@ -1,8 +1,8 @@
 from multiband_LS import LombScargleMultiband, SuperSmoother
 
 # Fetch the Sesar 2010 RR Lyrae data
-from multiband_LS.data import fetch_light_curves
-data = fetch_light_curves()
+from multiband_LS.data import fetch_rrlyrae
+data = fetch_rrlyrae()
 t, mag, dmag, filts = data.get_lightcurve(data.ids[0],
                                           return_1d=True)
 

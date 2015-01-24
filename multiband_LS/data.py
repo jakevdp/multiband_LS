@@ -2,8 +2,8 @@
 Data downloaders for the multiband_LS stuff
 """
 
-__all__ = ['fetch_rrlyrae_templates', 'fetch_light_curves',
-           'fetch_lc_params', 'fetch_lc_fit_params']
+__all__ = ['fetch_rrlyrae_templates', 'fetch_rrlyrae',
+           'fetch_rrlyrae_lc_params', 'fetch_rrlyrae_fitdata']
 
 import os
 import tarfile
@@ -114,7 +114,7 @@ class RRLyraeLC(object):
         This is table 2 of Sesar 2010
         """
         if self._metadata is None:
-            self._metadata = fetch_lc_params()
+            self._metadata = fetch_rrlyrae_lc_params()
         i = np.where(self._metadata['id'] == lcid)[0]
         if len(i) == 0:
             raise ValueError("invalid lcid: {0}".format(lcid))
@@ -125,7 +125,7 @@ class RRLyraeLC(object):
         This is table 3 of Sesar 2010
         """
         if self._obsdata is None:
-            self._obsdata = fetch_lc_fit_params()
+            self._obsdata = fetch_rrlyrae_fitdata()
         i = np.where(self._obsdata['id'] == lcid)[0]
         if len(i) == 0:
             raise ValueError("invalid lcid: {0}".format(lcid))
@@ -135,17 +135,17 @@ class RRLyraeLC(object):
 class PartialRRLyraeLC(RRLyraeLC):
     """Class to get a partial Stripe 82 light curve: one band per night"""
     @classmethod
-    def from_rrlyrae(cls, rrlyrae, rseed=0):
+    def from_rrlyrae(cls, rrlyrae, offset=0):
         return cls(filename=rrlyrae.filename,
                    dirname=rrlyrae.dirname,
-                   rseed=rseed)
+                   offset=offset)
 
-    def __init__(self, filename, dirname='table1', rseed=0):
-        self.rseed = rseed
+    def __init__(self, filename, dirname='table1', offset=0):
+        self.offset = offset
         RRLyraeLC.__init__(self, filename, dirname)
 
     def __getstate__(self):
-        return (self.filename, self.dirname, self.rseed)
+        return (self.filename, self.dirname, self.offset)
 
     def __setstate__(self, args):
         self.__init__(*args)
@@ -156,9 +156,8 @@ class PartialRRLyraeLC(RRLyraeLC):
             
         t, y, dy = RRLyraeLC.get_lightcurve(self, star_id, return_1d=False)
 
-        rng = np.random.RandomState(self.rseed)
         r = np.arange(len(t))
-        obs = rng.randint(0, 5, len(t))
+        obs = (self.offset + np.arange(len(t))) % 5
         t, y, dy = t[r, obs], y[r, obs], dy[r, obs]
         filts = np.array(list('ugriz'))[obs]
 
@@ -169,7 +168,7 @@ class PartialRRLyraeLC(RRLyraeLC):
 
 
 
-def fetch_light_curves(data_dir=None, partial=False):
+def fetch_rrlyrae(data_dir=None, partial=False):
     """Fetch light curves from Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
@@ -186,7 +185,7 @@ def fetch_light_curves(data_dir=None, partial=False):
         return RRLyraeLC(save_loc)
 
 
-def fetch_lc_params(data_dir=None):
+def fetch_rrlyrae_lc_params(data_dir=None):
     """Fetch data from table 2 of Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY
@@ -207,7 +206,7 @@ def fetch_lc_params(data_dir=None):
     return np.loadtxt(save_loc, dtype=dtype)
 
 
-def fetch_lc_fit_params(data_dir=None):
+def fetch_rrlyrae_fitdata(data_dir=None):
     """Fetch data from table 3 of Sesar 2010"""
     if data_dir is None:
         data_dir = DATA_DIRECTORY

@@ -2,7 +2,7 @@
 
 import numpy as np
 from scipy.interpolate import interp1d
-from .data import fetch_rrlyrae_templates, fetch_light_curves
+from .data import fetch_rrlyrae_templates, fetch_rrlyrae
 
 
 class RRLyraeObject(object):
@@ -24,7 +24,7 @@ class RRLyraeObject(object):
     period : float
         Period of the RR Lyrae object
     """
-    lcdata = fetch_light_curves()
+    lcdata = fetch_rrlyrae()
     templates = fetch_rrlyrae_templates()
 
     # Extinction corrections: Table 1 from Berry et al. (2012, ApJ, 757, 166).

@@ -2,11 +2,11 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from multiband_LS.data import fetch_light_curves
+from multiband_LS.data import fetch_rrlyrae
 
 
-rrlyrae = fetch_light_curves()
-rrlyrae_partial = fetch_light_curves(partial=True)
+rrlyrae = fetch_rrlyrae()
+rrlyrae_partial = fetch_rrlyrae(partial=True)
 
 data = [rrlyrae.get_lightcurve(lcid, True)
         for lcid in rrlyrae.ids]

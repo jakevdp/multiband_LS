@@ -511,9 +511,9 @@ S10 determined periods for these stars based on an emperically-derived light cur
   \includegraphics[width=\textwidth]{fig07b.pdf}
   \caption{
     Comparison of the Multiband algorithm and single-band supersmoother algorithm on 483 well-sampled RR Lyrae light curves from Stripe 82.
-    The upper panels show a representative lightcurve and periodogram fits, while the bottom panels compare the derived periods to the true periods \citep[Based on a combined SuperSmoother and template-fitting approach; see][]{Sesar2010}.
-    Shown for reference are the beat aliases (dotted lines) and the multiplicative alias (dashed line), along with counts of points aligned with each trend.
-    The supersmoother algorithm tends to err toward multiplicative aliases, while the multiband algorithm tends to err toward beat frequency aliases.
+    The upper panels show a representative lightcurve and periodogram fits, while the bottom panels compare the derived periods to the template-based periods reported in S10.
+    Shown for reference are the beat aliases (dotted lines) and the multiplicative alias (dashed lines), along with counts of points aligned with each trend.
+    The single-band supersmoother algorithm tends to err toward multiplicative aliases, while the multiband algorithm tends to err toward beat frequency aliases.
     Both methods find the correct period among the top 5 significant peaks around 99\% of the time.
   } 
   \figlabel{compare_periods}
@@ -523,11 +523,11 @@ The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 obse
 
 The lower panels of \fig{compare_periods} compare the S10 period with the best periods obtained from the 1-band supersmoother (lower-left) and from the shared-phase multiband model (lower-right). To guide the eye, the figure includes indicators of the locations of beat aliases (dotted lines) and multiplicative aliases (dashed lines) of the S10 period.
 
-The best-fit supersmoother period matches the S10 period in 89\% of cases (421/483), while the best-fit multiband period matches the S10 period in 79\% of cases (382/483). The modes of failure are instructive: when the supersmoother model misses the S10 period, it tends to land on a multiplicative alias. This is due to the flexibility of the supersmoother model: a doubled period spreads the points out further, leading to fewer constraints in each neighborhood and thus a smaller average residual around the over-fit model.  When the multiband model misses the S10 period, it tends to land on a beat alias between the S10 period and the 1-day observing cadence. This is due to the fact that the single-frequency periodic model significantly under-fits the data, and thus cannot distinguish deviations due to underfitting from deviations due to window function effects.
+The best-fit supersmoother period matches the S10 period in 89\% of cases (421/483), while the best-fit multiband period matches the S10 period in 79\% of cases (382/483). The modes of failure are instructive: when the supersmoother model misses the S10 period, it tends to land on a multiplicative alias (i.e. the dashed line). This is due to the flexibility of the supersmoother model: a doubled period spreads the points out, leading to fewer constraints in each neighborhood and thus a smaller average residual around model. In other words, the SuperSmoother tends to over-fit sparsely-sampled data. On the other hand, when the multiband model misses the S10 period, it tends to land on a beat alias between the S10 period and the 1-day observing cadence (i.e. the dotted lines). This is due to the fact that the single-frequency periodic model is biased, and significantly under-fits the data: it cannot distinguish residuals due to underfitting from residuals due to window function effects.
 
-In both models, the S10 period appears among the top 5 periods 99\% of the time: $477/483$ for supersmoother, and $480/483$ for multiband.\footnote{We would expect this correspondence to be 100\% in the case of the $g$-band supersmoother, which was the model used in the first pass of the S10 computation. This discrepancy can be chalked-up to the different supersmoother implementations used in S10 and in this work. The discrepant curves are those with very low signal-to-noise.} This suggests that had S10 used the multiband Lomb-Scargle rather than the supersmoother in the first pass for that study, the final results presented there would be for the most part unchanged.
+In both models, the S10 period appears among the top 5 periods 99\% of the time: $477/483$ for supersmoother, and $480/483$ for multiband.\footnote{We would expect this correspondence to be 100\% in the case of the $g$-band supersmoother, which was the model used in the first pass of the S10 computation. This discrepancy here is likely due to the slightly different supersmoother implementations used in S10 and in this work. The discrepant curves are those with very low signal-to-noise.} This suggests that had S10 used the multiband Lomb-Scargle rather than the supersmoother in the first pass for that study, the final results presented there would be for the most part unchanged.
 
-The results of this subsection show that the shared-phase multiband approach is comparable to the supersmoother approach for densely-sampled multiband data, although it has a tendency to get fooled by structure in the survey window function.
+The results of this subsection show that the shared-phase multiband approach is comparable to the supersmoother approach for densely-sampled multiband data, although it has a tendency to get fooled by structure in the survey window. Correction for this based on the estimated window power may alleviate this; see \citet{Roberts87} for an example of such an approach.
 
 \subsection{Sparsely-sampled Multiband Data}
 
@@ -536,27 +536,27 @@ The results of this subsection show that the shared-phase multiband approach is 
   \includegraphics[width=\textwidth]{fig08a.pdf}
   \includegraphics[width=\textwidth]{fig08b.pdf}
   \caption{
-    This figure shows a repeat of the results from \fig{compare_periods}, but the data is artificially reduced to only a single-band observation on each evening, a situation reflective of the observing cadence of future large-scale surveys (compare to \fig{compare_periods}).
-    In this case, the single-band SuperSmoother strategy used by \citet{Sesar2010} fails: there is simply not enough data in each band to recover an accurate period estimate, and the correct period is among the top 5 candidates in fewer than 60\% of cases.
-    The shared-phase multiband approach utilizes information from all five bands, and returns much more robust results: even with the reduced data, the true period is among the top 5 candidates in 94\% of cases.
+    This figure repeats the experiment shown in \fig{compare_periods}, but the data is artificially reduced to only a single-band observation on each evening, a situation reflective of the observing cadence of future large-scale surveys.
+    In this case, the single-band SuperSmoother strategy used as a first pass in S10 fails: there is simply not enough data in each band to recover an accurate period estimate, and the correct period is among the top 5 candidates in fewer than 50\% of cases.
+    The shared-phase multiband approach utilizes information from all five bands, and returns much more robust results: even with the greatly-reduced data, the true period is among the top 5 candidates in 93\% of cases.
   } 
   \figlabel{compare_periods_reduced}
 \end{figure}
 
-Where we expect the multiband approach to have an advantage is when the data are sparsely sampled, with observations through only a single band each night. To simulate this, we reduce the Stripe 82 RR Lyrae dataset by a factor of 5, keeping only a single band of imaging each night, for an average of 11 observations of each object per band. This is much closer to the type of observation available in future multiband surveys.
+Above we saw that the multiband model is comparable to methods from the literature for densely-sampled data. Where we expect the multiband approach to gain an advantage is when the data are sparsely sampled, with observations through only a single band at each observation. To simulate this, we reduce the size of the Stripe 82 RR Lyrae dataset by a factor of 5, keeping only a single band of imaging each night, for an average of 11 observations of each object per band. This is much closer to the type of data which will be available in future multiband time-domain surveys.
 
-The upper panels of \fig{compare_periods_reduced} show an example light curve from this reduced dataset, along with the supersmoother and multiband periodograms derived from this data. Analogously to the lower panels of \fig{multiband_sim}, the single-band supersmoother model loses the true period within the noise, while the shared-phase multiband model still shows a noticeable spike at this true period.
+The upper panels of \fig{compare_periods_reduced} show an example light curve from this reduced dataset, along with the supersmoother and multiband periodograms derived from this data. Analogously to the lower panels of \fig{multiband_sim}, the single-band supersmoother model loses the true period within the noise, while the shared-phase multiband model still shows a prominent spike at this true period.
 
-The lower panels of \fig{compare_periods_reduced} show the relationship between the S10 periods (based on the full dataset) and the periods derived with each model from this reduced dataset. It is clear that the supersmoother model is simply over-fitting noise with this few data points: the top period matches S10 in only 32\% of cases (compared to 87\% with the full dataset), and the top 5 periods contain the S10 period only 57\% of the time. The failure mode is much less regular as well: rather than being clustered near aliases, most of the points are scattered seemingly randomly around the space.
+The lower panels of \fig{compare_periods_reduced} show the relationship between the S10 periods (based on the full dataset) and the periods derived with each model from this reduced dataset. It is clear that the supersmoother model is simply over-fitting noise with this few data points: the top period matches S10 in only 32\% of cases (compared to 87\% with the full dataset), and the top 5 periods contain the S10 period only 45\% of the time. The failure mode is much less predictable as well: rather than being clustered near aliases, most of the period determinations are scattered seemingly randomly around the space.
 
-The multiband method does much better on the reduced dataset. Even with an 80\% reduction in the number of observations, the multiband method matches the S10 period 66\% of the time (compared to 79\% with the full dataset), and the top 5 periods contain the S10 period 94\% of the time. This performance is due to the fact that the multiband algorithm has relatively few parameters, but is yet able to accommodate data from multiple observing bands. In particular, this suggests that with the multiterm periodogram, the S10 analysis could have been done effectively with only a small fraction of the available data. This bodes well for future surveys, where data on variable stars will be much more sparsely sampled.
+The multiband method does much better on the reduced dataset. Even with an 80\% reduction in the number of observations, the multiband method matches the S10 period 64\% of the time (compared to 79\% with the full dataset), and the top 5 peaks contain the S10 period 94\% of the time. This performance is due to the fact that the multiband algorithm has relatively few parameters, but is yet able to flexibly accommodate data from multiple observing bands. In particular, this suggests that with the multiterm periodogram, the S10 analysis could have been done effectively with only a small fraction of the available data. This bodes well for future surveys, where data on variable stars will be much more sparsely sampled.
 
 \section{Discussion and Conclusion}
 
 \todo{Zeljko, can you take a stab at this?}
 
 \begin{enumerate}
-  \item Our method kicks ass, therefore we kick ass. QED.
+  \item Our method rocks, therefore we rock. QED.
   \item Future work: account for beat-aliases for ground-based data
   \item Future work: physically-motivated priors to further simplify the model
   \item Opportunity to apply this to PanSTARRS data release
@@ -578,8 +578,8 @@ Here is a basic example of how you can use the code to download data, fit a mult
 from multiband_LS import LombScargleMultiband
 
 # Fetch the Sesar 2010 RR Lyrae data
-from multiband_LS.data import fetch_light_curves
-data = fetch_light_curves()
+from multiband_LS.data import fetch_rrlyrae
+data = fetch_rrlyrae()
 t, mag, dmag, filts = data.get_lightcurve(data.ids[0],
                                           return_1d=True)
 

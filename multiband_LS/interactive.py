@@ -3,14 +3,14 @@ Utilities for creating IPython interactive plots to explore data & fits
 """
 import numpy as np
 from IPython.html.widgets import interact
-from .data import fetch_light_curves
+from .data import fetch_rrlyrae
 from . import LombScargleMultiband
 
 
 def interact_data():
     import matplotlib.pyplot as plt  # import here for backend safety
 
-    rrlyrae = fetch_light_curves()
+    rrlyrae = fetch_rrlyrae()
     lcids = np.fromiter(rrlyrae.ids, dtype=int)
     
     def plot_data(object_index=0, fold=False):
@@ -43,7 +43,7 @@ def interact_data():
 def interact_multifit():
     import matplotlib.pyplot as plt  # import here for backend safety
 
-    rrlyrae = fetch_light_curves()
+    rrlyrae = fetch_rrlyrae()
     lcids = np.fromiter(rrlyrae.ids, dtype=int)
     
     def plot_multifit(object_index=0, Nterms_base=4, Nterms_band=1):

@@ -16,7 +16,7 @@ import seaborn; seaborn.set()
 
 from multiband_LS import LombScargleMultiband, SuperSmootherMultiband
 from compute_results import SuperSmoother1Band
-from multiband_LS.data import fetch_light_curves
+from multiband_LS.data import fetch_rrlyrae
 
 from compute_results import get_period_results
 
@@ -157,8 +157,8 @@ def plot_periods(ssm_file, mbls_file, rrlyrae):
 
 
 if __name__ == '__main__':
-    rrlyrae = fetch_light_curves()
-    lcid = list(rrlyrae.ids)[4]
+    rrlyrae = fetch_rrlyrae()
+    lcid = list(rrlyrae.ids)[482]
 
     fig, ax = plot_example_lightcurve(rrlyrae, lcid)
     fig.savefig('fig07a.pdf')
