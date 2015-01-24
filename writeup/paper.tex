@@ -266,7 +266,7 @@ We note that this expression is equivalent to \eq{LombScargle} in the homoscedas
   \figlabel{basic_example}
 \end{figure}
 
-As an example of the standard periodogram in action, we perform a simple single-band harmonic analysis of simulated $r$-band observations of an RR Lyrae light curve, based on empirical templates derived in \citet{Sesar2010} (\fig{basic_example}). The observations are of a star with a period of 0.622 days, and take place on 60 random nights over a 6-month period, as seen in the left panel.
+As an example of the standard periodogram in action, we perform a simple single-band harmonic analysis of simulated $r$-band observations of an RR Lyrae light curve, based on empirical templates derived in S10 (\fig{basic_example}). The observations are of a star with a period of 0.622 days, and take place on 60 random nights over a 6-month period, as seen in the left panel.
 
 The upper-right panel shows the normalized periodogram for this source as a function of period. While the power does peak at the true period of 0.622 days, an aliasing effect is readily apparent near $P=0.38$. This additional peak is due to beat frequency between the true period $P$ and the observing cadence of $\sim 1$ day. This beat frequency is the first in a large sequence: for nightly observations, we'd expect to find excess power at periods $P_n = P / (1 + nP)$ days, for any integer $n$. The strong alias in \fig{basic_example} corresponds to the $n=1$ beat period $P_n=0.383$. Though it is possible to carefully correct for such aliasing by iteratively removing contributions from the estimated window function \citep[e.g.][]{Roberts87}, we'll ignore this detail in the current work.
 
@@ -519,7 +519,7 @@ S10 determined periods for these stars based on an emperically-derived light cur
   \figlabel{compare_periods}
 \end{figure}
 
-The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.  In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother algorithm and the shared-phase $(0, 1)$-multiband algorithm\footnote{The supersmoother periodogram $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with the Lomb-Scargle periodogram's $\chi^2$ interpretation from \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$}. Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
+The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.  In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother algorithm and the shared-phase $(0, 1)$-multiband algorithm\footnote{The supersmoother ``periodogram'' $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with the Lomb-Scargle periodogram's $\chi^2$ interpretation from \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$}. Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
 
 The lower panels of \fig{compare_periods} compare the S10 period with the best periods obtained from the 1-band supersmoother (lower-left) and from the shared-phase multiband model (lower-right). To guide the eye, the figure includes indicators of the locations of beat aliases (dotted lines) and multiplicative aliases (dashed lines) of the S10 period.
 
@@ -561,6 +561,9 @@ The multiband method does much better on the reduced dataset. Even with an 80\% 
   \item Future work: physically-motivated priors to further simplify the model
   \item Opportunity to apply this to PanSTARRS data release
 \end{enumerate}
+
+
+{\it Acknowledgements:} JTV is supported by data science grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. \todo{ZI is supported by...}  This work also made use of, and greatly benefitted from, free academic accounts provided by GitHub.
 
 
 \bibliographystyle{apj}
