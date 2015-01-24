@@ -7,7 +7,7 @@
 # Remove the # from the front of each line, and then edit appropriately.
 #
 
-title: Periodograms for Multiband Astronomical Time Series
+# title: Periodograms for Multiband Astronomical Time Series
 # abstract: "This paper introduces the {\it multiband periodogram}, a general extension of the standard Lomb-Scargle approach for detecting periodic signals in time-domain data."
 
 # This controls which file is shown on the right-hand side of the published
@@ -20,9 +20,10 @@ iframe_src: paper.pdf
 # in the address somewhere, indicating a line break.
 
 #authors:
-- name: Jake VanderPlas
-  address: eScience Institute, University of Washington
-- name: Zeljko Ivezic
-  address: Astronomy department, University of Washington
+#- name: Jake VanderPlas
+#  address: eScience Institute, University of Washington
+#- name: Zeljko Ivezic
+#  address: Astronomy department, University of Washington
 github_username: jakevdp
 github_repo: multiband_LS
+title: multiband_LS
