@@ -19,8 +19,8 @@ iframe_src: paper.pdf
 # These fields can contain HTML tags.  You probably want to put <br />
 # in the address somewhere, indicating a line break.
 
-#authors:
-#- name: Jake VanderPlas
-#  address: eScience Institute, University of Washington
-#- name: Zeljko Ivezic
-#  address: Astronomy department, University of Washington
+authors:
+- name: Jake VanderPlas
+  address: eScience Institute, University of Washington
+- name: Zeljko Ivezic
+  address: Astronomy department, University of Washington
