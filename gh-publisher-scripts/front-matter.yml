@@ -1,0 +1,26 @@
+#
+# This file controls the details on the published HTML page.
+#
+# All the values here are optional, but it will obviously look a lot
+# better if you fill them in.
+#
+# Remove the # from the front of each line, and then edit appropriately.
+#
+
+title: Periodograms for Multiband Astronomical Time Series
+abstract: This paper introduces the {\it multiband periodogram}, a general extension of the standard Lomb-Scargle approach for detecting periodic signals in time-domain data.
+
+# This controls which file is shown on the right-hand side of the published
+# HTML page.  By default it will take the first PDF or HTML file that it
+# finds.  If that doesn't work for you, you can specify the correct file here.
+iframe_src: paper.pdf
+
+# You can specify multiple authors, just follow the pattern below.
+# These fields can contain HTML tags.  You probably want to put <br />
+# in the address somewhere, indicating a line break.
+
+#authors:
+- name: Jake VanderPlas
+  address: eScience Institute, University of Washington
+- name: Zeljko Ivezic
+  address: Astronomy department, University of Washington
