@@ -7,8 +7,9 @@
 # Remove the # from the front of each line, and then edit appropriately.
 #
 
-# title: Periodograms for Multiband Astronomical Time Series
-# abstract: "This paper introduces the {\it multiband periodogram}, a general extension of the standard Lomb-Scargle approach for detecting periodic signals in time-domain data."
+title: "Periodograms for Multiband Astronomical Time Series"
+
+# abstract: This paper introduces the multiband periodogram, a general extension of the standard Lomb-Scargle approach for detecting periodic signals in time-domain data.
 
 # This controls which file is shown on the right-hand side of the published
 # HTML page.  By default it will take the first PDF or HTML file that it
