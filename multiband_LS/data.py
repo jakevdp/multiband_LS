@@ -49,6 +49,10 @@ class RRLyraeLC(object):
 
     @property
     def ids(self):
+        return list(self.ids_gen)
+
+    @property
+    def ids_gen(self):
         for f in self.filenames:
             if '/' not in f:
                 continue

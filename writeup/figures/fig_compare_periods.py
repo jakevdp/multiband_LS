@@ -24,7 +24,7 @@ from compute_results import get_period_results
 
 def plot_period_comparison(ax, Px_all, Py,
                            beats=[-3, -2, -1, 0, 1, 2, 3],
-                           aliases=[], color=None):
+                           aliases=[2], color=None):
     Px = Px_all[:, 0]
 
     ax.plot(Px, Py, 'o', alpha=0.5, ms=5, color=color)
@@ -49,7 +49,7 @@ def plot_period_comparison(ax, Px_all, Py,
                     size=10, va='bottom', ha='center', color='gray')
 
     for n in aliases:
-        fn = lambda P, n=n: n * P
+        fn = lambda P, n=n: P / n
         ax.plot(P1, fn(P1), '--', color='gray', alpha=0.7, lw=1, zorder=1)
         if n < 1:
             ax.text(1.21, fn(1.2), str(matches(fn(Px), Py)),
@@ -141,7 +141,7 @@ def plot_periods(ssm_file, mbls_file, rrlyrae):
 
     colors = seaborn.color_palette()
 
-    plot_period_comparison(ax[0], ssm_periods, sesar_periods, aliases=[1/2],
+    plot_period_comparison(ax[0], ssm_periods, sesar_periods,
                            color=colors[0])
     plot_period_comparison(ax[1], mbls_periods, sesar_periods,
                            color=colors[1])

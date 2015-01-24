@@ -51,7 +51,7 @@ for axi, (Nbase, Nband) in zip(ax, combos):
                                     Nterms_band=Nband)
     LS_multi.fit(t, mags, dy, filts)
     P_multi = LS_multi.periodogram(periods)
-    axi.plot(periods, P_multi, lw=1, color='gray')
+    axi.plot(periods, P_multi, lw=1)
     
     text = ('$N_{{base}}={0},\ N_{{band}}={1}\ \ (M^{{eff}}={2})$'
             ''.format(Nbase, Nband, (2 * max(0, Nbase - Nband)

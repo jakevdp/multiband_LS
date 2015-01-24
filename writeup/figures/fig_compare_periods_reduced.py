@@ -12,7 +12,8 @@ lcid = list(rrlyrae.ids)[4]
 fig, ax = plot_example_lightcurve(rrlyrae, lcid)
 fig.savefig('fig08a.pdf')
 
-fig, ax = plot_periods(ssm_file='results/partial_supersmoother_g.npy',
+# XXX: use new results here when available
+fig, ax = plot_periods(ssm_file='results_old/partial_supersmoother_g.npy',
                        mbls_file='results/partial_multiband_1_0.npy',
                        rrlyrae=rrlyrae)
 fig.savefig('fig08b.pdf')
