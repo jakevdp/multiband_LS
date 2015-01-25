@@ -574,8 +574,8 @@ The multiband method does much better on the reduced dataset. Even with an 80\% 
 The algorithm outlined in this paper is available as an open-source Python package\footnote{\url{http://github.com/jakevdp/multiband_LS/}}, along with code to download the data and recreate all the figures in this paper.
 {\tt multiband\_LS} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation via the {\tt numpy} package\footnote{http://www.numpy.org}.
 
-The API for the module is largely influenced by that of the {\tt scikit-learn} package\footnote{\url{http://scikit-learn.org}} \citep{scikit-learn}, in which models are class objects which can be ``fit()`` to data.
-Here is a basic example of how you can use the code to download data, fit a multiband model to the data, and compute the power at a few periods:
+The API for the module is largely influenced by that of the {\tt scikit-learn} package\footnote{\url{http://scikit-learn.org}} \citep{scikit-learn}, in which models are Python class objects which can be fit to data with the \texttt{fit()} method.
+Here is a basic example of how you can use the package to download the data used in this paper, fit a multiband model to the data, and compute the power at a few periods:
 
 \begin{lstlisting}
 from multiband_LS import LombScargleMultiband
@@ -591,10 +591,11 @@ model = LombScargleMultiband(Nterms_base=0, Nterms_band=1)
 model.fit(t, mag, dmag, filts)
 
 # Compute power at the following periods
-model.periodogram([0.2, 0.3, 0.4])
+periods = [0.2, 0.3, 0.4, 0.5] # periods in days
+power = model.periodogram(periods)
 \end{lstlisting}
 
-Other models are available as well. For example, here is how you can compute the periodogram under the supersmoother model:
+Other models are available as well. For example, here is how you can compute the periodogram under the supersmoother model; this implementation of the supersmoother periodogram makes use of the \texttt{supersmoother} Python package \citep{Vanderplas2015}.
 
 \begin{lstlisting}
 from multiband_LS import SuperSmoother
@@ -605,9 +606,9 @@ gband = (filts == 'g')
 model.fit(t[gband], mag[gband], dmag[gband])
 
 # Compute power at the following periods
-model.periodogram([0.2, 0.3, 0.4])
+power = model.periodogram(periods)
 \end{lstlisting}
 
-The code contains many more methods, and much more functionality that what is shown here. For updates and more information, visit \url{http://github.com/jakevdp/multiband_LS}.
+The models in the \texttt{multiband\_LS} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/jakevdp/multiband_LS}.
 
 \end{document}
