@@ -557,22 +557,23 @@ The multiband method does much better on the reduced dataset. Even with an 80\% 
 \sectlabel{discussion}
 
 We have motivated and derived a multiband version of the classic Lomb-Scargle method for detecting periodicity in astronomical time-series.
- Experiments on several hundred RR Lyrae stars from the Stripe 82 dataset indicate that this method outperforms methods used previously in the literature, especially for sparsely-sampled light curves with only single bands observed each night.
+ Experiments on several hundred RR Lyrae stars from the SDSS Stripe 82 dataset indicate that this method outperforms methods used previously in the literature, especially for sparsely-sampled light curves with only single bands observed each night.
 
 The main deficiency of the model is its tendency to be tricked by the survey window function, a result of the very model simplicity which causes its success in the case of sparse multiband data: it cannot disentangle model bias from window bias.
 This could potentially be accounted for by estimating and filtering the effect of the window function; one potential method for this involves estimating the deconvolution of the window power and the observed power.
-It may also be possible to propose a multiband extension of CARMA or another forward-modeling approaches to detecting periodicity.
+It may also be possible to propose a multiband extension of CARMA \citep{Kelly14},
+or another forward-modeling approaches to detecting periodicity.
 
-Another potentially fruitful way forward in the multiband case is to make use of physically-motivated priors in the light-curve shape. For example, the paths of RR Lyrae stars through color-color and color-magnitude space are constrained by known astrophysical processes in the structure of the stars, and making use of such a physically-motivated prior may help break degeneracies in period determination.
+Another potentially fruitful way forward in the multiband case is to make use of physically-motivated priors in the light-curve shape. For example, the paths of RR Lyrae stars through color-color and color-magnitude space are constrained by known astrophysical processes in the structure of the stars \citep[e.g., see Fig. 5 in][]{Szabo2014}, and making use of such a physically-motivated prior may help break degeneracies in period determination.
 
 Looking forward to future variable star catalogs from PanSTARRS, DES, and LSST, there are two important constraints that any analysis method must meet: the methods must be able to cope with heterogeneous and noisy observations through multiple band-passes, and the methods must be fast enough to be computable on millions or even billions of objects.
 The multiband method, through its combination of flexibility and model simplicity, meets the first: as shown above, it performs well in the case of sparsely-sampled multiband data.
-It also meets the second constraint: it consists of a fast linear model at each frequency, compared to a sliding-window model in the case of supersmoother, a nonlinear optimization in the case of template-fitting, and a markov chain monte carlo in the case of CARMA models.
+It also meets the second constraint: it consists of a fast linear model at each frequency, compared to a sliding-window model in the case of supersmoother, a nonlinear optimization in the case of template-fitting, and a Markov Chain Monte Carlo in the case of CARMA models.
 In our own benchmarks, we found the multiband method to be several times faster than the single-band supersmoother approach, and several orders of magnitude faster than the template fitting approach.
 This suggests that the multiband periodogram could have an important role to play in the analysis of variable stars in future surveys.
 
 
-{\it Acknowledgements:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. \todo{ZI is supported by...}  The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
+{\it Acknowledgements:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
 
 
 \bibliographystyle{apj}
@@ -583,7 +584,7 @@ This suggests that the multiband periodogram could have an important role to pla
 \sectlabel{gatspy}
 The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/jakevdp/gatspy/}}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available as well\footnote{\url{http://github.com/jakevdp/multiband_LS/}}.
 
-{\tt gatspy} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementatinos of numerical methods in Python.
+{\tt gatspy} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementations of numerical methods in Python.
 
 The API for the module is largely influenced by that of the {\tt scikit-learn} package \citep{scikit-learn, sklearn_API}\footnote{\url{http://scikit-learn.org}}, in which models are Python class objects which can be fit to data with the \texttt{fit()} method.
 Here is a basic example of how you can use {\tt multiband\_LS} to download the data used in this paper, fit a multiband model to the data, and compute the power at a few periods:
