@@ -5,8 +5,9 @@ import numpy as np
 import os
 from datetime import datetime
 
-from multiband_LS.data import fetch_rrlyrae
-from multiband_LS import LombScargleMultiband, SuperSmoother, SuperSmootherMultiband
+from gatspy.datasets import fetch_rrlyrae
+from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+                             SuperSmootherMultiband)
 
 
 class SuperSmoother1Band(SuperSmoother):
@@ -135,8 +136,8 @@ if __name__ == '__main__':
     client = Client()
     dview = client.direct_view()
     with dview.sync_imports():
-        from multiband_LS import (LombScargleMultiband, SuperSmoother,
-                                  SuperSmootherMultiband)
+        from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+                                     SuperSmootherMultiband)
 
     # Now time to compute the results. Here are the keywords used throughout:
     kwargs = dict(Nperiods=5, save_every=1, parallel=True, client=client)

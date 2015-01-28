@@ -4,7 +4,7 @@ supersmoother, and Sesar 2010 for reduced dataset.
 """
 import matplotlib.pyplot as plt
 from fig_compare_periods import plot_periods, plot_example_lightcurve
-from multiband_LS.data import fetch_rrlyrae
+from gatspy.datasets import fetch_rrlyrae
 
 rrlyrae = fetch_rrlyrae(partial=True)
 lcid = list(rrlyrae.ids)[482]

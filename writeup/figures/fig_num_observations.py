@@ -2,7 +2,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from multiband_LS.data import fetch_rrlyrae
+from gatspy.datasets import fetch_rrlyrae
 
 
 rrlyrae = fetch_rrlyrae()

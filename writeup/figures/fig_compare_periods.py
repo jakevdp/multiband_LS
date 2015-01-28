@@ -14,9 +14,9 @@ from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
-from multiband_LS import LombScargleMultiband, SuperSmootherMultiband
+from gatspy.periodic import LombScargleMultiband, SuperSmootherMultiband
 from compute_results import SuperSmoother1Band
-from multiband_LS.data import fetch_rrlyrae
+from gatspy.datasets import fetch_rrlyrae
 
 from compute_results import get_period_results
 

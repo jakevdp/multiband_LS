@@ -12,13 +12,13 @@ import matplotlib.pyplot as plt
 # Use seaborn settings for plot styles
 import seaborn; seaborn.set()
 
-from multiband_LS.generated import RRLyraeObject
-from multiband_LS.lomb_scargle import LombScargle
+from gatspy.datasets import RRLyraeGenerated
+from gatspy.periodic import LombScargle
 
 
 # Choose a Sesar 2010 object to base our fits on
 lcid = 1019544
-rrlyrae = RRLyraeObject(lcid, random_state=0)
+rrlyrae = RRLyraeGenerated(lcid, random_state=0)
 
 # Generate data in a 6-month observing season
 Nobs = 60

@@ -13,13 +13,13 @@ import matplotlib.pyplot as plt
 # Use seaborn settings for plot styles
 import seaborn; seaborn.set()
 
-from multiband_LS.generated import RRLyraeObject
-from multiband_LS import SuperSmoother
+from gatspy.datasets import RRLyraeGenerated
+from gatspy.periodic import SuperSmoother
 
 
 # Choose a Sesar 2010 object to base our fits on
 lcid = 1019544
-rrlyrae = RRLyraeObject(lcid, random_state=0)
+rrlyrae = RRLyraeGenerated(lcid, random_state=0)
 print("Extinction A_r = {0:.4f}".format(rrlyrae.obsmeta['rExt']))
 
 # Generate data in a 6-month observing season
@@ -39,7 +39,7 @@ periods = np.linspace(0.2, 0.9, 1000)
 
 #----------------------------------------------------------------------
 # First figure:
-# Compute the lomb-scargle periodogram in each band
+# Compute the supersmoother periodogram in each band
 
 P = [SuperSmoother().fit(t, m, dy).periodogram(periods) for m in mags]
 
