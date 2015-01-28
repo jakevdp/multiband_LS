@@ -62,7 +62,7 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
     def find_periods(lcid, Nperiods=Nperiods,
                      rrlyrae=rrlyrae, Model=Model,
                      model_args=model_args, model_kwds=model_kwds):
-        t, y, dy, filts = rrlyrae.get_lightcurve(lcid, return_1d=True)
+        t, y, dy, filts = rrlyrae.get_lightcurve(lcid)
         model = Model(*(model_args or ()), **(model_kwds or {}))
         model.optimizer.period_range = (0.2, 1.2)
         model.optimizer.verbose = 0

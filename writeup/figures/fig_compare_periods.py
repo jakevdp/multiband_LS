@@ -89,7 +89,7 @@ def plot_example_lightcurve(rrlyrae, lcid):
           fig.add_subplot(gs[0, 1]),
           fig.add_subplot(gs[1, 1])]
 
-    t, y, dy, filts = rrlyrae.get_lightcurve(lcid, True)
+    t, y, dy, filts = rrlyrae.get_lightcurve(lcid)
 
     # don't plot data with huge errorbars
     mask = (dy < 1)

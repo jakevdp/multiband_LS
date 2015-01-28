@@ -8,9 +8,9 @@ from gatspy.datasets import fetch_rrlyrae
 rrlyrae = fetch_rrlyrae()
 rrlyrae_partial = fetch_rrlyrae(partial=True)
 
-data = [rrlyrae.get_lightcurve(lcid, True)
+data = [rrlyrae.get_lightcurve(lcid)
         for lcid in rrlyrae.ids]
-data_partial = [rrlyrae_partial.get_lightcurve(lcid, True)
+data_partial = [rrlyrae_partial.get_lightcurve(lcid)
                 for lcid in rrlyrae.ids]
 
 tminmax = np.array([[t.min(), t.max()] for t,_,_,_ in data])
