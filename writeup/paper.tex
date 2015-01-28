@@ -579,23 +579,23 @@ This suggests that the multiband periodogram could have an important role to pla
 \bibliography{paper}
 
 \appendix
-\section{{\tt multiband\_LS}: Python Implementation of Multiband Periodogram}
-\sectlabel{multiband_LS}
-The algorithm outlined in this paper is available as an open-source Python package\footnote{\url{http://github.com/jakevdp/multiband_LS/}}, along with code to download the data and recreate all the figures in this paper.
-{\tt multiband\_LS} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementatinos of numerical methods in Python.
+\section{Python Implementation of Multiband Periodogram}
+\sectlabel{gatspy}
+The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/jakevdp/gatspy/}}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available as well\footnote{\url{http://github.com/jakevdp/multiband_LS/}}.
+
+{\tt gatspy} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementatinos of numerical methods in Python.
 
 The API for the module is largely influenced by that of the {\tt scikit-learn} package \citep{scikit-learn, sklearn_API}\footnote{\url{http://scikit-learn.org}}, in which models are Python class objects which can be fit to data with the \texttt{fit()} method.
 Here is a basic example of how you can use {\tt multiband\_LS} to download the data used in this paper, fit a multiband model to the data, and compute the power at a few periods:
 
 \begin{lstlisting}
-from multiband_LS import LombScargleMultiband
+from gatspy.periodic import LombScargleMultiband
 import numpy as np
 
 # Fetch the Sesar 2010 RR Lyrae data
-from multiband_LS.data import fetch_rrlyrae
+from gatspy.datasets import fetch_rrlyrae
 data = fetch_rrlyrae()
-t, mag, dmag, filts = data.get_lightcurve(data.ids[0],
-                                          return_1d=True)
+t, mag, dmag, filts = data.get_lightcurve(data.ids[0])
 
 # Construct the multiband model
 model = LombScargleMultiband(Nterms_base=0, Nterms_band=1)
@@ -609,17 +609,17 @@ power = model.periodogram(periods)
 Other models are available as well. For example, here is how you can compute the periodogram under the supersmoother model; this implementation of the supersmoother periodogram makes use of the \texttt{supersmoother} Python package \citep{Vanderplas2015}.
 
 \begin{lstlisting}
-from multiband_LS import SuperSmoother
+from gatspy.periodic import SuperSmoother
 
 # Construct the supersmoother model
 model = SuperSmoother()
 gband = (filts == 'g')
 model.fit(t[gband], mag[gband], dmag[gband])
 
-# Compute power at the following periods
+# Compute power at the given periods
 power = model.periodogram(periods)
 \end{lstlisting}
 
-The models in the \texttt{multiband\_LS} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/jakevdp/multiband_LS}.
+The models in the \texttt{gatspy} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/jakevdp/gatspy/}.
 
 \end{document}
