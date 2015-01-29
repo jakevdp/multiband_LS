@@ -10,7 +10,7 @@ from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
                              SuperSmootherMultiband)
 
 
-class SuperSmoother1Band(SuperSmoother):
+class SuperSmoother1Band(SuperSmootherMultiband):
     """
     Convenience class to fit a single band of data with supersmoother
 
@@ -21,13 +21,15 @@ class SuperSmoother1Band(SuperSmoother):
     """
     def __init__(self, optimizer=None, band='g'):
         self.band = band
-        SuperSmoother.__init__(self, optimizer)
+        SuperSmootherMultiband.__init__(self, optimizer)
 
     def _fit(self, t, y, dy, filts):
         mask = (filts == self.band)
-        self.t, self.y, self.dy = t[mask], y[mask], dy[mask]
-        self.filts = None
-        return SuperSmoother._fit(self, self.t, self.y, self.dy, self.filts)
+        self.t, self.y, self.dy, self.filts = (t[mask], y[mask],
+                                               dy[mask], filts[mask])
+        self.unique_filts_ = np.unique(self.filts)
+        return SuperSmootherMultiband._fit(self, self.t, self.y,
+                                           self.dy, self.filts)
 
 
 def compute_and_save_periods(rrlyrae, Model, outfile,
