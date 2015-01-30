@@ -592,7 +592,7 @@ The selected form of these regularization terms penalizes deviations of the ampl
 
 Computationally, the PGLS model requires a nonlinear optimization at each frequency $\omega$, and is thus much more expensive than the straightforward linear optimization of our shared-phase model.
 For this reason, LCB14 propose a clever method by which nested models are used to reduce the number of nonlinear optimizations used: essentially, by showing that the (linear) MGLS $\chi^2$ is a lower-bound of the (non-linear) PGLS $\chi^2$, it is possible to iteratively reduce the number of PGLS computations required to minimize the $\chi^2$ among a grid of frequencies.
-Such an optimization could also be applied in the case of our shared-phase model, but is not necessary here due to its relative speed.
+Such an optimization could also be applied in the case of our shared-phase model, but is not necessary here due to its already high speed.
 When applying the method to a very large number of light curves in, e.g. LSST however, such a computational trick may prove very useful.
 
 Given these important distinctions between the models proposed here and in LCB14, in future work we plan to do a detailed comparison of the two means of model regularization.
