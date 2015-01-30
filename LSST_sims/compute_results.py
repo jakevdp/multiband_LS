@@ -2,8 +2,33 @@ import os
 from datetime import datetime
 
 import numpy as np
+import numpy
 
 from LSSTsims import LSSTsims
+from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+                             SuperSmootherMultiband, LombScargleMultibandFast)
+
+
+class SuperSmoother1Band(SuperSmootherMultiband):
+    """
+    Convenience class to fit a single band of data with supersmoother
+
+    This class ignores all data not associated with the given band.
+
+    The main reason for this is that it can then be used as a stand-in for
+    any multiband class.
+    """
+    def __init__(self, optimizer=None, band='g'):
+        self.band = band
+        SuperSmootherMultiband.__init__(self, optimizer)
+
+    def _fit(self, t, y, dy, filts):
+        mask = (filts == self.band)
+        self.t, self.y, self.dy, self.filts = (t[mask], y[mask],
+                                               dy[mask], filts[mask])
+        self.unique_filts_ = numpy.unique(self.filts)
+        return SuperSmootherMultiband._fit(self, self.t, self.y,
+                                           self.dy, self.filts)
 
 
 def find_res(results, **kwargs):
@@ -55,13 +80,21 @@ def compute_and_save_periods(Model, outfile,
     # Define a function which, given a key, computes the desired periods.
     def find_periods(key, Nperiods=Nperiods, Model=Model, LSSTsims=LSSTsims,
                      model_args=model_args, model_kwds=model_kwds):
+        import numpy as np
         lsstsim = LSSTsims()
         t, y, dy, filts = lsstsim.generate_lc(*key, random_state=0)
+
         model = Model(*(model_args or ()), **(model_kwds or {}))
         model.optimizer.period_range = (0.2, 1.2)
         model.optimizer.verbose = 0
         model.fit(t, y, dy, filts)
-        return key + (model.find_best_periods(Nperiods),)
+        try:
+            periods = model.find_best_periods(Nperiods)
+        except np.linalg.LinAlgError:
+            periods = np.nan + np.zeros(Nperiods)
+        except ValueError:
+            periods = np.nan + np.zeros(Nperiods)
+        return key + (periods,)
 
     # Set up the iterator over results
     results = np.zeros(len(keys), dtype=dtype)
@@ -100,24 +133,60 @@ def gather_results(outfile, pointing_indices, ndays, rmags, template_indices):
     results = np.array([find_res(results, **dict(zip(dtype.names, key)))
                         for key in brd])
     return results.reshape(brd.shape + results.shape[-1:])
-    
-                   
 
 
 if __name__ == '__main__':
     from gatspy.periodic import LombScargleMultiband
 
-    rng = np.random.RandomState(0)
-    template_indices = rng.randint(0, 483, 5)
+    # Need some imports on the engine
+    from IPython.parallel import Client
+    client = Client()
+    dview = client.direct_view()
+    with dview.sync_imports():
+        import numpy
+        from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+                                     SuperSmootherMultiband)
+
+    template_indices = np.arange(5 * 23).reshape(5, 23).T
     pointing_indices = np.arange(1, 24)[:, None]
-    ndays = np.array([365, 3 * 365, 5 * 365, 10 * 365])[:, None, None]
+    ndays = np.array([90, 180, 365, 2*365])[:, None, None]
     rmags = np.array([20, 22, 24.5])[:, None, None, None]
 
-    compute_and_save_periods(LombScargleMultiband, 'results.npy',
+    compute_and_save_periods(LombScargleMultiband, 'resultsLSST.npy',
                              model_kwds=dict(Nterms_base=1, Nterms_band=0),
                              pointing_indices=pointing_indices,
                              ndays=ndays,
                              rmags=rmags,
                              template_indices=template_indices,
-                             parallel=True,
+                             parallel=True, client=client,
+                             save_every=1)
+
+    template_indices = template_indices[:, :1]
+
+    compute_and_save_periods(LombScargleMultiband, 'resultsLSST01.npy',
+                             model_kwds=dict(Nterms_base=0, Nterms_band=1),
+                             pointing_indices=pointing_indices,
+                             ndays=ndays,
+                             rmags=rmags,
+                             template_indices=template_indices,
+                             parallel=True, client=client,
+                             save_every=1)
+
+    for i, band in enumerate('ugriz'):
+        filename = 'resultsLSST_ssm_{0}.npy'.format(band)
+        compute_and_save_periods(SuperSmoother1Band, filename,
+                                 model_kwds=dict(band=i),
+                                 pointing_indices=pointing_indices,
+                                 ndays=ndays,
+                                 rmags=rmags,
+                                 template_indices=template_indices,
+                                 parallel=True, client=client,
+                                 save_every=1)
+
+    compute_and_save_periods(SuperSmootherMultiband, 'resultsLSST_ssmulti.npy',
+                             pointing_indices=pointing_indices,
+                             ndays=ndays,
+                             rmags=rmags,
+                             template_indices=template_indices,
+                             parallel=True, client=client,
                              save_every=1)
