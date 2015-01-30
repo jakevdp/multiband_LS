@@ -138,19 +138,25 @@ def gather_results(outfile, pointing_indices, ndays, rmags, template_indices):
 if __name__ == '__main__':
     from gatspy.periodic import LombScargleMultiband
 
-    # Need some imports on the engine
-    from IPython.parallel import Client
-    client = Client()
-    dview = client.direct_view()
-    with dview.sync_imports():
-        import numpy
-        from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
-                                     SuperSmootherMultiband)
+    parallel = False
+
+    if parallel:
+        # Need some imports on the engine
+        from IPython.parallel import Client
+        client = Client()
+        dview = client.direct_view()
+        with dview.sync_imports():
+            import numpy
+            from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+                                         SuperSmootherMultiband)
+    else:
+        client = None
 
     template_indices = np.arange(5 * 23).reshape(5, 23).T
     pointing_indices = np.arange(1, 24)[:, None]
     ndays = np.array([90, 180, 365, 2*365])[:, None, None]
     rmags = np.array([20, 22, 24.5])[:, None, None, None]
+
 
     compute_and_save_periods(LombScargleMultiband, 'resultsLSST.npy',
                              model_kwds=dict(Nterms_base=1, Nterms_band=0),
@@ -158,7 +164,7 @@ if __name__ == '__main__':
                              ndays=ndays,
                              rmags=rmags,
                              template_indices=template_indices,
-                             parallel=True, client=client,
+                             parallel=parallel, client=client,
                              save_every=1)
 
     template_indices = template_indices[:, :1]
@@ -169,7 +175,7 @@ if __name__ == '__main__':
                              ndays=ndays,
                              rmags=rmags,
                              template_indices=template_indices,
-                             parallel=True, client=client,
+                             parallel=parallel, client=client,
                              save_every=1)
 
     for i, band in enumerate('ugriz'):
@@ -180,7 +186,7 @@ if __name__ == '__main__':
                                  ndays=ndays,
                                  rmags=rmags,
                                  template_indices=template_indices,
-                                 parallel=True, client=client,
+                                 parallel=parallel, client=client,
                                  save_every=1)
 
     compute_and_save_periods(SuperSmootherMultiband, 'resultsLSST_ssmulti.npy',
@@ -188,5 +194,5 @@ if __name__ == '__main__':
                              ndays=ndays,
                              rmags=rmags,
                              template_indices=template_indices,
-                             parallel=True, client=client,
+                             parallel=parallel, client=client,
                              save_every=1)
