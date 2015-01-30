@@ -575,8 +575,9 @@ This suggests that the multiband periodogram could have an important role to pla
 and we make our tools publicly available on GitHub. 
 
 \subsection{Comparison with \citet{Long2014}}
-As we were finishing this study, it was pointed out to us that another group had released a preprint independently addressing the multiband periodogram case \citep[][hereafter LCB14]{Long2014}, and come up with a solutions very similar to the ones presented here.
-They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model, and the ``Penalized Generalized Lomb-Scargle'' (PGLS), which is similar in spirit to our $(0, 1)$ shared-phase model.
+As we were finishing this study, it was pointed out to us that another group had released a preprint independently addressing the multiband periodogram case \citep[][hereafter LCB14]{Long2014}, and come up with solutions very similar to the ones presented here.
+They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model
+here, and the ``Penalized Generalized Lomb-Scargle'' (PGLS), which is similar in spirit to our $(0, 1)$ shared-phase model.
 
 In the PGLS model, they start with a multi-phase model, fitting independent $N=1$ term fits to each band, and apply a nonlinear regularization term which penalizes differences in the amplitude and phase. In terms of the formalism used in this work, the PGLS model minimizes a regularized $\chi^2$ of the form
 \begin{equation}
