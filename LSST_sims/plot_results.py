@@ -41,7 +41,7 @@ def plot_results_multi(outfiles, pointing_indices, ndays, rmags, template_indice
                               ndays=ndays,
                               rmags=rmags,
                               template_indices=template_indices)[:, :, :, :, :1]
-               for outfile in outfiles[:4]]
+               for outfile in outfiles]
     results = np.concatenate(results, axis=-1)
 
     rrlyrae = fetch_rrlyrae()
@@ -82,7 +82,7 @@ plot_results('resultsLSST.npy',
 template_indices = template_indices[:, :1]
 
 plot_results_multi(['resultsLSST_ssm_{0}.npy'.format(band)
-                    for band in 'ugriz'],
+                    for band in 'g'],
                    pointing_indices=pointing_indices,
                    ndays=ndays,
                    rmags=rmags,
