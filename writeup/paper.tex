@@ -398,7 +398,8 @@ The model contains the following features:
 \end{enumerate}
 The total number of parameters for $K$ filters is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
-  y_k(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\\ 
+  \eqlabel{multiband_model}
+  y_k(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\nonumber\\ 
   &\theta^{(k)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(k)}_{2n - 1}\sin(n\omega t) + \theta^{(k)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
 The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(k)}$ are determined individually.
@@ -572,6 +573,28 @@ It also meets the second constraint: it consists of a fast linear model at each 
 In our own benchmarks, we found the multiband method to be several times faster than the single-band supersmoother approach, and several orders of magnitude faster than the template fitting approach.
 This suggests that the multiband periodogram could have an important role to play in the analysis of variable stars in future surveys
 and we make our tools publicly available on GitHub. 
+
+\subsection{Comparison with \citet{Long2014}}
+As we were finishing this study, it was pointed out to us that another group had released a preprint independently addressing the multiband periodogram case \citep[][hereafter LCB14]{Long2014}, and come up with a solutions very similar to the ones presented here.
+They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model, and the ``Penalized Generalized Lomb-Scargle'' (PGLS), which is similar in spirit to our $(0, 1)$ shared-phase model.
+
+In the PGLS model, they start with a multi-phase model, fitting independent $N=1$ term fits to each band, and apply a nonlinear regularization term which penalizes differences in the amplitude and phase. In terms of the formalism used in this work, the PGLS model minimizes a regularized $\chi^2$ of the form
+\begin{equation}
+  \chi^2_{PGLS} = \sum_{k=1}^K \bigg[~\chi^2_{GLS}(D^{(K)}) + J_A(A^{(k)}) + J_\phi(\phi^{(k)})~\bigg].
+\end{equation}
+for $K$ bands, where $\chi^2_{GLS}(D^{(K)})$ is the $\chi^2$ of the standard floating mean model on the single-band data $D^{(K)}$, and $J_A$ and $J_\phi$ are regularization/penalty terms which are a function of the amplitude $A^{k}$ and phase $\phi^{(k)}$ of each model. In terms of our linear model parameters $\theta^{(k)}$, this amplitude and phase can be expressed:
+\begin{eqnarray}
+ A^{(k)} &=& \sqrt{(\theta_1^{(k)})^2 + (\theta_1^{(k)})^2}\nonumber\\
+ \phi^{(k)} &=& \arctan(\theta_2 / \theta_1)
+\end{eqnarray}
+The selected form of these regularization terms penalizes deviations of the amplitude and phase from a common mean between the bands; in this sense the PGLS model can be considered a conceptual mid-point between our shared-phase and multi-phase models. Within the formalism proposed here, such a mid-point may be alternatively attained by suitably increasing the regularization parameter $\epsilon$ used in the shared-phase model, though the nature of the resulting regularization will differ.
+
+Computationally, the PGLS model requires a nonlinear optimization at each frequency $\omega$, and is thus much more expensive than the straightforward linear optimization of our shared-phase model.
+For this reason, LCB14 propose a clever method by which nested models are used to reduce the number of nonlinear optimizations used: essentially, by showing that the (linear) MGLS $\chi^2$ is a lower-bound of the (non-linear) PGLS $\chi^2$, it is possible to iteratively reduce the number of PGLS computations required to minimize the $\chi^2$ among a grid of frequencies.
+Such an optimization could also be applied in the case of our shared-phase model, but is not necessary here due to its relative speed.
+When applying the method to a very large number of light curves in, e.g. LSST however, such a computational trick may prove very useful.
+
+Given these important distinctions between the models proposed here and in LCB14, in future work we plan to do a detailed comparison of the two means of model regularization.
 
 
 {\it Acknowledgements:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
