@@ -1,0 +1,35 @@
+I am attaching a tar.gz file with two dozen simple text files. They represent 24 locations
+within the LSST footprint, and ra/dec are listed in the first two columns of each file (always
+the same values in a given file). The following 3 columns are more useful:
+- 3rd column in mjd, in days, with an arbitrary and irrelevant (here) offset
+- filter, where 0-5 corresponds to ugrizy, respectively
+- m5 is the five-sigma depth, which can be used to compute random photometric error as 
+  a function of star’s magnitude, using eq. 5 (page 20) from this paper
+http://www.astro.washington.edu/users/ivezic/Publications/0805.2366v4.pdf
+
+I would also add 0.005 mag in quadrature to the result from eq. 5 to avoid unrealistically
+small values (this is eq. 4). 
+
+These 24 locations have enough of variation in the sampling that the results should be
+representative (and this is an old simulations anyway, though good enough for our purpose). 
+
+The question is what are we looking for? What does it quantitatively mean to say "we do just as well with half the data"? perhaps we find the true period in the top 5 results for a certain percentage of cases?
+
+We want to find out the average (over 24 sampling windows above) detection probability for an 
+RR Lyr light curve as a function of the light curve duration (0-10 years) and the mean magnitude
+(say, 20.0 to 24.5 in the r band), for both methods. 
+
+So, assuming that your already have a tool for generating ugrizy time series using templates,
+1)  2-D loop over assumed mean magnitudes and the length of light curve (say 30-3650 days)
+
+2) loop over these 24 files: 
+      - sample the light curve at times and in bands given in a file, 
+      - given magnitude and m5, generate expected uncertainty and generate error by drawing from 
+          the corresponding gaussian
+      - given the five 5 light curves, estimate period using both methods
+ and average the behavior over all 24 locations
+
+3) plot the results vs. mean mag. and the light curve length. 
+
+In principle, one could also take a range of periods at each location and then average over both
+the sampling function and period (e.g. 0.3 < P/days < 0.8). 
