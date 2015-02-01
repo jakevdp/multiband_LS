@@ -3,10 +3,11 @@ from datetime import datetime
 
 import numpy as np
 
-from mapcache import NumpyCache
+from mapcache import NumpyCache, compute_parallel
 from LSSTsims import LSSTsims
-from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
-                             SuperSmootherMultiband, LombScargleMultibandFast)
+from gatspy.periodic import (LombScargleMultiband,
+                             SuperSmootherMultiband,
+                             LombScargleMultibandFast)
 
 
 class SuperSmoother1Band(SuperSmootherMultiband):
@@ -43,13 +44,6 @@ def compute_and_save_periods(Model, outfile,
     cache = NumpyCache(outfile)
     keys = list(np.broadcast(pointing_indices, ndays, rmags, template_indices))
 
-    results = dict(cache.items())
-    if(results):
-        print("using {0} previous results from {1}"
-              "".format(len(results), outfile))
-    keys = [key for key in keys if key not in results]
-
-    # For testing purposes... only find a few results
     if num_results is not None:
         keys = keys[:num_results]
 
@@ -73,35 +67,20 @@ def compute_and_save_periods(Model, outfile,
             periods = np.nan + np.zeros(Nperiods)
         return key, periods
 
-    # Set up the iterator over results
-    if parallel:
-        if client is None:
-            from IPython.parallel import Client
-            client = Client()
-        lbv = client.load_balanced_view()
-        results_iter = lbv.map(find_periods, keys,
-                               block=False, ordered=False)
+    results = compute_parallel(cache, find_periods, keys,
+                               save_every=save_every,
+                               parallel=parallel, client=client)
+
+    if num_results is not None:
+        return results
     else:
-        results_iter = map(find_periods, keys)
-
-    # Do the iteration, saving the results occasionally
-    print(datetime.now())
-    for i, (key, result) in enumerate(results_iter):
-        print('{0}/{1}: {2}'.format(i + 1, len(keys), result))
-        print(' {0}'.format(datetime.now()))
-        cache.add_row(key, result, save=False)
-        if (i + 1) % save_every == 0:
-            cache.save()
-    cache.save()
-
-    return gather_results(outfile, pointing_indices,
-                          ndays, rmags, template_indices)
+        return gather_results(outfile, pointing_indices, ndays,
+                              rmags, template_indices)
 
 
 def gather_results(outfile, pointing_indices, ndays, rmags, template_indices):
     results = NumpyCache(outfile)
     brd = np.broadcast(pointing_indices, ndays, rmags, template_indices)
-    
     results = np.array([results.get_row(key) for key in brd])
     return results.reshape(brd.shape + results.shape[-1:])
 
@@ -115,7 +94,8 @@ if __name__ == '__main__':
         client = Client()
         dview = client.direct_view()
         with dview.sync_imports():
-            from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
+            from gatspy.periodic import (LombScargleMultiband,
+                                         LombScargleMultibandFast,
                                          SuperSmootherMultiband)
     else:
         client = None
@@ -130,7 +110,8 @@ if __name__ == '__main__':
                   rmags=rmags,
                   template_indices=template_indices,
                   parallel=parallel, client=client,
-                  save_every=10)
+                  save_every=4,
+                  num_results=22)
 
     compute_and_save_periods(LombScargleMultiband, 'resultsLSST.npy',
                              model_kwds=dict(Nterms_base=1, Nterms_band=0),
