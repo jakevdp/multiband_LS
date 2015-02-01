@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 import numpy as np
-import numpy
 
 from mapcache import NumpyCache
 from LSSTsims import LSSTsims
@@ -24,10 +23,11 @@ class SuperSmoother1Band(SuperSmootherMultiband):
         SuperSmootherMultiband.__init__(self, optimizer)
 
     def _fit(self, t, y, dy, filts):
+        import numpy as np
         mask = (filts == self.band)
         self.t, self.y, self.dy, self.filts = (t[mask], y[mask],
                                                dy[mask], filts[mask])
-        self.unique_filts_ = numpy.unique(self.filts)
+        self.unique_filts_ = np.unique(self.filts)
         return SuperSmootherMultiband._fit(self, self.t, self.y,
                                            self.dy, self.filts)
 
@@ -71,7 +71,7 @@ def compute_and_save_periods(Model, outfile,
             periods = np.nan + np.zeros(Nperiods)
         except ValueError:
             periods = np.nan + np.zeros(Nperiods)
-        return periods
+        return key, periods
 
     # Set up the iterator over results
     if parallel:
@@ -79,10 +79,10 @@ def compute_and_save_periods(Model, outfile,
             from IPython.parallel import Client
             client = Client()
         lbv = client.load_balanced_view()
-        results_iter = zip(keys, lbv.map(find_periods, keys,
-                                         block=False, ordered=False))
+        results_iter = lbv.map(find_periods, keys,
+                               block=False, ordered=False)
     else:
-        results_iter = zip(keys, map(find_periods, keys))
+        results_iter = map(find_periods, keys)
 
     # Do the iteration, saving the results occasionally
     print(datetime.now())
@@ -107,9 +107,7 @@ def gather_results(outfile, pointing_indices, ndays, rmags, template_indices):
 
 
 if __name__ == '__main__':
-    from gatspy.periodic import LombScargleMultiband
-
-    parallel = False
+    parallel = True
 
     if parallel:
         # Need some imports on the engine
@@ -117,25 +115,22 @@ if __name__ == '__main__':
         client = Client()
         dview = client.direct_view()
         with dview.sync_imports():
-            import numpy
             from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
                                          SuperSmootherMultiband)
     else:
         client = None
 
-    template_indices = np.arange(5 * 23).reshape(5, 23).T
+    template_indices = np.arange(2 * 23).reshape(2, 23).T
     pointing_indices = np.arange(1, 24)[:, None]
     ndays = np.array([90, 180, 365, 2*365])[:, None, None]
     rmags = np.array([20, 22, 24.5])[:, None, None, None]
-
-    template_indices = template_indices[:, :1]
 
     kwargs = dict(pointing_indices=pointing_indices,
                   ndays=ndays,
                   rmags=rmags,
                   template_indices=template_indices,
                   parallel=parallel, client=client,
-                  save_every=20)
+                  save_every=10)
 
     compute_and_save_periods(LombScargleMultiband, 'resultsLSST.npy',
                              model_kwds=dict(Nterms_base=1, Nterms_band=0),
@@ -145,7 +140,7 @@ if __name__ == '__main__':
                              model_kwds=dict(Nterms_base=0, Nterms_band=1),
                              **kwargs)
 
-    for i, band in enumerate('ugriz'):
+    for i, band in enumerate('ugrizy'):
         filename = 'resultsLSST_ssm_{0}.npy'.format(band)
         compute_and_save_periods(SuperSmoother1Band, filename,
                                  model_kwds=dict(band=i),
