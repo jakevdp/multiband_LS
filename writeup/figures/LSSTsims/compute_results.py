@@ -35,14 +35,14 @@ class SuperSmoother1Band(SuperSmootherMultiband):
 
 def compute_and_save_periods(Model, outfile,
                              pointing_indices, ndays,
-                             rmags, template_indices,
+                             gmags, template_indices,
                              model_args=None, model_kwds=None,
                              Nperiods=5, save_every=5,
                              parallel=True, client=None,
                              num_results=None):
     """Function to compute periods and save the results"""
     cache = NumpyCache(outfile)
-    keys = list(np.broadcast(pointing_indices, ndays, rmags, template_indices))
+    keys = list(np.broadcast(pointing_indices, ndays, gmags, template_indices))
 
     if num_results is not None:
         keys = keys[:num_results]
@@ -75,12 +75,14 @@ def compute_and_save_periods(Model, outfile,
         return results
     else:
         return gather_results(outfile, pointing_indices, ndays,
-                              rmags, template_indices)
+                              gmags, template_indices)
 
 
-def gather_results(outfile, pointing_indices, ndays, rmags, template_indices):
+def gather_results(outfile, pointing_indices, ndays, gmags, template_indices):
+    if not os.path.exists(outfile):
+        raise ValueError("Cannot gather results from {0}".format(outfile))
     results = NumpyCache(outfile)
-    brd = np.broadcast(pointing_indices, ndays, rmags, template_indices)
+    brd = np.broadcast(pointing_indices, ndays, gmags, template_indices)
     results = np.array([results.get_row(key) for key in brd])
     return results.reshape(brd.shape + results.shape[-1:])
 
@@ -103,15 +105,14 @@ if __name__ == '__main__':
     template_indices = np.arange(2 * 23).reshape(2, 23).T
     pointing_indices = np.arange(1, 24)[:, None]
     ndays = np.array([90, 180, 365, 2*365])[:, None, None]
-    rmags = np.array([20, 22, 24.5])[:, None, None, None]
+    gmags = np.array([20, 22, 24.5])[:, None, None, None]
 
     kwargs = dict(pointing_indices=pointing_indices,
                   ndays=ndays,
-                  rmags=rmags,
+                  gmags=gmags,
                   template_indices=template_indices,
                   parallel=parallel, client=client,
-                  save_every=4,
-                  num_results=22)
+                  save_every=4)
 
     compute_and_save_periods(LombScargleMultiband, 'resultsLSST.npy',
                              model_kwds=dict(Nterms_base=1, Nterms_band=0),

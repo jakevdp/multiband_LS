@@ -190,7 +190,7 @@ def compute_parallel(cache, func, keys, save_every=4,
     # Do the iteration, saving the results occasionally
     print(datetime.now())
     for i, (key, result) in enumerate(results_iter):
-        print('{0}/{1}: {2}'.format(i + 1, len(keys), result))
+        print('{0}/{1}: {2}'.format(i + 1, len(keys_to_compute), result))
         print(' {0}'.format(datetime.now()))
         cache.add_row(key, result, save=((i + 1) % save_every == 0))
     cache.save()
