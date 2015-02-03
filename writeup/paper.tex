@@ -80,8 +80,11 @@ fits for individual bands describe residuals relative to the base model and typi
 lower-order Fourier series. This decrease in the required number of fit parameters is the
 main reason for improved performance. We use simulated light curves 
 and randomly subsampled SDSS Stripe 82 data to demonstrate the superiority of this 
-method compared to other methods from the literature. The Python implementation of 
-this method, along with code to fully reproduce the results reported here, is available on GitHub.
+method compared to other methods from the literature, and find that this method will be able to
+efficiently determine the correct period in the majority of LSST's bright RR Lyrae stars with
+as little as six months of LSST data.
+The Python implementation of this method, along with code to fully reproduce the results
+reported here, is available on GitHub.
 \end{abstract}
 
 \keywords{
@@ -589,6 +592,9 @@ Part of this improvement is due to the performance of the shared-phase multiband
   \centering
   \includegraphics[width=\textwidth]{fig09.pdf}
   \caption{
+    Fraction of periods correctly determined for LSST RR Lyrae as a function
+    of observing time and $g$-band magnitude, for the multiband (solid lines)
+    and single-band supersmoother (dashed lines) approaches.
   } 
   \figlabel{LSST_sims}
 \end{figure}
