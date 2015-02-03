@@ -554,6 +554,45 @@ The lower panels of \fig{compare_periods_reduced} show the relationship between 
 
 The multiband method does much better on the reduced dataset. Even with an 80\% reduction in the number of observations, the multiband method matches the S10 period 64\% of the time (compared to 79\% with the full dataset), and the top 5 peaks contain the S10 period 94\% of the time (compared to 99\% with the full dataset). This performance is due to the fact that the multiband algorithm has relatively few parameters, but is yet able to flexibly accommodate data from multiple observing bands. In particular, this suggests that with the multiterm periodogram, the S10 analysis could have been done effectively with only a small fraction of the available data. This bodes well for future surveys, where data on variable stars will be much more sparsely sampled.
 
+\section{Prospects for LSST}
+\sectlabel{LSST}
+Previously, \citet{Oluseyi12} evaluated the prospects of period finding in early LSST data, and found results which were not encouraging.
+Using the conservative criterion of a 2/3 majority among the top single-band supersmoother fits in the $g$, $r$, and $i$ bands, they showed that, depending on spectral type, finding reliable periods for the brightest ($g \sim 20$) RR Lyrae stars will require several years of LSST data, while periods for some of the faintest ($g \sim 25$) stars will not be reliable with even ten years of data!
+Here we show that a strategy involving the multiband periodogram along with S10-style template fitting greatly improves this outlook.
+
+The results of the previous section show that even in the case of sparsely-sampled multiband data, the shared-phase periodogram finds the true period among its top candidates.
+Furthermore, even with such sparse data, the S10 template-fitting performs well, though computationally it is extremely expensive if a small set of candidate periods cannot be provided (B. Sesar, private communication).
+This suggests the following procedure for determining periods in future multiband datasets:
+
+\begin{enumerate}
+\item As a first pass, find a set of candidate frequencies using the multiband periodogram. This is a fast linear optimization that can be trivially parallelized.
+\item Within these candidate frequencies, use the much more costly template-fitting procedure to choose the optimal period from among the handful of candidates.
+\item Compute a goodness-of-fit statistic of this template-fitting result to determine whether the fit is suitable; if not, then apply the template-fitting procedure across the full period range.
+\end{enumerate}
+
+Here we briefly explore simulated LSST observations of RR Lyrae stars in order to gauge the effectiveness of this strategy.
+
+To accomplish this, we \todo{Zeljko fill in details about bands \& cadences}
+and simulated a set of 50 RR Lyrae observations with the S10 templates, at each of a range of apparent magnitudes between $g=20$ and $g=24.5$.
+Given the capability of template-fitting to choose among candidate periods, we use a more relaxed period-matching criterion than in \citet{Oluseyi12}: when evaluating the single-band supersmoother, we require that the true period is among the five periods determined independently in the $u, g, r, i, z$ bands; in the multiband case we require that the true period is among the top five peaks in the multiband periodogram.
+
+\fig{LSST_sims} shows the fraction of stars where this period matching criterion is met as a function of $g$-band magnitude and subset of LSST data.
+The solid lines show the multiband results; the dashed lines show the single-band supersmoother results; and the shading helps guide the eye for the sake of comparison. In all cases, the multiband result is superior to the single-band result. This is especially so for faint stars, where the multiband results greatly improve over the supersmoother results, which due to model flexibility tend to over-fit the noisy data.
+
+In particular, these results point to much rosier prospects for science with variable stars than previously reported.
+In particular, even with only six months of LSST data, we can expect to correctly identify the periods for over 60\% of stars brighter than $g=22$; with the first two years of LSST observations, this increases to nearly 100\%.
+Part of this improvement is due to the performance of the shared-phase multiband model with noisy data, and part of this improvement is due to the relaxed period-matching constraints enabled by the hybrid approach of non-parametric and template-fitting proposed above.
+
+\todo{Say more about Brani's template fitting?}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{fig09.pdf}
+  \caption{
+  } 
+  \figlabel{LSST_sims}
+\end{figure}
+
 \section{Discussion and Conclusion}
 \sectlabel{discussion}
 
@@ -571,32 +610,13 @@ Looking forward to future variable star catalogs from PanSTARRS, DES, and LSST, 
 The multiband method, through its combination of flexibility and model simplicity, meets the first: as shown above, it performs well in the case of sparsely-sampled multiband data.
 It also meets the second constraint: it consists of a fast linear model at each frequency, compared to a sliding-window model in the case of supersmoother, a nonlinear optimization in the case of template-fitting, and a Markov Chain Monte Carlo in the case of CARMA models.
 In our own benchmarks, we found the multiband method to be several times faster than the single-band supersmoother approach, and several orders of magnitude faster than the template fitting approach.
-This suggests that the multiband periodogram could have an important role to play in the analysis of variable stars in future surveys
-and we make our tools publicly available on GitHub. 
 
-\subsection{Comparison with \citet{Long2014}}
-As we were finishing this study, it was pointed out to us that another group had released a preprint independently addressing the multiband periodogram case \citep[][hereafter LCB14]{Long2014}, and come up with solutions very similar to the ones presented here.
-They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model
-here, and the ``Penalized Generalized Lomb-Scargle'' (PGLS), which is similar in spirit to our $(0, 1)$ shared-phase model.
+The strengths and weaknesses of the method suggest a hybrid approach to finding periodicity in sparsely-sampled multiband data: a first pass with the fast multiband method, followed by a second pass using the more computationally intensive template-fitting method to select among these candidate periods.
+Despite pessimism in previous studies, our experiments with simulated LSST data lead us to expect such a hybrid approach to successfully identify periods in the vast majority of RR Lyrae stars brighter than $g\sim 22.5$
+This suggests that the multiband periodogram could have an important role to play in the analysis of variable stars in future surveys.
 
-In the PGLS model, they start with a multi-phase model, fitting independent $N=1$ term fits to each band, and apply a nonlinear regularization term which penalizes differences in the amplitude and phase. In terms of the formalism used in this work, the PGLS model minimizes a regularized $\chi^2$ of the form
-\begin{equation}
-  \chi^2_{PGLS} = \sum_{k=1}^K \bigg[~\chi^2_{GLS}(D^{(K)}) + J_A(A^{(k)}) + J_\phi(\phi^{(k)})~\bigg].
-\end{equation}
-for $K$ bands, where $\chi^2_{GLS}(D^{(K)})$ is the $\chi^2$ of the standard floating mean model on the single-band data $D^{(K)}$, and $J_A$ and $J_\phi$ are regularization/penalty terms which are a function of the amplitude $A^{k}$ and phase $\phi^{(k)}$ of each model. In terms of our linear model parameters $\theta^{(k)}$, this amplitude and phase can be expressed:
-\begin{eqnarray}
- A^{(k)} &=& \sqrt{(\theta_1^{(k)})^2 + (\theta_1^{(k)})^2}\nonumber\\
- \phi^{(k)} &=& \arctan(\theta_2 / \theta_1)
-\end{eqnarray}
-The selected form of these regularization terms penalizes deviations of the amplitude and phase from a common mean between the bands; in this sense the PGLS model can be considered a conceptual mid-point between our shared-phase and multi-phase models. Within the formalism proposed here, such a mid-point may be alternatively attained by suitably increasing the regularization parameter $\epsilon$ used in our shared-phase model, though the nature of the resulting regularization will differ.
-
-Computationally, the PGLS model requires a nonlinear optimization at each frequency $\omega$, and is thus much more expensive than the straightforward linear optimization of our shared-phase model.
-For this reason, LCB14 propose a clever method by which nested models are used to reduce the number of nonlinear optimizations used: essentially, by showing that the (linear) MGLS $\chi^2$ is a lower-bound of the (non-linear) PGLS $\chi^2$, it is possible to iteratively reduce the number of PGLS computations required to minimize the $\chi^2$ among a grid of frequencies.
-Such an optimization could also be applied in the case of our shared-phase model, but is not necessary here due to its already high speed.
-Nevertheless, when applying the method to a very large number of light curves, as in e.g. LSST, such a computational trick may prove very useful.
-
-Given these important distinctions between the models proposed here and in LCB14, in future work we plan to do a detailed comparison of the two means of model regularization.
-
+We have released a Python implementation of the multiband periodogram on GitHub, along with Python code to reproduce all results and figures in this work; see \sect{gatspy}.
+As we were finalizing this manuscript, we were made aware of a preprint of an independent exploration of a similar approach to multiband light curves \citep{Long14}; we compare the two approaches in \sect{long_comparison}.
 
 {\it Acknowledgements:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
 
@@ -647,5 +667,30 @@ power = model.periodogram(periods)
 \end{lstlisting}
 
 The models in the \texttt{gatspy} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/jakevdp/gatspy/}.
+
+
+\section{Comparison with \citet{Long2014}}
+\sectlabel{long_comparison}
+As we were finishing this study, it was pointed out to us that another group had released a preprint independently addressing the multiband periodogram case \citep[][hereafter LCB14]{Long2014}, and come up with solutions very similar to the ones presented here.
+They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model
+here, and the ``Penalized Generalized Lomb-Scargle'' (PGLS), which is similar in spirit to our $(0, 1)$ shared-phase model.
+
+In the PGLS model, they start with a multi-phase model, fitting independent $N=1$ term fits to each band, and apply a nonlinear regularization term which penalizes differences in the amplitude and phase. In terms of the formalism used in this work, the PGLS model minimizes a regularized $\chi^2$ of the form
+\begin{equation}
+  \chi^2_{PGLS} = \sum_{k=1}^K \bigg[~\chi^2_{GLS}(D^{(K)}) + J_A(A^{(k)}) + J_\phi(\phi^{(k)})~\bigg].
+\end{equation}
+for $K$ bands, where $\chi^2_{GLS}(D^{(K)})$ is the $\chi^2$ of the standard floating mean model on the single-band data $D^{(K)}$, and $J_A$ and $J_\phi$ are regularization/penalty terms which are a function of the amplitude $A^{k}$ and phase $\phi^{(k)}$ of each model. In terms of our linear model parameters $\theta^{(k)}$, this amplitude and phase can be expressed:
+\begin{eqnarray}
+ A^{(k)} &=& \sqrt{(\theta_1^{(k)})^2 + (\theta_1^{(k)})^2}\nonumber\\
+ \phi^{(k)} &=& \arctan(\theta_2 / \theta_1)
+\end{eqnarray}
+The selected form of these regularization terms penalizes deviations of the amplitude and phase from a common mean between the bands; in this sense the PGLS model can be considered a conceptual mid-point between our shared-phase and multi-phase models. Within the formalism proposed here, such a mid-point may be alternatively attained by suitably increasing the regularization parameter $\epsilon$ used in our shared-phase model, though the nature of the resulting regularization will differ.
+
+Computationally, the PGLS model requires a nonlinear optimization at each frequency $\omega$, and is thus much more expensive than the straightforward linear optimization of our shared-phase model.
+For this reason, LCB14 propose a clever method by which nested models are used to reduce the number of nonlinear optimizations used: essentially, by showing that the (linear) MGLS $\chi^2$ is a lower-bound of the (non-linear) PGLS $\chi^2$, it is possible to iteratively reduce the number of PGLS computations required to minimize the $\chi^2$ among a grid of frequencies.
+Such an optimization could also be applied in the case of our shared-phase model, but is not necessary here due to its already high speed.
+Nevertheless, when applying the method to a very large number of light curves, as in e.g. LSST, such a computational trick may prove very useful.
+
+Given these important distinctions between the models proposed here and in LCB14, in future work we plan to do a detailed comparison of the two means of model regularization.
 
 \end{document}
