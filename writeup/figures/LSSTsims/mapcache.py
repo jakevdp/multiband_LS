@@ -9,9 +9,9 @@ import numpy as np
 
 try:
     # Python 2
-    import itertools.imap as map
+    from itertools import imap
 except ImportError:
-    pass
+    imap = map
 
 
 class MapCache(object):
@@ -182,10 +182,10 @@ def compute_parallel(cache, func, keys, save_every=4,
             from IPython.parallel import Client
             client = Client()
         lbv = client.load_balanced_view()
-        results_iter = lbv.map(iter_function, keys_to_compute,
+        results_iter = lbv.imap(iter_function, keys_to_compute,
                                block=False, ordered=False)
     else:
-        results_iter = map(iter_function, keys_to_compute)
+        results_iter = imap(iter_function, keys_to_compute)
 
     # Do the iteration, saving the results occasionally
     print(datetime.now())

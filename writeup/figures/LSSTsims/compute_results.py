@@ -94,6 +94,7 @@ if __name__ == '__main__':
         # Need some imports on the engine
         from IPython.parallel import Client
         client = Client()
+
         dview = client.direct_view()
         with dview.sync_imports():
             from gatspy.periodic import (LombScargleMultiband,
@@ -104,8 +105,8 @@ if __name__ == '__main__':
 
     template_indices = np.arange(2 * 23).reshape(2, 23).T
     pointing_indices = np.arange(1, 24)[:, None]
-    ndays = np.array([90, 180, 365, 2*365])[:, None, None]
-    gmags = np.array([20, 22, 24.5])[:, None, None, None]
+    ndays = np.array([90, 180, 365, 2*365, 5*365])[:, None, None]
+    gmags = np.array([20, 21, 22, 23, 24.5])[:, None, None, None]
 
     kwargs = dict(pointing_indices=pointing_indices,
                   ndays=ndays,
