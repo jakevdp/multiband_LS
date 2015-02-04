@@ -70,7 +70,7 @@
 \begin{abstract}
 This paper introduces the {\it multiband periodogram}, a general extension of the well-known 
 Lomb-Scargle approach for detecting periodic signals in time-domain data. In addition to 
-advantanges of the Lomb-Scargle method such as treatment of non-uniform sampling and
+advantages of the Lomb-Scargle method such as treatment of non-uniform sampling and
 heteroscedastic errors, the multiband periodogram significantly improves period finding for randomly 
 sampled multiband light curves (e.g., Pan-STARRS, DES and LSST). The light curves in 
 each band are modeled as arbitrary truncated Fourier series, with the period and phase 
@@ -117,7 +117,7 @@ and can treat non-uniformly sampled time series with heteroscedastic measurement
 The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different
 frequencies are not orthogonal. As a result, the periodogram has many local maxima and thus in practice the global 
 maximum of the periodogram is found by grid search \citep[for details see, e.g.][]{ICVG2014}.
-A more general parameteric method based on the use of continuous-time autoregressive moving average (CARMA) model
+A more general parametric method based on the use of continuous-time autoregressive moving average (CARMA) model
 was recently introduced by \citet{Kelly14}. CARMA models can also treat non-uniformly sampled time series with 
 heteroscedastic measurement uncertainties, and can handle complex variability patterns. 
 
@@ -126,7 +126,7 @@ that successive measurements must be taken through a single photometric bandpass
 problem for past surveys because measurements are generally taken through a single photometric filter 
 \citep [e.g. LINEAR,][]{LINEAR1}, or nearly-simultaneously in all bands at each observation \citep [e.g. SDSS,][]{Sesar2010}.
 For the case of simultaneously taken multiband measurements, \cite{Suveges12} utilized the principal component
-method to optimaly extract the best period. Their method is essentially a multiband generalization of the well-known
+method to optimally extract the best period. Their method is essentially a multiband generalization of the well-known
 two-band Welch-Stetson variability index \citep{Stetson1996}. Unfortunately, when data in each band are taken at
 different times, the  principal component approach in not applicable. In such cases, past studies have generally relied 
 on \adhoc{} methods such as a majority vote among multiple single-band estimates of the 
@@ -180,7 +180,7 @@ where $\bar{y}$ is the mean and $V_y$ is the variance of the data $\{y_k\}$, and
   \eqlabel{SingleModel}
   d(t) = A\sin(\omega t + \phi).
 \end{equation}
-This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, nonstationary frequencies, and other more sophisticated models within a Bayesian framework.
+This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the normalized periodogram of Lomb and Scargle is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, non-stationary frequencies, and other more sophisticated models within a Bayesian framework.
 
 While the important features of least squares frequency estimation via Lomb-Scargle periodograms have been discussed elsewhere, we will present a brief introduction to the subject in the following section.
 The matrix-based formalism we develop here will make clear how the method can be extended to more sophisticated models, including the multiband periodogram proposed in this work.
@@ -253,7 +253,7 @@ With these definitions, the model in \eq{simplemodel} can be expressed as a simp
   \chi^2(\omega) &=& (y - X_\omega\theta)^T\Sigma^{-1}(y - X_\omega\theta)\\
   \chi^2_0 &=& y^T \Sigma^{-1} y
 \end{eqnarray}
-The expression for the normalized periodogram can be computed by finding via standard methods the value of $\theta$ which minizes $\chi^2(\omega)$, and plugging the result into \eq{chi2PN}. This yields
+The expression for the normalized periodogram can be computed by finding via standard methods the value of $\theta$ which minimizes $\chi^2(\omega)$, and plugging the result into \eq{chi2PN}. This yields
 \begin{equation}
   \eqlabel{LombScargle2}
   P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
@@ -300,7 +300,7 @@ In the remainder of this section, we will explore a few of these modifications a
   \includegraphics[width=\textwidth]{fig02.pdf}
   \caption{
     An illustration of the effect of the floating mean model for censored data.
-    The data consist of 80 observations drawn from a sinusoidal model. To mimick a potentially damaging selection effect, all observations with magnitude fainter than 16 are removed (indicated by the light-gray points). The standard and floating-mean periodograms are computed from the remaining data; these fits are shown over the data in the left panel. Because of this biased observing pattern, the mean of the observed data is a biased estimator of the true mean. The standard fixed-mean model in this case fails to recover the true period of 0.622 days, while the floating mean model still finds the correct period.
+    The data consist of 80 observations drawn from a sinusoidal model. To mimic a potentially damaging selection effect, all observations with magnitude fainter than 16 are removed (indicated by the light-gray points). The standard and floating-mean periodograms are computed from the remaining data; these fits are shown over the data in the left panel. Because of this biased observing pattern, the mean of the observed data is a biased estimator of the true mean. The standard fixed-mean model in this case fails to recover the true period of 0.622 days, while the floating mean model still finds the correct period.
   }
   \figlabel{floating_mean}
 \end{figure}
@@ -309,7 +309,7 @@ As an example of one of these generalizations, we'll consider what \citet{Zechme
 \begin{equation}
   y(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
-This model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all datapoints.
+This model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
 
 For well-sampled data, there is usually very little difference between a standard periodogram and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data are a poor predictor of the true mean, causing the standard fixed-mean method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
 
@@ -504,7 +504,7 @@ While this approach is sufficient for well-sampled data, it becomes problematic 
 
 The lower panels of \fig{multiband_sim} show the same 60 nights of data, except with only a {\it single} band observation recorded each night.
 The lower-left panel shows the observations as a function of phase, and the lower-right panels show the periodograms derived from the data.
-With only 12 observations for each indiviudal band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase multiband approach (i.e. $N_{base}=1,N_{band}=0$), shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days.
+With only 12 observations for each individual band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase multiband approach (i.e. $N_{base}=1,N_{band}=0$), shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days.
 
 This shared-phase $(1,0)$ model is only one of the possible multiband options, however: \fig{multiband_models} shows multiband fits to this data for models with various choices of $(N_{base},N_{band})$.
 We see here many of the characteristics noted above for single-band models: as discussed in \sect{multiterm}, increasing the number of Fourier terms leads to power at multiples of the fundamental period, and increased model complexity (roughly indexed by the effective number of free parameters $M^{eff}$) tends to increase the background level of the periodogram, obscuring significant peaks.
@@ -514,7 +514,7 @@ For this reason, models with $N_{base} > N_{band}$ are the most promising: they 
 \section{Application to Stripe 82 RR Lyrae}
 \sectlabel{stripe82}
 Stripe 82 is a three hundred square degree equatorial region of the sky which was repeatedly imaged through multiple band-passes during phase II of the Sloan Digital Sky Survey \citep[SDSS II, see][]{Sesar2007}.
-Here we consider the SDSS II observations of 483 RR Lyrae stars compiled and studied by S10, in which periods for these stars were determined based on emperically-derived light curve templates.
+Here we consider the SDSS II observations of 483 RR Lyrae stars compiled and studied by S10, in which periods for these stars were determined based on empirically-derived light curve templates.
 Because the template-fitting method is extremely computationally intensive, S10 first determined candidate periods by taking the top 5 results of the Supersmoother \citep{Reimann94} algorithm applied to the $g$-band; template fits were then performed at each candidate period and the period with the best template fit was reported as the true period. In this section, we make use of this dataset to quantitatively evaluate the effectiveness of the multiband periodogram approach.
 
 \subsection{Densely-sampled Multiband Data}
@@ -616,7 +616,7 @@ Because of our relaxed matching criteria, even the single-band supersmoother res
 Without fail, the multiband result exceeds this best-case single-band result; the improvement is most apparent for faint stars, where the greater model flexibility of the supersmoother causes it to over-fit the noisy data.
 
 These results point to much more promising prospects for science with variable stars than previously reported.
-In particular, even with only six months of LSST data, we can expect to correctly identify the periods for over 60\% of stars brighter than $g=22$; with the first two years of LSST observations, this increases to nearly 100\%.
+In particular, even with only six months of LSST data, we can expect to correctly identify the periods for over 60\% of stars brighter than $g=22$; with the first two years of LSST observations, this increases to nearly 100\%; with five years of data, the multiband method identifies the correct period for 100\% of even the faintest stars.
 Part of this improvement is due to the performance of the shared-phase multiband model with noisy data, and part of this improvement is due to the relaxed period-matching constraints enabled by the hybrid approach of periodogram-based and template-based period determination.
 
 %\todo{Say more about Brani's template fitting? Zeljko: I don't know. I would guess that fitting templates to
@@ -637,6 +637,7 @@ Part of this improvement is due to the performance of the shared-phase multiband
     Fraction of periods correctly determined for LSST RR Lyrae as a function
     of the length of the observing season and the mean $g$-band magnitude, for the multiband (solid lines)
     and single-band supersmoother (dashed lines) approaches.
+    The multiband method is superior to the single-band supersmoother approach in all cases, and especially for the faintest objects.
   } 
   \figlabel{LSST_sims}
 \end{figure}
@@ -660,7 +661,7 @@ This finding suggests that the multiband periodogram could have an important rol
 We have released a Python implementation of the multiband periodogram on GitHub, along with Python code to reproduce all results and figures in this work; this is described in \app{gatspy}.
 As we were finalizing this manuscript, we were made aware of a preprint of an independent exploration of a similar approach to multiband light curves \citep{Long2014}; we discuss the similarities and differences between these two approaches in \app{long_comparison}.
 
-{\it Acknowledgements:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
+{\it Acknowledgments:} JTV is supported by the University of Washington eScience institute, including grants from the Alfred P. Sloan Foundation, the Gordon and Betty Moore Foundation, and the Washington Research Foundation. The authors thank GitHub for providing free academic accounts which were essential in the development of this work.
 
 
 \bibliographystyle{apj}
@@ -669,7 +670,7 @@ As we were finalizing this manuscript, we were made aware of a preprint of an in
 \appendix
 \section{Python Implementation of Multiband Periodogram}
 \sectlabel{gatspy}
-The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/jakevdp/gatspy/}}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available in a separate repository\footnote{\url{http://github.com/jakevdp/multiband_LS/}}.
+The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/astroml/gatspy/}} \citep{gatspy}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available in a separate repository\footnote{\url{http://github.com/jakevdp/multiband_LS/}}.
 
 {\tt gatspy} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementations of numerical methods in Python.
 
@@ -708,7 +709,7 @@ model.fit(t[gband], mag[gband], dmag[gband])
 power = model.periodogram(periods)
 \end{lstlisting}
 
-The models in the \texttt{gatspy} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/jakevdp/gatspy/}.
+The models in the \texttt{gatspy} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/astroml/gatspy/}.
 
 
 \section{Comparison with \citet{Long2014}}
