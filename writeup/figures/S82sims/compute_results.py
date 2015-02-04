@@ -59,6 +59,13 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
     return compute_parallel(cache, find_periods, lcids,
                             save_every=save_every,
                             parallel=parallel, client=client)
+
+
+def gather_results(outfile, ids):
+    if not os.path.exists(outfile):
+        raise ValueError("Cannot gather results from {0}".format(outfile))
+    results = NumpyCache(outfile)
+    return np.array([results.get_row(lcid) for lcid in ids])    
         
             
 if __name__ == '__main__':

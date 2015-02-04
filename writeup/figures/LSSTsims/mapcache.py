@@ -1,6 +1,7 @@
 """
 mapcache.py: a simple mapped object persistency model, with various backends.
 """
+from __future__ import division, print_function
 
 import pickle
 from datetime import datetime
@@ -183,7 +184,7 @@ def compute_parallel(cache, func, keys, save_every=4,
             client = Client()
         lbv = client.load_balanced_view()
         results_iter = lbv.imap(iter_function, keys_to_compute,
-                               block=False, ordered=False)
+                                ordered=False)
     else:
         results_iter = imap(iter_function, keys_to_compute)
 

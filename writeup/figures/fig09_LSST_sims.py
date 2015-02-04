@@ -80,7 +80,7 @@ ax.legend(ref_lines, ['multiband', 'supersmoother'], loc='lower center')
 ax.set(xlabel='g-band magnitude',
        ylabel='Fraction of Periods among Top-5',
        title='Multiband Improvement over SuperSmoother for LSST',
-       xlim=(20, 24.5), ylim=(0, 1.005))
+       xlim=(20, 24.5), ylim=(0, 1.05))
 
 fig.savefig('fig09.pdf')
 plt.show()

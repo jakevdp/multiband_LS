@@ -7,7 +7,8 @@ in this directory.
 """
 from __future__ import print_function, division
 
-import os, sys; sys.path.append(os.path.abspath('../..'))
+import os
+import sys
 
 import numpy as np
 from scipy.stats import mode
@@ -15,11 +16,10 @@ import matplotlib.pyplot as plt
 import seaborn; seaborn.set()
 
 from gatspy.periodic import LombScargleMultiband, SuperSmootherMultiband
-from compute_results import SuperSmoother1Band
 from gatspy.datasets import fetch_rrlyrae
 
-from compute_results import get_period_results
-
+sys.path.append(os.path.abspath('S82sims'))
+from compute_results import SuperSmoother1Band, gather_results
 
 
 def plot_period_comparison(ax, Px_all, Py,
@@ -52,11 +52,11 @@ def plot_period_comparison(ax, Px_all, Py,
         fn = lambda P, n=n: P / n
         ax.plot(P1, fn(P1), '--', color='gray', alpha=0.7, lw=1, zorder=1)
         if n < 1:
-            ax.text(1.21, fn(1.2), str(matches(fn(Px), Py)),
-                    size=10, va='center', ha='left', color='gray')
-        else:
             ax.text(fn(1.2), 1.21, str(matches(Px, fn(Py))),
                     size=10, va='bottom', ha='center', color='gray')
+        else:
+            ax.text(1.21, fn(1.2), str(matches(fn(Px), Py)),
+                    size=10, va='center', ha='left', color='gray')
 
     ax.set_xlim(0.1, 1.2)
     ax.set_ylim(0.1, 1.2)
@@ -132,8 +132,8 @@ def plot_periods(ssm_file, mbls_file, rrlyrae):
     ids = list(rrlyrae.ids)
     sesar_periods = np.array([rrlyrae.get_metadata(lcid)['P']
                               for lcid in ids])
-    ssm_periods = get_period_results(ssm_file, ids)
-    mbls_periods = get_period_results(mbls_file, ids)
+    ssm_periods = gather_results(ssm_file, ids)
+    mbls_periods = gather_results(mbls_file, ids)
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 4), sharex=True, sharey=True)
     fig.subplots_adjust(left=0.07, right=0.95, wspace=0.1,
@@ -163,8 +163,8 @@ if __name__ == '__main__':
     fig, ax = plot_example_lightcurve(rrlyrae, lcid)
     fig.savefig('fig07a.pdf')
 
-    fig, ax = plot_periods(ssm_file='results/supersmoother_g.npy',
-                           mbls_file='results/multiband_1_0.npy',
+    fig, ax = plot_periods(ssm_file='S82sims/res_supersmoother_g.npy',
+                           mbls_file='S82sims/res_multiband_1_0.npy',
                            rrlyrae=rrlyrae)
     fig.savefig('fig07b.pdf')
     plt.show()
