@@ -1,10 +1,18 @@
 """
 mapcache.py: a simple mapped object persistency model, with various backends.
 """
+from __future__ import division, print_function
 
 import pickle
+from datetime import datetime
 import os
 import numpy as np
+
+try:
+    # Python 2
+    from itertools import imap
+except ImportError:
+    imap = map
 
 
 class MapCache(object):
@@ -138,6 +146,57 @@ def _dict_to_array(dct):
     arr['key'] = keys
     arr['val'] = vals
     return arr
+
+
+#----------------------------------------------------------------------
+# Tools for parallel computation
+def compute_parallel(cache, func, keys, save_every=4,
+                     func_args=None, func_kwargs=None,
+                     parallel=True, client=None):
+    """Do a parallel computation of a function"""
+    keys = [key for key in keys]
+    results = dict(cache.items())
+    print(50 * '=')
+    print("Starting parallel run of {0} results".format(len(keys)))
+    print(" - parallel={0}".format(parallel))
+
+    if results:
+        print(" - found {0} previous results in {1}"
+              "".format(len(results), cache.filename))
+    keys_to_compute = [key for key in keys if key not in results]
+
+    # default arguments
+    def iter_function(key, func=func, func_args=func_args,
+                      func_kwargs=func_kwargs):
+        func_args = func_args or ()
+        func_kwargs = func_kwargs or {}
+        return func(key, *func_args, **func_kwargs)
+
+    print(" - computing {0} results".format(len(keys_to_compute)))
+
+    # Set up the iterator over results
+    if parallel:
+        # Use interactive to prevent namespace issues
+        from IPython.parallel.util import interactive
+        iter_function = interactive(iter_function)
+        if client is None:
+            from IPython.parallel import Client
+            client = Client()
+        lbv = client.load_balanced_view()
+        results_iter = lbv.imap(iter_function, keys_to_compute,
+                                ordered=False)
+    else:
+        results_iter = imap(iter_function, keys_to_compute)
+
+    # Do the iteration, saving the results occasionally
+    print(datetime.now())
+    for i, (key, result) in enumerate(results_iter):
+        print('{0}/{1}: {2}'.format(i + 1, len(keys_to_compute), result))
+        print(' {0}'.format(datetime.now()))
+        cache.add_row(key, result, save=((i + 1) % save_every == 0))
+    cache.save()
+
+    return np.array([cache.get_row(key) for key in keys])
 
 
 #----------------------------------------------------------------------

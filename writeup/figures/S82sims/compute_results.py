@@ -5,7 +5,7 @@ import numpy as np
 import os
 from datetime import datetime
 
-from mapcache import NumpyCache
+from mapcache import NumpyCache, compute_parallel
 from gatspy.datasets import fetch_rrlyrae
 from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
                              SuperSmootherMultiband)
@@ -42,14 +42,6 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
     """Function to compute periods and save the results"""
     cache = NumpyCache(outfile)
     lcids = rrlyrae.ids
-
-    results = dict(cache.items())
-    if(results):
-        print("using {0} previous results from {1}"
-              "".format(len(results), outfile))
-    lcids = [lcid for lcid in lcids if lcid not in results]
-
-    # For testing purposes... only find a few results
     if num_results is not None:
         lcids = lcids[:num_results]
 
@@ -64,38 +56,9 @@ def compute_and_save_periods(rrlyrae, Model, outfile,
         model.fit(t, y, dy, filts)
         return lcid, model.find_best_periods(Nperiods)
 
-    # Set up the iterator over results
-    if parallel:
-        if client is None:
-            from IPython.parallel import Client
-            client = Client()
-        lbv = client.load_balanced_view()
-        results_iter = lbv.map(find_periods, lcids,
-                               block=False, ordered=False)
-    else:
-        results_iter = map(find_periods, lcids)
-
-    # Do the iteration, saving the results occasionally
-    print(datetime.now())
-    for i, (lcid, periods) in enumerate(results_iter):
-        print('{0}/{1}: {2} {3}'.format(i + 1, len(lcids), lcid, periods))
-        print(' {0}'.format(datetime.now()))
-        cache.add_row(lcid, periods, save=False)
-        if (i + 1) % save_every == 0:
-            cache.save()
-    cache.save()
-
-    return gather_results(outfile, rrlyrae.ids[:len(results)])
-
-
-def gather_results(outfile, lcids=None):
-    """
-    Get the results from the outfile for the associated integer light curve ids
-    """
-    if lcids is None:
-        lcids = fetch_rrlyrae().ids
-    results = NumpyCache(outfile)
-    return np.array([results.get_row(lcid) for lcid in lcids])
+    return compute_parallel(cache, find_periods, lcids,
+                            save_every=save_every,
+                            parallel=parallel, client=client)
         
             
 if __name__ == '__main__':
@@ -113,6 +76,13 @@ if __name__ == '__main__':
         with dview.sync_imports():
             from gatspy.periodic import (LombScargleMultiband, SuperSmoother,
                                          SuperSmootherMultiband)
+
+        # Make sure necessary data is fetched on all clients.
+        # Otherwise, there can be cross-talk which results in an error.
+        for c in client:
+            c.block = True
+            c.execute('from gatspy.datasets import fetch_rrlyrae;'
+                      'fetch_rrlyrae()')
     else:
         client = None
 
