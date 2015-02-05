@@ -1,4 +1,5 @@
-\documentclass[12pt,preprint]{aastex}
+\documentclass{emulateapj}
+
 
 % has to be before amssymb it seems
 %\usepackage{color,hyperref}
@@ -165,16 +166,14 @@ For evenly-spaced data, the {\it periodogram}, a term coined by \citet{Schuster9
 and can be computed very efficiently using the Fast Fourier Transform.
 
 Because astronomical observing cadences are rarely so uniform, many have looked at extending the ideas behind the periodogram to work with unevenly-sampled data. Most famously, \citet{Lomb76} and \citet{Scargle82} extended earlier work to define the {\it normalized periodogram}:
-\begin{equation}
+\begin{eqnarray}
   \eqlabel{LombScargle}
-  P_N(\omega) = \frac{1}{2\,V_y}\left[
-    \frac{\left[\sum_k(y_k - \bar{y})\cos\omega(t_k - \tau)\right]^2}
-    {\sum_k \cos^2\omega(t_k - \tau)}
-    +
-    \frac{\left[\sum_k(y_k - \bar{y})\sin\omega(t_k - \tau)\right]^2}
-    {\sum_k \sin^2\omega(t_k - \tau)}
-\right],
-\end{equation}
+  P_N(\omega) = \frac{1}{2\,V_y}
+  \Bigg[&\frac{\left[\sum_k(y_k - \bar{y})\cos\omega(t_k - \tau)\right]^2}
+    {\sum_k \cos^2\omega(t_k - \tau)} +\nonumber\\
+   & \frac{\left[\sum_k(y_k - \bar{y})\sin\omega(t_k - \tau)\right]^2}
+    {\sum_k \sin^2\omega(t_k - \tau)}\Bigg],
+\end{eqnarray}
 where $\bar{y}$ is the mean and $V_y$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which makes $P_N(\omega)$ independent of a translation in $t$ \citep[see][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this time-offset has a deeper effect: namely, it makes $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
 \begin{equation}
   \eqlabel{SingleModel}
@@ -221,7 +220,7 @@ where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle} and 
 
 \subsection{Matrix Formalism}
 The expressions related to the stationary sinusoid model can be expressed more compactly by defining the following matrices:
-\begin{equation}
+\begin{eqnarray}
 X_\omega = \left[
 \begin{array}{cc}
 \sin(\omega t_1) & \cos(\omega t_1)\\
@@ -229,7 +228,7 @@ X_\omega = \left[
 \vdots & \vdots \\
 \sin(\omega t_N) & \cos(\omega t_N)\\
 \end{array}
-\right];~~
+\right]; \nonumber\\
 y = \left[
 \begin{array}{c}
 y_1 \\
@@ -246,7 +245,7 @@ y_N\\
 0 & 0 &  \cdots & \sigma_N^2
 \end{array}
 \right]
-\end{equation}
+\end{eqnarray}
 With these definitions, the model in \eq{simplemodel} can be expressed as a simple linear product, $y(t|\omega,\theta) = X_\omega\theta$, and the model and reference $\chi^2$ can be written
 
 \begin{eqnarray}
@@ -264,14 +263,14 @@ We note that this expression is equivalent to \eq{LombScargle} in the homoscedas
 \subsection{Simple Single-band Period Finding}
 \sectlabel{simple_period}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig01.pdf}
   \caption{
     An illustration of the basic periodogram and its relationship to the single-term sinusoid model. The left panel shows the input data, while the right panels show the fit derived from the data. The upper-right panel shows the periodogram with a clear peak at the true period of 0.622 days, and the bottom-right panel shows the data as a function of the phase associated with this period. Note in the periodogram the presence of the typical aliasing effect, with power located at beat frequencies between the true period and the 1-day observing cadence (see \sect{simple_period} for further discussion).
   }
   \figlabel{basic_example}
-\end{figure}
+\end{figure*}
 
 As an example of the standard periodogram in action, we perform a simple single-band harmonic analysis of simulated $r$-band observations of an RR Lyrae light curve, based on empirical templates derived in S10 (\fig{basic_example}). The observations are of a star with a period of 0.622 days, and take place on 60 random nights over a 6-month period, as seen in the left panel.
 
@@ -295,7 +294,7 @@ In the remainder of this section, we will explore a few of these modifications a
 \subsection{Stationary Sinusoid with Floating Mean}
 \sectlabel{floating_mean}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig02.pdf}
   \caption{
@@ -303,7 +302,7 @@ In the remainder of this section, we will explore a few of these modifications a
     The data consist of 80 observations drawn from a sinusoidal model. To mimic a potentially damaging selection effect, all observations with magnitude fainter than 16 are removed (indicated by the light-gray points). The standard and floating-mean periodograms are computed from the remaining data; these fits are shown over the data in the left panel. Because of this biased observing pattern, the mean of the observed data is a biased estimator of the true mean. The standard fixed-mean model in this case fails to recover the true period of 0.622 days, while the floating mean model still finds the correct period.
   }
   \figlabel{floating_mean}
-\end{figure}
+\end{figure*}
 
 As an example of one of these generalizations, we'll consider what \citet{Zechmeister09} call the ``generalized Lomb-Scargle method'', and which we'll call the {\it floating-mean periodogram}. This method adjusts the classic normalized periodogram by fitting the mean of the model alongside the amplitudes:
 \begin{equation}
@@ -317,7 +316,7 @@ For well-sampled data, there is usually very little difference between a standar
 \subsection{Truncated Fourier Models}
 \sectlabel{multiterm}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig03.pdf}
   \caption{
@@ -331,7 +330,7 @@ For well-sampled data, there is usually very little difference between a standar
     which drives up the ``background'' level in the periodogram.
   }
   \figlabel{multiterm_example}
-\end{figure}
+\end{figure*}
 
 As mentioned above, the standard periodogram is equivalent to fitting a single-term stationary sinusoidal model to the data. A natural extension is to instead use a multiple-term sinusoidal model, with frequencies at integer multiples of the fundamental frequency. With $N$ Fourier terms, there are $2N + 1$ free parameters, and the model is given by
 \begin{equation}
@@ -358,7 +357,7 @@ Second, notice that as the number of terms is increased, the general ``backgroun
 \subsection{Regularized Models}
 \sectlabel{regularization}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig04.pdf}
   \caption{
@@ -371,7 +370,7 @@ Second, notice that as the number of terms is increased, the general ``backgroun
     stronger periodogram peaks.
   }
   \figlabel{regularized_example}
-\end{figure}
+\end{figure*}
 
 The previous sections raise the question: how complicated a model should we use? We have seen that as we add more terms to the fit, the model will come closer and closer to the observed data.  In the extreme case, when the number of model parameters equals the number of data points, the model can fit the data {\it exactly} regardless of frequency and the periodogram will be everywhere unity (though in most cases, numerical inaccuracies prevent a truly perfect fit). For very high-order models, the fit becomes very sensitive to the noise in the data, and we say we have {\it over-fit} the data. This can be addressed by explicitly truncating the series, but we can also use a {\it regularization} term to mathematically enforce a less complicated model.
 
@@ -404,7 +403,8 @@ The multiband model contains the following features:
 The total number of parameters for $K$ filters is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
   \eqlabel{multiband_model}
-  y_k(t|\omega,\theta) = &\theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right]& +\nonumber\\ 
+  &y_k(t|\omega,\theta) =
+  \theta_0 + \sum_{n=1}^{M_{base}} \left[\theta_{2n - 1}\sin(n\omega t) + \theta_{2n}\cos(n\omega t)\right] +&\nonumber\\ 
   &\theta^{(k)}_0 + \sum_{n=1}^{M_{band}} \left[\theta^{(k)}_{2n - 1}\sin(n\omega t) + \theta^{(k)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
 The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(k)}$ are determined individually.
@@ -460,7 +460,7 @@ We see that this particular multiband periodogram is identical to a weighted sum
 \subsection{Multiband Periodogram for Simulated Data}
 \sectlabel{Simulated}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig05a.pdf}
   \includegraphics[width=\textwidth]{fig05b.pdf}
@@ -477,11 +477,11 @@ We see that this particular multiband periodogram is identical to a weighted sum
     all five bands, and results in a significant detection of the true period.
   }
   \figlabel{multiband_sim}
-\end{figure}
+\end{figure*}
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.8\textwidth]{fig06.pdf}
+  \includegraphics[width=0.5\textwidth]{fig06.pdf}
   \caption{
     Comparison of the periodograms produced by various multiband models.
     The data is the same as that used in \fig{multiband_sim}. $N_{base}$ gives
@@ -519,7 +519,7 @@ Because the template-fitting method is extremely computationally intensive, S10 
 
 \subsection{Densely-sampled Multiband Data}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig07a.pdf}
   \includegraphics[width=\textwidth]{fig07b.pdf}
@@ -531,7 +531,7 @@ Because the template-fitting method is extremely computationally intensive, S10 
     Both methods find the correct period among the top 5 significant peaks around 99\% of the time.
   } 
   \figlabel{compare_periods}
-\end{figure}
+\end{figure*}
 
 The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.  In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother model and the shared-phase $(0, 1)$-multiband model\footnote{The supersmoother ``periodogram'' $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$, where $\bar{r}_0$ is the mean absolute residual around a constant model.}. Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
 
@@ -545,7 +545,7 @@ The results of this subsection show that the shared-phase multiband approach is 
 
 \subsection{Sparsely-sampled Multiband Data}
 
-\begin{figure}
+\begin{figure*}
   \centering
   \includegraphics[width=\textwidth]{fig08a.pdf}
   \includegraphics[width=\textwidth]{fig08b.pdf}
@@ -555,7 +555,7 @@ The results of this subsection show that the shared-phase multiband approach is 
     The shared-phase multiband approach utilizes information from all five bands, and returns much more robust results: even with the greatly-reduced data, the true period is among the top 5 candidates in 93\% of cases.
   } 
   \figlabel{compare_periods_reduced}
-\end{figure}
+\end{figure*}
 
 Above we saw that the multiband model is comparable to methods from the literature for densely-sampled data. Where we expect the multiband approach to gain an advantage is when the data are sparsely sampled, with data through only a single band at each observation time. To simulate this, we reduce the size of the Stripe 82 RR Lyrae dataset by a factor of 5, keeping only a single band of imaging each night: an average of 11 observations of each object per band. This is much closer to the type of data which will be available in future multiband time-domain surveys.
 
@@ -632,7 +632,7 @@ Part of this improvement is due to the performance of the shared-phase multiband
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.7\textwidth]{fig09.pdf}
+  \includegraphics[width=0.5\textwidth]{fig09.pdf}
   \caption{
     Fraction of periods correctly determined for LSST RR Lyrae as a function
     of the length of the observing season and the mean $g$-band magnitude, for the multiband (solid lines)
@@ -670,7 +670,7 @@ As we were finalizing this manuscript, we were made aware of a preprint of an in
 \appendix
 \section{Python Implementation of Multiband Periodogram}
 \sectlabel{gatspy}
-The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/astroml/gatspy/}} \citep{gatspy}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available in a separate repository\footnote{\url{http://github.com/jakevdp/multiband_LS/}}.
+The algorithm outlined in this paper is available in {\tt gatspy}, an open-source Python package for general astronomical time-series analysis\footnote{\url{http://github.com/astroml/gatspy/}} \citep{gatspy}. Along with the periodogram implementation, it also contains code to download all the data used in this work. Code to reproduce this paper, including all figures, is available in a separate repository\footnote{\url{http://github.com/jakevdp/multiband\_LS/}}.
 
 {\tt gatspy} is a pure-Python package written to be compatible with both Python 2 and Python 3, and performs fast numerical computation through dependencies on {\tt numpy} \citep{numpy}\footnote{\url{http://www.numpy.org}} and {\tt astroML} \citep{astroML}\footnote{\url{http://www.astroml.org}}, which offer optimized implementations of numerical methods in Python.
 
@@ -712,7 +712,7 @@ power = model.periodogram(periods)
 The models in the \texttt{gatspy} package contain many more methods, and much more functionality that what is shown here. For updates, more examples, and more information, visit \url{http://github.com/astroml/gatspy/}.
 
 
-\section{Comparison with \citet{Long2014}}
+\section{Comparison with Long (2014)}
 \sectlabel{long_comparison}
 As we were finishing this study, we learned that another group had released a preprint independently addressing the multiband periodogram case, and come up with a solution very similar to the one presented here \citep[][hereafter LCB14]{Long2014}.
 They present two methods, the ``Multiband Generalized Lomb-Scargle'' (MGLS) which is effectively identical to the $(1, 0)$ multi-phase model
