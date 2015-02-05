@@ -59,6 +59,7 @@ target/
 
 # data files
 *.gz
+*.tgz
 *.npy
 *.npz
 
