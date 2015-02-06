@@ -3,7 +3,8 @@ Mutiband Lomb-Scargle Periodograms
 This repository contains the source for our multiband periodogram paper.
 It makes use of the [gatspy](http://github.com/jakevdp/gatspy/) package,
 which has been developed concurrently.
-It is a work in progress; to see the current build of the paper,
+The paper has been submitted to the Astrophysical Journal, and a preprint is available on [arXiv](http://arxiv.org/abs/1502.01344).
+To see a current build of the paper from the master branch of this repository,
 refer to http://jakevdp.github.io/multiband_LS (powered by [gh-publisher](https://github.com/ewanmellor/gh-publisher)).
 
 Feel free to submit comments or feedback via the Issues tab on this repository.
