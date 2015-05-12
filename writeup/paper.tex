@@ -201,13 +201,13 @@ In this section we present a brief quantitative introduction to the least square
 \begin{equation}
   D = \{t_k, y_k, \sigma_k\}_{k=1}^N
 \end{equation}
-where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. \old{Without loss of generality} \new{For notational simplicity} we will assume that the data $y_k$ are centered such that the measurements within each band satisfy
+where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. \old{Without loss of generality} \new{For notational simplicity} we will assume \new{without loss of generality} that the data $y_k$ are centered such that the measurements within each band satisfy
 \begin{equation}
   \eqlabel{ycentered}
   \frac{\sum_k w_ky_k}{\sum_k w_k} = 0
 \end{equation}
 where the weights are $w_k = \sigma_k^{-2}$.
-\new{Though this assumption is important for the models presented in this section, it will become superfluous with the floating-mean models described in later sections.}
+\new{Though this assumption is essential to the models presented in this section, it will become superfluous with the floating-mean models described in later sections.}
 
 \subsection{Stationary Sinusoid Model}
 
