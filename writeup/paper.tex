@@ -85,14 +85,14 @@ shared across all bands. The key aspect is the use of Tikhonov regularization wh
 most of the variability into the so-called base model common to all bands, while 
 fits for individual bands describe residuals relative to the base model and typically require
 lower-order Fourier series. This decrease in the effective model complexity is the
-main reason for improved performance. \new{After a pedagogical development of the formalism
-of least-squares spectral analysis which motivates the essential features of the multiband model,}
+main reason for improved performance. After a pedagogical development of the formalism
+of least-squares spectral analysis which motivates the essential features of the multiband model,
 we use simulated light curves 
 and randomly subsampled SDSS Stripe 82 data to demonstrate the superiority of this 
 method compared to other methods from the literature, and find that this method will be able to
 efficiently determine the correct period in the majority of LSST's bright RR Lyrae stars with
-as little as six months of LSST data, \new{a vast improvement over the years of data
-reported to be required by previous studies.}
+as little as six months of LSST data, a vast improvement over the years of data
+reported to be required by previous studies.
 A Python implementation of this method, along with code to fully reproduce the results
 reported here, is available on GitHub.
 \end{abstract}
@@ -156,10 +156,10 @@ model} common to all bands, while fits for individual bands describe residuals r
 and typically require lower-order Fourier series. This decrease in effective model complexity is the
 main reason for improved performance. 
 
-The remainder of the paper is organized as follows. \new{\sects{2-4} offer a review of essential concepts in least squares modeling and least squares spectral analysis, as well as their relationship to common periodogram estimates:}
+The remainder of the paper is organized as follows. \sects{2-4} offer a review of essential concepts in least squares modeling and least squares spectral analysis, as well as their relationship to common periodogram estimates:
 in \sect{brief_overview} we provide a brief review of least-squares periodic fitting, and in \sect{standard_least_squares} derive the matrix-based formalism for single-band least squares spectral analysis used through the rest of this work.
 \sect{extending_periodogram} introduces several extensions and generalizations to the single-band model that the matrix formalism makes possible, including floating mean models, truncated Fourier models, and regularized models.
-\new{\sects{5-7} present our new developments:}
+\sects{5-7} present our new developments:
 in \sect{multiband}, we use the ideas and formalism of \sects{2-4} to motivate the {\it multiband periodogram}, and show some examples of its use on simulated data.
 In \sect{stripe82} we apply this method to measurements of 483 RR Lyrae stars first explored by \citet[][hereafter S10]{Sesar2010}, and in \sect{LSST} explore the performance of the method for simulated observations from the LSST survey.
 We conclude in \sect{discussion}.
@@ -184,7 +184,7 @@ Because astronomical observing cadences are rarely so uniform, many have looked 
    & \frac{\left[\sum_k(y_k - \bar{y})\sin\omega(t_k - \tau)\right]^2}
     {\sum_k \sin^2\omega(t_k - \tau)}\Bigg],
 \end{eqnarray}
-where $\bar{y}$ is the mean and $V_y$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which \new{orthogonalizes the model and} makes $P_N(\omega)$ independent of a translation in $t$ \citep[see][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this time-offset has a deeper effect: namely, it \old{leaves} \new{gives $P_N$ a similar form to previous extensions of $C(\omega)$, while leaving} $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
+where $\bar{y}$ is the mean and $V_y$ is the variance of the data $\{y_k\}$, and $\tau$ is the time-offset which orthogonalizes the model and makes $P_N(\omega)$ independent of a translation in $t$ \citep[see][for an in-depth discussion]{NumRec}. \citet{Lomb76} showed that this time-offset has a deeper effect: namely, it gives $P_N$ a similar form to previous extensions of $C(\omega)$, while leaving $P_N$ identical to the estimate of harmonic content given a least-squares fit to a single-component sinusoidal model,
 \begin{equation}
   \eqlabel{SingleModel}
   d(t) = A\sin(\omega t + \phi).
@@ -192,7 +192,7 @@ where $\bar{y}$ is the mean and $V_y$ is the variance of the data $\{y_k\}$, and
 This long-recognized connection between spectral power and least squares fitting methods was solidified by \citet{Jaynes87}, who demonstrated that the least-squares periodogram method is a sufficient statistic for inferences about a stationary-frequency signal in the presence of Gaussian noise. Building on this result, \citet{Bretthorst88} explored the extension of these methods to more complicated models with multiple frequency terms, non-stationary frequencies, and other more sophisticated models within a Bayesian framework.
 
 While the important features of least squares frequency estimation via Lomb-Scargle periodograms have been discussed elsewhere, we will present a brief introduction to the subject in the following section.
-\old{The matrix-based formalism we develop here will make clear how the method} \new{In particular, we re-express the problem in a matrix-based formalism that makes clear how the basic approach motivated by \citet{Lomb76}, \citet{Scargle82}, and others} can be extended to more sophisticated models, including the multiband periodogram proposed in this work.
+In particular, we re-express the problem in a matrix-based formalism that makes clear how the basic approach motivated by \citet{Lomb76}, \citet{Scargle82}, and others can be extended to more sophisticated models, including the multiband periodogram proposed in this work.
 
 
 \section{Standard Least Squares Spectral Fitting}
@@ -201,13 +201,13 @@ In this section we present a brief quantitative introduction to the least square
 \begin{equation}
   D = \{t_k, y_k, \sigma_k\}_{k=1}^N
 \end{equation}
-where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. \old{Without loss of generality} \new{For notational simplicity} we will assume \new{without loss of generality} that the data $y_k$ are centered such that the measurements within each band satisfy
+where $t_k$ is the time of observation, $y_k$ is the observed value (typically a magnitude), and $\sigma_k$ describes the Gaussian errors on each value. For notational simplicity we will assume without loss of generality that the data $y_k$ are centered such that the measurements within each band satisfy
 \begin{equation}
   \eqlabel{ycentered}
   \frac{\sum_k w_ky_k}{\sum_k w_k} = 0
 \end{equation}
 where the weights are $w_k = \sigma_k^{-2}$.
-\new{Though this assumption is essential to the models presented in this section, it will become superfluous with the floating-mean models described in later sections.}
+Though this assumption is essential to the models presented in this section, it will become superfluous with the floating-mean models described in later sections.
 
 \subsection{Stationary Sinusoid Model}
 
@@ -225,13 +225,13 @@ For the single-term Fourier model, it can be shown \citep[see, e.g.][]{ICVG2014}
   \eqlabel{chi2PN}
   \chi_{min}^2(\omega) = \chi^2_0[1 - P_N(\omega)]
 \end{equation}
-where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle}\new{\footnote{\new{An important feature of the Lomb-Scargle approach is the modification of the model with the time-offset $\tau$ tuned to orthogonalize the harmonic basis across the irregular times $\{t_i\}$. This orthogonalization cancels cross-terms in the expression of $\chi^2$, greatly reducing the complexity of computing $P_N$. As discussed in footnote \ref{footnote:ortho2}, however, this orthogonalization does not change the resulting periodogram and so it can savely be ignored for the purposes of this work.}}\label{footnote:ortho1}}
+where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle}\footnote{An important feature of the Lomb-Scargle approach is the modification of the model with the time-offset $\tau$ tuned to orthogonalize the harmonic basis across the irregular times $\{t_i\}$. This orthogonalization cancels cross-terms in the expression of $\chi^2$, greatly reducing the complexity of computing $P_N$. As discussed in footnote \ref{footnote:ortho2}, however, this orthogonalization does not change the resulting periodogram and so it can savely be ignored for the purposes of this work.}\label{footnote:ortho1}
 and $\chi^2_0$ is the reference $\chi^2$ for a constant model, which due to the assumption in \eq{ycentered} is simply $\chi^2_0 = \sum_k (y_k/\sigma_k)^2$.
 
 
 \subsection{Matrix Formalism}
 \sectlabel{matrix_formalism}
-\new{A standard way of compactly expressing least squares models is via matrix expressions \citep[See e.g.][]{Brandt1970}. Likewise,}
+A standard way of compactly expressing least squares models is via matrix expressions \citep[See e.g.][]{Brandt1970}. Likewise,
 the expressions related to the stationary sinusoid model can be expressed more compactly by defining the following matrices:
 \begin{eqnarray}
 X_\omega = \left[
@@ -272,10 +272,10 @@ The expression for the normalized periodogram can be computed by finding via sta
   P_N(\omega) = \frac{y^T\Sigma^{-1}X_\omega~[X_\omega^T\Sigma^{-1}X_\omega]^{-1}~X_\omega^T\Sigma^{-1}y}{y^T\Sigma^{-1}y}.
 \end{equation}
 We note that \eq{LombScargle2} is equivalent to \eq{LombScargle} in the homoscedastic case with $\Sigma \propto V_y I$.
-\footnote{\new{For direct comparison to the Lomb-Scargle approach, we need the equivalent of the $\tau$ parameter which orthogonalizes the basis across the observed times $\{t_i\}$.
+\footnote{For direct comparison to the Lomb-Scargle approach, we need the equivalent of the $\tau$ parameter which orthogonalizes the basis across the observed times $\{t_i\}$.
 Such an orthogonalization is accomplished via the transformations $X_\omega \to X_\omega V_\omega$ and $\theta \to V_\omega^T \theta$, where $V_\omega$ is the orthogonal matrix of eigenvectors of the covariance $X_\omega^T \Sigma^{-1} X_\omega$.
 The $V_\omega$ terms trivially cancel out of \eqs{LS_chi2}{LombScargle2} and the results of this section are unchanged.
-The general matrix formalism used here makes clear that this result applies to all the periodogram extensions mentioned in this work.}\label{footnote:ortho2}}
+The general matrix formalism used here makes clear that this result applies to all the periodogram extensions mentioned in this work.\label{footnote:ortho2}}
 
 
 \subsection{Simple Single-band Period Finding}
@@ -322,14 +322,14 @@ In the remainder of this section, we will explore a few of these modifications a
   \figlabel{floating_mean}
 \end{figure*}
 
-As an example of one of these generalizations, we'll consider \old{what Zechmeister \& Kurster (2009) call the ``generalized Lomb-Scargle method'', and which we'll call the floating-mean periodogram.}
-\new{what has variously been called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle method} \citep{Zechmeister09}. Here we use the term {\it floating-mean periodogram}.} This method adjusts the classic normalized periodogram by fitting the mean of the model alongside the amplitudes:
+As an example of one of these generalizations, we'll consider 
+what has variously been called the {\it Date-compensated Discrete Fourier Transform} \citep{Ferraz-Mello81}, the {\it floating-mean periodogram} \citep{Cumming99}, and the {\it generalized Lomb-Scargle method} \citep{Zechmeister09}. Here we use the term {\it floating-mean periodogram}. This method adjusts the classic normalized periodogram by fitting the mean of the model alongside the amplitudes:
 \begin{equation}
   y(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
-\old{This model} \new{The periodogram derived from this model} can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the \new{orthogonalized} harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
+The periodogram derived from this model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the orthogonalized harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
 
-For well-sampled data, there is usually very little difference between a \old{standard periodogram and a floating-mean periodogram} \new{a standard periodogram on pre-centered data and a floating-mean periodogram}. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data is a poor predictor of the true mean, causing the standard method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
+For well-sampled data, there is usually very little difference between a standard periodogram on pre-centered data and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data is a poor predictor of the true mean, causing the standard method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
 
 
 \subsection{Truncated Fourier Models}
@@ -529,7 +529,7 @@ While this approach is sufficient for well-sampled data, it becomes problematic 
 
 The lower panels of \fig{multiband_sim} show the same 60 nights of data, except with only a {\it single} band observation recorded each night.
 The lower-left panel shows the observations as a function of phase, and the lower-right panels show the periodograms derived from the data.
-With only 12 observations for each individual band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase $(N_{base}=1,N_{band}=0)$ multiband approach, shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days. \new{The key result is that while methods based on the standard periodogram are suitable for densely-sampled data, the multiband periodogram is superior for sparsely-sampled multiband observations.}
+With only 12 observations for each individual band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase $(N_{base}=1,N_{band}=0)$ multiband approach, shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days. The key result is that while methods based on the standard periodogram are suitable for densely-sampled data, the multiband periodogram is superior for sparsely-sampled multiband observations.
 
 This shared-phase $(1,0)$ model is only one of the possible multiband options, however: \fig{multiband_models} compares multiband fits to this data for models with various choices of $(N_{base},N_{band})$.
 We see here many of the characteristics noted above for single-band models: as discussed in \sect{multiterm}, increasing the number of Fourier terms leads to power at multiples of the fundamental period, and increased model complexity (roughly indexed by the effective number of free parameters $M^{eff}$) tends to increase the background level of the periodogram, obscuring significant peaks.
@@ -551,19 +551,19 @@ Because the template-fitting method is extremely computationally intensive, S10 
   \caption{
     Comparison of the Multiband algorithm and single-band supersmoother algorithm on 483 well-sampled RR Lyrae light curves from Stripe 82.
     The upper panels show a representative lightcurve and periodogram fits, while the bottom panels compare the derived periods to the template-based periods reported in S10.
-    Shown for reference are the beat aliases (dotted lines) and the \old{multiplicative} \new{first harmonic} alias (dashed lines): numbers along the top and right edges of the panels indicate the number of points aligned with each trend.
-    The single-band supersmoother model tends to err toward \old{multiplicative} \new{harmonic} aliases, while the multiband model tends to err toward beat frequency aliases.
+    Shown for reference are the beat aliases (dotted lines) and the first harmonic alias (dashed lines): numbers along the top and right edges of the panels indicate the number of points aligned with each trend.
+    The single-band supersmoother model tends to err toward harmonic aliases, while the multiband model tends to err toward beat frequency aliases.
     Both methods find the correct period among the top 5 significant peaks around 99\% of the time.
-    \new{This suggests that for densely-sampled multiband surveys, the multiband periodogram will match the results of standard methods (but see \fig{compare_periods_reduced}).}
+    This suggests that for densely-sampled multiband surveys, the multiband periodogram will match the results of standard methods (but see \fig{compare_periods_reduced}).
   } 
   \figlabel{compare_periods}
 \end{figure*}
 
 The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.  In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother model and the shared-phase $(0, 1)$-multiband model\footnote{The supersmoother ``periodogram'' $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$, where $\bar{r}_0$ is the mean absolute residual around a constant model.}. Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
 
-The lower panels of \fig{compare_periods} compare the S10 period with the best periods obtained from the 1-band supersmoother (lower-left) and from the shared-phase multiband model (lower-right). To guide the eye, the figure includes indicators of the locations of beat aliases (dotted lines) and \old{multiplicative} \new{first harmonic} aliases (dashed lines) of the S10 period. \new{Numerical results are summarized in the upper rows of Table \ref{table:results}.}
+The lower panels of \fig{compare_periods} compare the S10 period with the best periods obtained from the 1-band supersmoother (lower-left) and from the shared-phase multiband model (lower-right). To guide the eye, the figure includes indicators of the locations of beat aliases (dotted lines) and first harmonic aliases (dashed lines) of the S10 period. Numerical results are summarized in the upper rows of Table \ref{table:results}.
 
-The best-fit supersmoother period matches the S10 period in 87\% of cases (421/483), while the best-fit multiband period matches the S10 period in 79\% of cases (382/483). The modes of failure are instructive: when the supersmoother model misses the S10 period, it tends to land on a \old{multiplicative} \new{harmonic} alias (i.e. the dashed line). This is due to the flexibility of supersmoother: a doubled period spreads the points out, leading to fewer constraints in each neighborhood and thus a smaller average residual around model. In other words, the SuperSmoother tends to over-fit data which is sparsely-sampled. On the other hand, when the multiband model misses the S10 period, it tends to land on a beat alias between the S10 period and the 1-day observing cadence (i.e. the dotted lines). This is due to the fact that the single-frequency periodic model is biased, and significantly under-fits the data: it cannot distinguish residuals due to underfitting from residuals due to window function effects.
+The best-fit supersmoother period matches the S10 period in 87\% of cases (421/483), while the best-fit multiband period matches the S10 period in 79\% of cases (382/483). The modes of failure are instructive: when the supersmoother model misses the S10 period, it tends to land on a harmonic alias (i.e. the dashed line). This is due to the flexibility of supersmoother: a doubled period spreads the points out, leading to fewer constraints in each neighborhood and thus a smaller average residual around model. In other words, the SuperSmoother tends to over-fit data which is sparsely-sampled. On the other hand, when the multiband model misses the S10 period, it tends to land on a beat alias between the S10 period and the 1-day observing cadence (i.e. the dotted lines). This is due to the fact that the single-frequency periodic model is biased, and significantly under-fits the data: it cannot distinguish residuals due to underfitting from residuals due to window function effects.
 
  In both models, the S10 period appears among the top 5 periods 99\% of the time: $477/483$ for supersmoother, and $480/483$ for multiband.\footnote{We might expect this correspondence to be 100\% in the case of the $g$-band supersmoother, which was the model used in the first pass of the S10 computation. This discrepancy here is likely due to the slightly different supersmoother implementations used in S10 and in this work. Objects showing this discrepancy are those with very low signal-to-noise.} This suggests that had S10 used the multiband Lomb-Scargle rather than the supersmoother in the first pass for that study, the final results presented there would be for the most part unchanged.
 
@@ -579,7 +579,7 @@ The results of this subsection show that the shared-phase multiband approach is 
     This figure repeats the experiment shown in \fig{compare_periods} (see caption there for description), but the data is artificially reduced to only a single-band observation on each evening, a situation reflective of the observing cadence of future large-scale surveys.
     In this case, the single-band SuperSmoother strategy used as a first pass in S10 fails: there is simply not enough data in each band to recover an accurate period estimate. The correct period is among the top 5 candidates in fewer than 50\% of cases.
     The shared-phase multiband approach utilizes information from all five bands, and returns much more robust results: even with the greatly-reduced data, the true period is among the top 5 candidates in 93\% of cases.
-    \new{This suggests that for sparsely-sampled multiband survey data (such as that expected from LSST) the multiband periodogram will produce superior results when compared to standard methods -- see \fig{LSST_sims}.}
+    This suggests that for sparsely-sampled multiband survey data (such as that expected from LSST) the multiband periodogram will produce superior results when compared to standard methods -- see \fig{LSST_sims}.
   } 
   \figlabel{compare_periods_reduced}
 \end{figure*}
@@ -588,9 +588,9 @@ Above we saw that the multiband model is comparable to methods from the literatu
 
 The upper panels of \fig{compare_periods_reduced} show an example light curve from this reduced dataset, along with the supersmoother and multiband periodograms derived from this data. Analogously to the lower panels of \fig{multiband_sim}, the single-band supersmoother model loses the true period within the noise, while the shared-phase multiband model still shows prominent signal near the S10 period.
 
-The lower panels of \fig{compare_periods_reduced} show the relationship between the S10 periods (based on the full dataset) and the periods derived with each model from this reduced dataset, \new{and these results are summarized in the lower rows of Table \ref{table:results}}. It is clear that the supersmoother model is simply over-fitting noise with this few data points: the top period matches S10 in only 23\% of cases (compared to 87\% with the full dataset), and the top 5 periods contain the S10 period only 45\% of the time. The failure mode is much less predictable as well: rather than being clustered near aliases, most of the period determinations are scattered seemingly randomly around the parameter space.
+The lower panels of \fig{compare_periods_reduced} show the relationship between the S10 periods (based on the full dataset) and the periods derived with each model from this reduced dataset, and these results are summarized in the lower rows of Table \ref{table:results}. It is clear that the supersmoother model is simply over-fitting noise with this few data points: the top period matches S10 in only 23\% of cases (compared to 87\% with the full dataset), and the top 5 periods contain the S10 period only 45\% of the time. The failure mode is much less predictable as well: rather than being clustered near aliases, most of the period determinations are scattered seemingly randomly around the parameter space.
 
-\old{The multiband method outperforms the single-band method on the sparse dataset.} \new{While the multiband method performed comparably to the S10 method on dense data, it far outperforms S10 on the sparse dataset.} Even with an 80\% reduction in the number of observations, the multiband method matches the S10 period 64\% of the time (compared to 79\% with the full dataset), and the top 5 peaks contain the S10 period 94\% of the time (compared to 99\% with the full dataset). This performance is due to the fact that the multiband algorithm has relatively few parameters, but is yet able to flexibly accommodate noisy data from multiple observing bands. In particular, this suggests that with the multiterm periodogram, the S10 analysis could have been done effectively with only a small fraction of the available data. This bodes well for future surveys, where data on variable stars will be much more sparsely sampled.
+While the multiband method performed comparably to the S10 method on dense data, it far outperforms S10 on the sparse dataset. Even with an 80\% reduction in the number of observations, the multiband method matches the S10 period 64\% of the time (compared to 79\% with the full dataset), and the top 5 peaks contain the S10 period 94\% of the time (compared to 99\% with the full dataset). This performance is due to the fact that the multiband algorithm has relatively few parameters, but is yet able to flexibly accommodate noisy data from multiple observing bands. In particular, this suggests that with the multiterm periodogram, the S10 analysis could have been done effectively with only a small fraction of the available data. This bodes well for future surveys, where data on variable stars will be much more sparsely sampled.
 
 
 \begin{table*}
@@ -682,8 +682,8 @@ Part of this improvement is due to the performance of the shared-phase multiband
   \includegraphics[width=0.5\textwidth]{fig09.pdf}
   \caption{
     Fraction of periods correctly determined for LSST RR Lyrae as a function
-    of the length of the observing season and the mean $g$-band magnitude, for the multiband periodogram approach \new{(method of this work; solid lines)}
-    and single-band supersmoother approach \new{\citep[method of][dashed lines]{Oluseyi12}}.
+    of the length of the observing season and the mean $g$-band magnitude, for the multiband periodogram approach (method of this work; solid lines)
+    and single-band supersmoother approach \citep[method of][dashed lines]{Oluseyi12}.
     The multiband method is superior to the single-band supersmoother approach in all cases, and especially for the faintest objects.
   } 
   \figlabel{LSST_sims}
