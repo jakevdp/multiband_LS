@@ -124,9 +124,13 @@ estimate.
 The most popular parametric method is the Lomb-Scargle periodogram, which is discussed in detail in \sect{brief_overview}.
 The Lomb-Scargle periodogram is related to the $\chi^2$ for a least-square fit of a single sinusoid to data
 and can treat non-uniformly sampled time series with heteroscedastic measurement uncertainties. 
-The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different
-frequencies are not orthogonal. As a result, the periodogram has many local maxima and thus in practice the global 
-maximum of the periodogram is found by grid search \citep[for details see, e.g.][]{ICVG2014}.
+\new{The underlying model of the Lomb-Scargle periodogram is nonlinear in frequency, and thus the likelihood surface in frequency is non-convex.
+This non-convexity is readily apparent in the many local maxima of the periodogram, which makes it difficult to find the maximum via standard numerical optimization routines.
+Thus in practice the global 
+maximum of the periodogram is often found by a brute-force grid search \citep[for details see, e.g.][]{ICVG2014}.}
+\old{The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different frequencies are not orthogonal. 
+As a result, the periodogram has many local maxima. Thus in practice the global 
+maximum of the periodogram is often found by a brute-force grid search (for details see, e.g. Ivezic 2014)}
 A more general parametric method based on the use of continuous-time autoregressive moving average (CARMA) model
 was recently introduced by \citet{Kelly14}. CARMA models can also treat non-uniformly sampled time series with 
 heteroscedastic measurement uncertainties, and can handle complex variability patterns. 
@@ -225,7 +229,7 @@ For the single-term Fourier model, it can be shown \citep[see, e.g.][]{ICVG2014}
   \eqlabel{chi2PN}
   \chi_{min}^2(\omega) = \chi^2_0[1 - P_N(\omega)]
 \end{equation}
-where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle}\footnote{An important feature of the Lomb-Scargle approach is the modification of the model with the time-offset $\tau$ tuned to orthogonalize the harmonic basis across the irregular times $\{t_i\}$. This orthogonalization cancels cross-terms in the expression of $\chi^2$, greatly reducing the complexity of computing $P_N$. As discussed in footnote \ref{footnote:ortho2}, however, this orthogonalization does not change the resulting periodogram and so it can savely be ignored for the purposes of this work.}\label{footnote:ortho1}
+where $P_N(\omega)$ is the normalized periodogram given in \eq{LombScargle}\footnote{An important feature of the Lomb-Scargle approach is the modification of the model with the time-offset $\tau$ tuned to orthogonalize the harmonic basis across the irregular times $\{t_i\}$. This orthogonalization cancels cross-terms in the expression of $\chi^2$, greatly reducing the complexity of computing $P_N$. As discussed in footnote \ref{footnote:ortho2}, however, this orthogonalization does not change the resulting periodogram and so it can safely be ignored for the purposes of this work.}\label{footnote:ortho1}
 and $\chi^2_0$ is the reference $\chi^2$ for a constant model, which due to the assumption in \eq{ycentered} is simply $\chi^2_0 = \sum_k (y_k/\sigma_k)^2$.
 
 
@@ -274,7 +278,7 @@ The expression for the normalized periodogram can be computed by finding via sta
 We note that \eq{LombScargle2} is equivalent to \eq{LombScargle} in the homoscedastic case with $\Sigma \propto V_y I$.
 \footnote{For direct comparison to the Lomb-Scargle approach, we need the equivalent of the $\tau$ parameter which orthogonalizes the basis across the observed times $\{t_i\}$.
 Such an orthogonalization is accomplished via the transformations $X_\omega \to X_\omega V_\omega$ and $\theta \to V_\omega^T \theta$, where $V_\omega$ is the orthogonal matrix of eigenvectors of the covariance $X_\omega^T \Sigma^{-1} X_\omega$.
-The $V_\omega$ terms trivially cancel out of \eqs{LS_chi2}{LombScargle2} and the results of this section are unchanged.
+The $V_\omega$ terms straightforwardly cancel out of \eqs{LS_chi2}{LombScargle2} and the results of this section are unchanged.
 The general matrix formalism used here makes clear that this result applies to all the periodogram extensions mentioned in this work.\label{footnote:ortho2}}
 
 
@@ -302,9 +306,9 @@ We have shown two forms of the classic normalized periodogram: \eq{LombScargle} 
 
 The matrix-based formulation of \eq{LombScargle2}, though slower than the Fourier-derived formulation, is a more general expression and allows several advantages:
 \begin{enumerate}
-  \item It is trivially extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the {\it noise covariance matrix} $\Sigma$.
-  \item It is trivially extended to more sophisticated linear models by appropriately modifying the {\it design matrix} $X_\omega$.
-  \item It is trivially extended to include Tikhonov/L2-regularization terms (see \sect{regularization} for more details)  by adding an appropriate diagonal term to the {\it normal matrix} $X_\omega^T\Sigma^{-1}X_\omega$.
+  \item It is straightforwardly extended to heteroscedastic and/or correlated measurement noise in the data $y_k$ through appropriate modification of the {\it noise covariance matrix} $\Sigma$.
+  \item It is straightforwardly extended to more sophisticated linear models by appropriately modifying the {\it design matrix} $X_\omega$.
+  \item It is straightforwardly extended to include Tikhonov/L2-regularization terms (see \sect{regularization} for more details)  by adding an appropriate diagonal term to the {\it normal matrix} $X_\omega^T\Sigma^{-1}X_\omega$.
 \end{enumerate}
 In the remainder of this section, we will explore a few of these modifications and how they affect the periodogram and resulting model fits.
 
@@ -329,7 +333,7 @@ what has variously been called the {\it Date-compensated Discrete Fourier Transf
 \end{equation}
 The periodogram derived from this model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the orthogonalized harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
 
-For well-sampled data, there is usually very little difference between a standard periodogram on pre-centered data and a floating-mean periodogram. Where this becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data is a poor predictor of the true mean, causing the standard method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
+For well-sampled data, there is usually very little difference between a standard periodogram on pre-centered data and a floating-mean periodogram. Where this difference becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data is a poor predictor of the true mean, causing the standard method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
 
 
 \subsection{Truncated Fourier Models}
@@ -340,7 +344,8 @@ For well-sampled data, there is usually very little difference between a standar
   \includegraphics[width=\textwidth]{fig03.pdf}
   \caption{
     The model fits and periodograms for several truncated Fourier models.
-    The data are the same as those in \fig{basic_example}. Note that the
+    The data are the same as those in \fig{basic_example}. Note that
+    \new{in addition to the previously-seen 0.38-day alias,} the
     higher-order models will generally show periodogram peaks at multiples
     of the true fundamental frequency $P_0$: this is because for integer $n$
     less than the number of Fourier terms in the model, $P_0$ is a higher
@@ -371,7 +376,13 @@ Computing the power via \eq{LombScargle2} using $X_\omega^{(2)}$ will give the t
 
 First, we see in the right panel that all three models show a clear signal at the true period of $P_0 = 0.622$ days. The higher-order models, however, also show a a spike in power at $P_1 = 2 P_0$: the reason for this is that for and $N>1$-term model, the period $P_0$ is the first harmonic of a model with fundamental frequency $2P_0$, and the higher-order models contain the single-period result.
 
-Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram power is inversely related to the $\chi^2$ of the fit at each frequency. A more flexible higher-order model can better fit the data at all periods, not just the true period. Thus in general the observed power of a higher-order Fourier model will be everywhere higher than the power of a lower-order Fourier model.
+Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram power is inversely related to the $\chi^2$ of the fit at each frequency. A more flexible higher-order model can better fit the data at all periods, not just the true period.
+Thus in general the observed power of a higher-order Fourier model will be everywhere higher than the power of a lower-order Fourier model.
+\new{One might hope that when adding terms, the correct-period model would show more of an improvement than the incorrect-period model (and thus the maximum would become more pronounced), but this does not generally hold.
+Consider that in the extreme limit in which the number model parameters is equal to the number of data points, the model has enough flexibility to fit the data perfectly at {\it every} frequency, and the resulting periodogram would be a flat line!
+Thus when adding more terms, the boost in power to the background must be larger on average than the boost in power to the signal.}
+
+ 
 
 \subsection{Regularized Models}
 \sectlabel{regularization}
@@ -412,14 +423,20 @@ In \fig{regularized_example}, we compare a regularized and unregularized 20-term
 
 \section{A Multiple-Band Model}
 \sectlabel{multiband}
-In this section we will combine the ideas of the previous sections to construct the {\it multiband periodogram} which can flexibly account for heterogeneous sources of data for a single object.
-To compute such a periodogram, we will take advantage of the easy extensibility of the matrix formalism which led to our generalizations above.
+In this section we will combine the ideas of the previous sections to construct the {\it multiband periodogram} which flexibly account for heterogeneous sources of data for a single object.
+\new{To start with, we might consider one of two na{\"i}ve approaches:
+
+First, we might consider ignoring band labels and simply compute a single standard Lomb-Scargle periodogram over the full dataset. This amounts to the assumption that a single sinusoid fits each band, and in practice will fail to account for astrophysical variability between bands.
+
+Second, we might consider computing a standard Lomb-Scargle periodogram in each band, and using the additivity of $\chi^2$ along with \eq{chi2PN} to construct a multiband periodogram. This amounts to the assumption that the bands have completely independent phases and amplitudes, and has too many free parameters to be useful in most cases of interest (see \sect{relationship} for further discussion).}
+
+To compute \old{such} a periodogram \new{which strikes a balance between these two extremes}, we will take advantage of the easy extensibility of the matrix formalism which led to our generalizations above.
 The multiband model contains the following features:
 \begin{enumerate}
-  \item An $N_{base}$-term truncated Fourier fit which models a latent parameter, which we'll call the ``overall variability''.
-  \item A set of $N_{band}$-term truncated Fourier fits, each of which models the residual of a single band from this overall variability.
+  \item An $N_{base}$-term truncated Fourier fit which models \new{the shared variability among all $K$ observed bands}. \old{a latent parameter, which we'll call the ``overall variability''.}
+  \item A set of $N_{band}$-term truncated Fourier fits, each of which models the residual within a single band from the \old{overall variability} \new{shared variability accounted for above}.
 \end{enumerate}
-The total number of parameters for $K$ filters is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
+The total number of parameters for $K$ bands is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
   \eqlabel{multiband_model}
   &y_k(t|\omega,\theta) =
@@ -427,8 +444,9 @@ The total number of parameters for $K$ filters is then $M_K = (2N_{base} + 1) + 
   &\theta^{(k)}_0 + \sum_{n=1}^{N_{band}} \left[\theta^{(k)}_{2n - 1}\sin(n\omega t) + \theta^{(k)}_{2n}\cos(n\omega t)\right].&
 \end{eqnarray}
 The important feature of this model is that {\it all bands} share the same base parameters $\theta$, while their offsets $\theta^{(k)}$ are determined individually.
+\new{Note the potential for confusion: $N_{band}$ here is not the number of observed bands, but the number of Fourier components fit to the data each of the $K$ observed bands.}
 
-We can construct the normalized periodogram for this model by building a sparse design matrix with $M_K$ columns. Each row corresponds to a single observation through a single band. Columns corresponding to the base model and the matching observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $N_{base}=1$ and $N_{band}=0$ model corresponds to one with a simple single-term periodic base frequency, and an independent constant offset term in each band. The associated design matrix depends on the particular data, but will look similar to this:
+We can construct the normalized periodogram for this model by building a sparse design matrix with $M_K$ columns. Each row corresponds to a single observation through a single band. Columns corresponding to the base model and the matching observation band will have nonzero entries; all other columns will be filled with zeros. For example, the $(N_{base},N_{band})=(1,0)$ model corresponds to one with a simple single-term periodic base frequency, and an independent constant offset term in each band. The associated design matrix depends on the particular data, but will look similar to this:
 \begin{equation}
 X_\omega^{(1,0)} = \left[
 \begin{array}{cccccccc}
@@ -460,7 +478,7 @@ This multiband approach, then, actually comprises a set of models indexed by the
 
 \subsection{Relationship of Multiband and Single-band approaches}
 \sectlabel{relationship}
-The {\it multi-phase} $(N_{base}=0, N_{band}=1)$ model turns out to be a particularly special case.
+The multi-phase model with $(N_{base},N_{band})=(0,1)$ turns out to be a particularly special case.
 Here the base model is a simple global offset which is degenerate with the offsets in each band, so that the design matrix $X_\omega$ can be straightforwardly rearranged as block-diagonal.
 A block-diagonal design matrix in a linear model indicates that components of the model are being solved independently: here these independent components amount to the single-band floating-mean model from \sect{floating_mean}, fit independently for each of the $K$ bands.
 This particular multiband model can give us insight into the relationship between single-band and multiband approaches.
@@ -477,7 +495,7 @@ and it can easily be shown that the $P_N$ can be constructed as a weighted sum o
 \begin{equation}
   P_N^{(0,1)}(\omega) = \frac{\sum_{k=1}^K\chi^2_{0,k}P_N^{(k)}}{\sum_{k=1}^K\chi^2_{0,k}}.
 \end{equation}
-Thus the $(N_{base}=0, N_{band}=1)$ multi-phase  multiband periodogram is identical to a weighted sum of standard periodograms in each band, where the weights $\chi^2_{0,k}$ are a reflection of both the number of measurements in each band, and how much those measurements deviate from a simple constant reference model.
+Thus the $(N_{base},N_{band}=(0,1)$ multi-phase multiband periodogram is identical to a weighted sum of standard periodograms in each band, where the weights $\chi^2_{0,k}$ are a reflection of both the number of measurements in each band, and how much those measurements deviate from a simple constant reference model.
 
 \subsection{Multiband Periodogram for Simulated Data}
 \sectlabel{Simulated}
@@ -529,7 +547,7 @@ While this approach is sufficient for well-sampled data, it becomes problematic 
 
 The lower panels of \fig{multiband_sim} show the same 60 nights of data, except with only a {\it single} band observation recorded each night.
 The lower-left panel shows the observations as a function of phase, and the lower-right panels show the periodograms derived from the data.
-With only 12 observations for each individual band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase $(N_{base}=1,N_{band}=0)$ multiband approach, shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days. The key result is that while methods based on the standard periodogram are suitable for densely-sampled data, the multiband periodogram is superior for sparsely-sampled multiband observations.
+With only 12 observations for each individual band, it is clear that there is not enough data to accurately determine the period within each single band. The shared-phase $(N_{base},N_{band})=(1,0)$ multiband approach, shown in the lower-right panel, fits a single model to the full data and clearly recovers the true frequency of 0.622 days. The key result is that while methods based on the standard periodogram are suitable for densely-sampled data, the multiband periodogram is superior for sparsely-sampled multiband observations.
 
 This shared-phase $(1,0)$ model is only one of the possible multiband options, however: \fig{multiband_models} compares multiband fits to this data for models with various choices of $(N_{base},N_{band})$.
 We see here many of the characteristics noted above for single-band models: as discussed in \sect{multiterm}, increasing the number of Fourier terms leads to power at multiples of the fundamental period, and increased model complexity (roughly indexed by the effective number of free parameters $M^{eff}$) tends to increase the background level of the periodogram, obscuring significant peaks.
@@ -613,12 +631,17 @@ While the multiband method performed comparably to the S10 method on dense data,
 \end{table*}
 
 \subsection{Potential Improvements to the Multiband Method}
-The fact that the multiband model does not select the top frequency each time points to its weaknesses: first, as a Fourier-like model, it tends to respond to frequency structure in the window function as well as frequency structure in the data.
-This is a result of the very model simplicity which causes its success in the case of sparse multiband data: it cannot disentangle bias in the model from bias due to the survey window.
+\new{A well-known (though often unrecognized) deficiency of Lomb-Scargle-type periodograms on unevenly-sampled data is that they do not measure the power of the signal in question, but the power of the signal {\it convolved with the observing with the survey window function}.
+For regularly-sampled timeseries, this convolution is the source of the aliasing related to the Nyquist sampling limit; for non-regular sampling, this aliasing generally happens to some degree at {\it all} frequencies!
+Thus even if the signal has a single well-defined period, this aliasing generally causes multiple maxima in the measured periodogram.
+The multiband periodogram, as a generalization of Lomb-Scargle, shares this difficulty:}
+\old{The fact that the multiband model does not select the top frequency each time points to its weaknesses: first, as a Fourier-like model,} it tends to respond to frequency structure in the window function as well as frequency structure in the data.
+This can be viewed as a result of the very model simplicity which causes its success in the case of sparse multiband data: it cannot disentangle bias in the model from bias due to the survey window.
+
 This could potentially be accounted for by correcting for the effect of the estimated window function; one potential method for this involves estimating the deconvolution of the window power and the observed power \citep{Roberts87}.
 It may also be possible to propose a multiband extension of CARMA \citep{Kelly14}, or another forward-modeling approach to detecting periodicity.
 
-One potentially fruitful avenue of research which we do not study here is the adjustment of the regularization terms in the model, and the application of other types of regularization to the higher-order periodogram.
+Another potentially fruitful avenue of research which we do not study here is the adjustment of the regularization terms in the model, and the application of other types of regularization to the higher-order periodogram.
 In particular, L1 regularization (also known as Lasso regression) could lead to interesting results: L1 regularization is similar in spirit to the Tikhonov regularization discussed in \sect{regularization}, but tends toward sparsity in the model parameters \citep[see, e.g.][for a discussion]{ICVG2014}.
 Such an approach could provide a useful tradeoff between model complexity and bias in the case of higher-order truncated Fourier models, though comes at a higher computational cost.
 
@@ -641,7 +664,7 @@ Here we show that such a hybrid strategy combining the multiband periodogram and
 
 We suggest the following procedure for determining periods in future multiband datasets:
 \begin{enumerate}
-   \item As a first pass, find a set of candidate frequencies using the multiband periodogram. This is a fast linear optimization that can be trivially parallelized.
+   \item As a first pass, find a set of candidate frequencies using the multiband periodogram. This is a fast linear optimization that can be straightforwardly parallelized.
    \item Within these candidate frequencies, use the more costly template-fitting procedure to choose the optimal period from among the handful of candidates.
    \item Compute a goodness-of-fit statistic for the best-fit template to determine whether the fit is suitable; if not, then apply the template-fitting procedure across the full period range.
 \end{enumerate}
