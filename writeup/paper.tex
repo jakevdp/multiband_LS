@@ -127,7 +127,7 @@ and can treat non-uniformly sampled time series with heteroscedastic measurement
 \old{The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different frequencies are not orthogonal. 
 As a result, the periodogram has many local maxima.}
 \new{The underlying model of the Lomb-Scargle periodogram is nonlinear in frequency, and thus the likelihood surface in frequency is non-convex.
-This non-convexity is readily apparent in the many local maxima of the periodogram, which makes it difficult to find the maximum via standard numerical optimization routines.}
+This non-convexity is readily apparent in the many local maxima of the typical periodogram, which makes it difficult to find the maximum via standard numerical optimization routines.}
 Thus in practice the global 
 maximum of the periodogram is often found by a brute-force grid search \citep[for details see, e.g.][]{ICVG2014}.
 A more general parametric method based on the use of continuous-time autoregressive moving average (CARMA) model
@@ -148,7 +148,7 @@ periodogram \citep[e.g.,][]{Oluseyi12}.
 For surveys that obtain multiband data one band at a time, such as Pan-STARRS \citep{Kaiser2010} and DES \citep{Flaugher08},
 and for future multicolor surveys such as LSST \citep{Ivezic08LSST}, this \adhoc{} approach is not optimal. In order to take 
 advantage of the full information content in available data, it would be desirable to have a single estimate of the periodogram 
-which accounts for all observed data in a manner which does not depend on assumptions about the underlying spectrum of the object. 
+which accounts for all observed data in a manner independent of assumptions about the underlying spectrum of the object.
 We propose such a method in this paper. 
 
 The proposed method is essentially a generalization of the Lomb-Scargle method to 
@@ -156,7 +156,7 @@ multiband case. The light curves in  each band are modeled as arbitrary truncate
 with the period, and optionally the phase, shared across all bands. The key aspect enabling this approach is the use of Tikhonov regularization 
 (discussed in detail in \sect{regularization}) which drives most of the variability into the so-called {\it base 
 model} common to all bands, while fits for individual bands describe residuals relative to the base model 
-and typically require lower-order Fourier series. This decrease in effective model complexity is the
+and typically require lower-order Fourier series. This regularization-driven decrease in effective model complexity is the
 main reason for improved performance. 
 
 The remainder of the paper is organized as follows. \sects{2-4} offer a review of essential concepts in least squares modeling and least squares spectral analysis, as well as their relationship to common periodogram estimates:
@@ -377,6 +377,7 @@ First, we see in the right panel that all three models show a clear signal at th
 
 Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram power is inversely related to the $\chi^2$ of the fit at each frequency. A more flexible higher-order model can better fit the data at all periods, not just the true period.
 Thus in general the observed power of a higher-order Fourier model will be everywhere higher than the power of a lower-order Fourier model.
+
 \new{One might hope that when adding terms, the correct-period model would show more of an improvement than the incorrect-period model (and thus the periodogram maximum would become more pronounced), but this does not generally hold.
 Consider that in the extreme limit in which the number model parameters is equal to the number of data points, the model has enough flexibility to fit the data perfectly at {\it every} frequency, and the resulting periodogram would be a flat line at maximum power!
 This can only be the case if, on average, addition of terms preferentially boosts the background level.}
@@ -417,23 +418,23 @@ Minimizing this regularized $\chi^2$, solving for $\theta$, and plugging into th
 \end{equation}
 Notice that the effect of this regularization term is to add a diagonal penalty to the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$, which has the additional feature that it can correct ill-posed models where the normal matrix is non-invertible. This feature of the regularization will become important for the multiband models discussed below.
 
-In \fig{regularized_example}, we compare a regularized and unregularized 20-term truncated Fourier model on our simulated RR Lyrae light curve. We use $\lambda = 0$ on the offset term, and make the penalty $\lambda_j$ progressively larger for each harmonic component. The result of the regularized model is less over-fitting to the input data, and stronger periodogram peaks.
+In \fig{regularized_example}, we compare a regularized and unregularized 20-term truncated Fourier model on our simulated RR Lyrae light curve. We use $\lambda = 0$ on the offset term, and make the penalty $\lambda_j$ progressively larger for each harmonic component. The regularization prevents overfitting (left panel), and results in more prominent periodogram peaks (right panel).
 
 
 \section{A Multiple-Band Model}
 \sectlabel{multiband}
-In this section we will combine the ideas of the previous sections to construct the {\it multiband periodogram} which flexibly account for heterogeneous sources of data for a single object.
-\new{To start with, we might consider one of two na{\"i}ve approaches:
+In this section we will combine the ideas of the previous sections to construct the {\it multiband periodogram} which flexibly accounts for heterogeneous sources of data for a single object.
+\new{To start with, we might consider one of two na{\"i}ve approaches to the multi-band problem:
 
-First, we might ignore band labels entirely and simply compute a single standard Lomb-Scargle periodogram over the full dataset. This amounts to the assumption that one global model suitably fits each band, and in practice will fail due to the astrophysical variability between bands.
+First, we might ignore band labels entirely and simply compute a single standard Lomb-Scargle periodogram over the full dataset. This amounts to the assumption that one global model suitably fits each band, and in practice will perform poorly due to the astrophysical variability between bands: in other words, the model is too simple and under-fits the data.
 
-Second, we might treat each band entirely independently and compute a standard Lomb-Scargle periodogram on each, and use the additivity of $\chi^2$ along with \eq{chi2PN} to construct a multiband periodogram. This amounts to the assumption that the bands have completely independent phases and amplitudes, and has too many free parameters to be useful in most cases of interest (see \sect{relationship} for further discussion).}
+Second, we might treat each band entirely independently and compute a standard Lomb-Scargle periodogram on each, and use the additivity of $\chi^2$ along with \eq{chi2PN} to construct a multiband periodogram. This amounts to the assumption that the bands have completely independent phases and amplitudes, and has too many free parameters to be useful in most cases of interest. In other words, the model is too complex and over-fits the data (see \sect{relationship} for further discussion).}
 
 To compute \old{such} a periodogram \new{which strikes a balance between these two extremes}, we will take advantage of the easy extensibility of the matrix formalism which led to our generalizations above.
 The multiband model presented here contains the following features:
 \begin{enumerate}
-  \item An $N_{base}$-term truncated Fourier fit which models \new{the shared variability among all $K$ observed bands}. \old{a latent parameter, which we'll call the ``overall variability''.}
-  \item A set of $N_{band}$-term truncated Fourier fits, each of which models the residual within a single band from the \old{overall variability} \new{shared variability accounted for above}.
+\item An $N_{base}$-term truncated Fourier \new{``base model'' which models the shared variability among all $K$ observed bands}. \old{a latent parameter, which we'll call the ``overall variability''.}
+  \item A set of $N_{band}$-term truncated Fourier fits, each of which models the residual within a single band from the \new{shared variability accounted for in the base model.} \old{overall variability}.
 \end{enumerate}
 The total number of parameters for $K$ bands is then $M_K = (2N_{base} + 1) + K(2N_{band} + 1)$. As a result, for each band $k$ we have the following model of the observed magnitudes:
 \begin{eqnarray}
@@ -459,7 +460,10 @@ X_\omega^{(1,0)} = \left[
 \end{equation}
 Here the nonzero entries of the final five columns are binary flags indicating the $(u, g, r, i, z)$-band of the given observation: for this example, the first row is a $u$-band measurement, the second is a $z$-band, the third is a $i$-band, etc., as indicated by the position of the nonzero matrix element within the row.
 
-On examination of the above matrix, it's clear that the columns are not linearly independent (i.e. $X_\omega$ is low-rank), and thus the parameters of the best-fit model will be degenerate. Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each residual. Mathematically, the result of this is that the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$ will be non-invertible, and thus the periodogram is ill-defined. In order to proceed, then, we'll either have to use a different model, or use a cleverly-constructed regularization term on one of the offending parameters.
+On examination of the above matrix, it's clear that the columns are not linearly independent (i.e. $X_\omega$ is low-rank), and thus the parameters of the best-fit model will be degenerate.
+Intuitively, this is due to the fact that if we add an overall offset to the base model, this can be perfectly accounted for by subtracting that same offset from each residual model.
+Mathematically, the result of this is that the normal matrix $X_\omega^T\Sigma^{-1}X_\omega$ will be non-invertible, and thus the periodogram is ill-defined.
+In order to proceed, then, we'll either have to use a different model, or use a cleverly-constructed regularization term on one of the offending parameters.
 
 We'll choose the latter here, and regularize all the band columns while leaving the base columns un-regularized: for the above $X_\omega$ matrix, this regularization will look like
 \begin{equation}
@@ -477,10 +481,17 @@ This multiband approach, then, actually comprises a set of models indexed by the
 
 \subsection{Relationship of Multiband and Single-band approaches}
 \sectlabel{relationship}
+\new{
+With this formalism in place, we can return to the na{\"i}ve models discussed at the beginning of \sect{multiband}.
+The first is simply a standard Lomb-Scargle, ignoring the band information.
+The second, in which each band is fit independently, turns out to be equivalent to the $(N_{base},N_{band})=(0,1)$ model defined above.
+}
+\old{
 The multi-phase model with $(N_{base},N_{band})=(0,1)$ turns out to be a particularly special case.
+}
 Here the base model is a simple global offset which is degenerate with the offsets in each band, so that the design matrix $X_\omega$ can be straightforwardly rearranged as block-diagonal.
 A block-diagonal design matrix in a linear model indicates that components of the model are being solved independently: here these independent components amount to the single-band floating-mean model from \sect{floating_mean}, fit independently for each of the $K$ bands.
-This particular multiband model can give us insight into the relationship between single-band and multiband approaches.
+\old{This particular multiband model can give us insight into the relationship between single-band and multiband approaches.}
 
 For band $k$, we'll denote the single-band floating-mean periodogram as
 \begin{equation}
@@ -494,7 +505,7 @@ and it can easily be shown that the $P_N$ can be constructed as a weighted sum o
 \begin{equation}
   P_N^{(0,1)}(\omega) = \frac{\sum_{k=1}^K\chi^2_{0,k}P_N^{(k)}}{\sum_{k=1}^K\chi^2_{0,k}}.
 \end{equation}
-Thus the $(N_{base},N_{band}=(0,1)$ multi-phase multiband periodogram is identical to a weighted sum of standard periodograms in each band, where the weights $\chi^2_{0,k}$ are a reflection of both the number of measurements in each band, and how much those measurements deviate from a simple constant reference model.
+Thus the $(N_{base},N_{band})=(0,1)$  multiband periodogram is identical to a weighted sum of standard periodograms in each band, where the weights $\chi^2_{0,k}$ are a reflection of both the number of measurements in each band and how much those measurements deviate from a simple constant reference model.
 
 \subsection{Multiband Periodogram for Simulated Data}
 \sectlabel{Simulated}
@@ -630,13 +641,13 @@ While the multiband method performed comparably to the S10 method on dense data,
 \end{table*}
 
 \subsection{Potential Improvements to the Multiband Method}
-\new{A well-known (though often unrecognized) deficiency of Lomb-Scargle-type periodograms on unevenly-sampled data is that they do not measure the power of the signal in question, but the power of the signal {\it convolved with the observing with the survey window function}.
-For regularly-sampled timeseries, this convolution is the source of the aliasing related to the Nyquist sampling limit; for non-regular sampling, this aliasing generally happens to some degree at {\it all} frequencies!
+\new{A well-known (though often unrecognized) difficulty of Lomb-Scargle-type periodograms on unevenly-sampled data is that they do not measure the power of the signal in question, but the power of the signal {\it convolved with the observing with the survey window function}.
+For regularly-sampled timeseries, this convolution is the source of the perfect aliasing beyond the Nyquist sampling limit; for non-regular sampling, this aliasing generally happens to some degree at {\it all} frequencies!
 Because of this, even a signal with a single well-defined period will result in a Lomb-Scargle periodogram with multiple maxima at locations which depend on both the underlying signal and the precise observing window.
 
 The multiband periodogram, as a generalization of Lomb-Scargle, shares this difficulty:}
 \old{The fact that the multiband model does not select the top frequency each time points to its weaknesses: first, as a Fourier-like model,} it tends to respond to frequency structure in the window function as well as frequency structure in the data.
-This can be viewed as a result of the very model simplicity which causes its success in the case of sparse multiband data: it cannot disentangle bias in the model from bias due to the survey window.
+This can be viewed as a result of the very model simplicity which causes its success in the case of sparse multiband data: it cannot disentangle bias in the model from bias due to features in the survey window.
 
 This could potentially be accounted for by correcting for the effect of the estimated window function; one potential method for this involves estimating the deconvolution of the window power and the observed power \citep{Roberts87}.
 It may also be possible to propose a multiband extension of, e.g., CARMA \citep{Kelly14} or another forward-modeling approach to detecting periodicity.
