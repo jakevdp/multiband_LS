@@ -118,23 +118,22 @@ gaining popularity is the Supersmoother routine \citep{Reimann94}. It uses a run
 regression on the data to fit the observations as a function of phase to a range of periods. The best period 
 minimizes a figure-of-merit, adopted as weighted sum of absolute residuals around the running mean. 
 Neither the Supersmoother algorithm nor the PDM method require \apriori{} knowledge of the light curve shape. 
-We note that neither method produces posterior probability distribution for the period but rather a single point 
-estimate. 
 
 The most popular parametric method is the Lomb-Scargle periodogram, which is discussed in detail in \sect{brief_overview}.
 The Lomb-Scargle periodogram is related to the $\chi^2$ for a least-square fit of a single sinusoid to data
 and can treat non-uniformly sampled time series with heteroscedastic measurement uncertainties. 
-\old{The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency and basis functions at different frequencies are not orthogonal. 
+The underlying model of the Lomb–Scargle periodogram is nonlinear in frequency \old{and basis functions at different frequencies are not orthogonal. 
 As a result, the periodogram has many local maxima.}
-\new{The underlying model of the Lomb-Scargle periodogram is nonlinear in frequency, and thus the likelihood surface in frequency is non-convex.
+\new{and so the likelihood surface in frequency is non-convex.
 This non-convexity is readily apparent in the many local maxima of the typical periodogram, which makes it difficult to find the maximum via standard numerical optimization routines.}
 Thus in practice the global 
 maximum of the periodogram is often found by a brute-force grid search \citep[for details see, e.g.][]{ICVG2014}.
+
 A more general parametric method based on the use of continuous-time autoregressive moving average (CARMA) model
 was recently introduced by \citet{Kelly14}. CARMA models can also treat non-uniformly sampled time series with 
 heteroscedastic measurement uncertainties, and can handle complex variability patterns. 
 
-A weakness of the above methods is that they require homogeneous measurements -- for astronomy data, this means 
+A weakness of all these standard methods is that they require homogeneous measurements -- for astronomy data, this means 
 that successive measurements must be taken through a single photometric bandpass (filter). This has not been a major
 problem for past surveys because measurements are generally taken through a single photometric filter 
 \citep [e.g. LINEAR,][]{LINEAR1}, or nearly-simultaneously in all bands at each observation \citep [e.g. SDSS,][]{Sesar2010}.
@@ -210,7 +209,7 @@ where $t_k$ is the time of observation, $y_k$ is the observed value (typically a
   \frac{\sum_k w_ky_k}{\sum_k w_k} = 0
 \end{equation}
 where the weights are $w_k = \sigma_k^{-2}$.
-Though this assumption is essential to the models presented in this section, it will become superfluous with the floating-mean models described in later sections.
+Though this assumption is essential to the simpler models presented in this section, it will become superfluous with the floating-mean models described in later sections.
 
 \subsection{Stationary Sinusoid Model}
 
@@ -330,7 +329,7 @@ what has variously been called the {\it Date-compensated Discrete Fourier Transf
 \begin{equation}
   y(t~|~\omega, \theta) = \theta_0 + \theta_1\sin\omega t + \theta_2\cos\omega t
 \end{equation}
-The periodogram derived from this model can be more accurate than the standard periodogram for certain observing cadences and selection functions. \citet{Zechmeister09} detail the required modifications to the orthogonalized harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
+The periodogram derived from this model can be more accurate than the standard \new{pre-centered} periodogram for certain observing cadences and selection functions, \new{and espeically when searching for long-period varaibility or working with very few samples \citep{Cumming99}.} \citet{Zechmeister09} detail the required modifications to the orthogonalized harmonic formalism of \eq{LombScargle} to allow the mean to float in the model. In the matrix formalism, the modification is much more straightforward: all that is required is to add a column of ones to the $X_\omega$ matrix before computing the power via \eq{LombScargle2}. This column of ones corresponds to a third entry in the parameter vector $\theta$, and acts as a uniform constant offset for all data points.
 
 For well-sampled data, there is usually very little difference between a standard periodogram on pre-centered data and a floating-mean periodogram. Where this difference becomes important is if selection effects or observing cadences cause there to be preferentially more observations at certain phases of the light curve: a toy example demonstrating this situation is shown in \fig{floating_mean}. The data are drawn from a sinusoid with Gaussian errors, and data with a magnitude fainter than 16 are removed to simulate an observational bias (left panel). Because of this observational bias, the mean of the observed data is a poor predictor of the true mean, causing the standard method to poorly fit the data and miss the input period (upper-right panel). The floating-mean approach is able to automatically adjust for this bias, resulting in a periodogram which readily detects the input period of 0.622 days (lower-right panel).
 
@@ -378,8 +377,8 @@ First, we see in the right panel that all three models show a clear signal at th
 Second, notice that as the number of terms is increased, the general ``background'' level of the periodogram increases. This is due to the fact that the periodogram power is inversely related to the $\chi^2$ of the fit at each frequency. A more flexible higher-order model can better fit the data at all periods, not just the true period.
 Thus in general the observed power of a higher-order Fourier model will be everywhere higher than the power of a lower-order Fourier model.
 
-\new{One might hope that when adding terms, the correct-period model would show more of an improvement than the incorrect-period model (and thus the periodogram maximum would become more pronounced), but this does not generally hold.
-Consider that in the extreme limit in which the number model parameters is equal to the number of data points, the model has enough flexibility to fit the data perfectly at {\it every} frequency, and the resulting periodogram would be a flat line at maximum power!
+\new{One might hope that when adding terms, the correct-period model would show more of an improvement than the incorrect-period model (and thus the periodogram maximum would become more pronounced in comparison to the background), but this does not generally hold.
+Consider that in the extreme limit in which the number model parameters is equal to the number of data points, the model has enough flexibility to fit the data perfectly at {\it every} frequency, and the resulting periodogram would be everywhere unity!
 This can only be the case if, on average, addition of terms preferentially boosts the background level.}
 
  
@@ -402,7 +401,10 @@ This can only be the case if, on average, addition of terms preferentially boost
   \figlabel{regularized_example}
 \end{figure*}
 
-The previous sections raise the question: how complicated a model should we use? We have seen that as we add more terms to the fit, the model will come closer and closer to the observed data.  In the extreme case, when the number of model parameters equals the number of data points, the model can fit the data {\it exactly} regardless of frequency and the periodogram will be everywhere unity (though in most cases, numerical inaccuracies prevent a truly perfect fit). For very high-order models, the fit becomes very sensitive to the noise in the data, and we say we have {\it over-fit} the data. This can be addressed by explicitly truncating the series, but we can also use a {\it regularization} term to mathematically enforce a less complicated model.
+The previous sections raise the question: how complicated a model should we use? We have seen that as we add more terms to the fit, the model will more closely describe the observed data.
+\old{In the extreme case, when the number of model parameters equals the number of data points, the model can fit the data {\it exactly} regardless of frequency and the periodogram will be everywhere unity (though in most cases, numerical inaccuracies prevent a truly perfect fit).}
+For very high-order models, however, such a close fit {\it over-fits} the data: that is, the fit is more responsive to statistical noise in the observations than to the underlying signal.
+This can be addressed by explicitly truncating the series at some number of terms, but we can also use a {\it regularization} term to mathematically enforce model simplicity.
 
 A regularization term is an explicit penalty on the magnitude of the model parameters $\theta$, and can take a number of forms. For computational simplicity here we'll use an {\it L2 regularization} -- also known as Tikhonov Regularization \citep{Tikhonov1963} or Ridge Regression \citep{Hoerl1970} -- which is a quadratic penalty term in the model parameters added to the $\chi^2$. Mathematically, this is equivalent in the Bayesian framework to using a zero-mean Gaussian prior on the model parameters.
 
@@ -482,8 +484,8 @@ This multiband approach, then, actually comprises a set of models indexed by the
 \subsection{Relationship of Multiband and Single-band approaches}
 \sectlabel{relationship}
 \new{
-With this formalism in place, we can return to the na{\"i}ve models discussed at the beginning of \sect{multiband}.
-The first is simply a standard Lomb-Scargle, ignoring the band information.
+With this formalism in place, we can return briefly to the na{\"i}ve models discussed at the beginning of \sect{multiband}.
+The first, which ignores band information, is simply a standard Lomb-Scargle over the heterogeneous data.
 The second, in which each band is fit independently, turns out to be equivalent to the $(N_{base},N_{band})=(0,1)$ model defined above.
 }
 \old{
@@ -501,7 +503,7 @@ The full multiband periodogram is given by
 \begin{equation}
   P_N^{(0,1)}(\omega) = 1 - \frac{\sum_{k=1}^K\chi^2_{min, k}(\omega)}{\sum_{k=1}^K\chi^2_{0,k}}
 \end{equation}
-and it can easily be shown that the $P_N$ can be constructed as a weighted sum of $P_N^{(k)}$:
+and it can be shown straightforwaredly that $P_N^{(0,1)}$ can be constructed as a weighted sum of $P_N^{(k)}$:
 \begin{equation}
   P_N^{(0,1)}(\omega) = \frac{\sum_{k=1}^K\chi^2_{0,k}P_N^{(k)}}{\sum_{k=1}^K\chi^2_{0,k}}.
 \end{equation}
@@ -587,7 +589,9 @@ Because the template-fitting method is extremely computationally intensive, S10 
   \figlabel{compare_periods}
 \end{figure*}
 
-The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.  In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother model and the shared-phase $(0, 1)$-multiband model\footnote{The supersmoother ``periodogram'' $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$, where $\bar{r}_0$ is the mean absolute residual around a constant model.}. Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
+The full S10 RR Lyrae dataset consists of 483 objects with an average of 55 observations in each of the five SDSS $ugriz$ bands spread over just under ten years.
+In the upper panels of \fig{compare_periods} we show the observed data for one of these objects, along with the periodogram derived with the single-band supersmoother model\footnote{The supersmoother ``periodogram'' $P_{SS}$ is constructed from the minimum sum of weighted model residuals $\bar{r}_{min}$ in analogy with \eq{chi2PN}: $P_{SS}(\omega) = 1 - \bar{r}_{min}(\omega) / \bar{r}_0$, where $\bar{r}_0$ is the mean absolute residual around a constant model.} and the shared-phase $(0, 1)$-multiband model.
+Here we have a case which is analogous to that shown for simulated data in the top panels of \fig{multiband_sim}: each band has enough data to easily locate candidate peaks, the best of which is selected via the S10 template-fitting procedure.
 
 The lower panels of \fig{compare_periods} compare the S10 period with the best periods obtained from the 1-band supersmoother (lower-left) and from the shared-phase multiband model (lower-right). To guide the eye, the figure includes indicators of the locations of beat aliases (dotted lines) and first harmonic aliases (dashed lines) of the S10 period. Numerical results are summarized in the upper rows of Table \ref{table:results}.
 
