@@ -52,6 +52,7 @@ ax[1].errorbar(phase, mag, dmag, fmt='.', color='#888888')
 
 # Fit and plot the model
 model = LombScargle().fit(t, mag, dmag)
+model.optimizer.period_range = (0.2, 1.2)
 
 phase = (t / model.best_period) % 1
 phasefit = np.linspace(0, 1, 1000)
