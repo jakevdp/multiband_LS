@@ -71,8 +71,8 @@ for i in range(2):
     yfits = model2.predict(tfit, filts=filts[:, None], period=period)
 
     plot_data(ax[1, 0], t, y, dy, f)
-    for i in range(5):
-        ax[1, 0].plot(tfit / period, yfits[i])
+    for j in range(5):
+        ax[1, 0].plot(tfit / period, yfits[j])
     ax[1, 1].plot(periods, model2.score(periods))
 
     fig.savefig('naive_{0}.png'.format(i + 1))
