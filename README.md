@@ -1,5 +1,5 @@
-Mutiband Lomb-Scargle Periodograms
-==================================
+Multiband Lomb-Scargle Periodograms
+===================================
 This repository contains the source for our multiband periodogram paper.
 It makes use of the [gatspy](http://github.com/jakevdp/gatspy/) package,
 which has been developed concurrently.
